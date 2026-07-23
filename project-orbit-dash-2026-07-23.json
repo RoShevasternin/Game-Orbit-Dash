@@ -1,0 +1,28 @@
+{
+  "type": "single-project",
+  "version": "2.0",
+  "exportDate": "2026-07-23T06:18:34.898Z",
+  "project": {
+    "id": "proj-1784647014592-413",
+    "name": "Orbit Dash",
+    "desc": "Orbit Dash [game v2]",
+    "icon": "🚀",
+    "categories": [
+      {
+        "id": 0,
+        "title": "📋 Основа",
+        "subtitle": "MVP",
+        "icon": "📋"
+      }
+    ],
+    "tasks": [
+      {
+        "categoryId": 0,
+        "title": "🎨 Figma Design",
+        "details": "<h4>✨ Робимо Дизайн Гри в Figma!</h4>\n\nhttps://www.figma.com/design/WMH6Wm1NVhx9CI4MYD2Lnx/VELDAN?node-id=5305-2651&p=f&t=cXnCP5nnGHyGIXCM-0"
+      }
+    ],
+    "completedTasks": {},
+    "collapsedCategories": {}
+  }
+}
