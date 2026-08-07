@@ -1,0 +1,139 @@
+9_patch.png
+size: 971, 1131
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+dialog_lvl
+  rotate: false
+  xy: 1, 1
+  size: 699, 320
+  orig: 699, 320
+  offset: 0, 0
+  index: -1
+  split: 368, 330, 160, 159
+  pad: -1, -1, -1, -1
+goals_badge
+  rotate: false
+  xy: 701, 1
+  size: 269, 81
+  orig: 269, 81
+  offset: 0, 0
+  index: -1
+  split: 46, 46, 38, 42
+  pad: -1, -1, -1, -1
+goals_bg_item_def
+  rotate: false
+  xy: 1, 322
+  size: 125, 125
+  orig: 125, 125
+  offset: 0, 0
+  index: -1
+  split: 61, 61, 62, 61
+  pad: -1, -1, -1, -1
+goals_bg_item_done
+  rotate: false
+  xy: 127, 322
+  size: 125, 125
+  orig: 125, 125
+  offset: 0, 0
+  index: -1
+  split: 0, 125, 0, 125
+goals_pill_reward
+  rotate: false
+  xy: 253, 322
+  size: 285, 96
+  orig: 285, 96
+  offset: 0, 0
+  index: -1
+  split: 58, 58, 44, 51
+  pad: -1, -1, -1, -1
+goals_pill_timer
+  rotate: false
+  xy: 539, 322
+  size: 265, 96
+  orig: 265, 96
+  offset: 0, 0
+  index: -1
+  split: 50, 54, 46, 49
+  pad: -1, -1, -1, -1
+goals_pill_timer_red
+  rotate: false
+  xy: 1, 448
+  size: 265, 96
+  orig: 265, 96
+  offset: 0, 0
+  index: -1
+  split: 54, 63, 47, 48
+  pad: -1, -1, -1, -1
+panel_coin
+  rotate: false
+  xy: 267, 448
+  size: 482, 175
+  orig: 482, 175
+  offset: 0, 0
+  index: -1
+  split: 273, 208, 74, 100
+  pad: -1, -1, -1, -1
+panel_merge_bonus
+  rotate: false
+  xy: 1, 624
+  size: 428, 428
+  orig: 428, 428
+  offset: 0, 0
+  index: -1
+  split: 38, 34, 43, 38
+  pad: -1, -1, -1, -1
+panel_settings
+  rotate: false
+  xy: 430, 624
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+  split: 50, 55, 50, 49
+  pad: -1, -1, -1, -1
+panel_who
+  rotate: false
+  xy: 631, 624
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+  split: 95, 104, 108, 91
+  pad: -1, -1, -1, -1
+progress_dialog_lvl
+  rotate: false
+  xy: 1, 1053
+  size: 518, 32
+  orig: 518, 32
+  offset: 0, 0
+  index: -1
+  split: 15, 16, 14, 17
+  pad: 386, 98, -1, -1
+progress_dialog_lvl_background
+  rotate: false
+  xy: 1, 1086
+  size: 533, 44
+  orig: 533, 44
+  offset: 0, 0
+  index: -1
+  split: 20, 21, 20, 23
+  pad: -1, -1, -1, -1
+separator
+  rotate: false
+  xy: 535, 1086
+  size: 29, 17
+  orig: 29, 17
+  offset: 0, 0
+  index: -1
+  split: 12, 16, 7, 9
+  pad: -1, -1, -1, -1
+separator_2
+  rotate: false
+  xy: 565, 1086
+  size: 29, 17
+  orig: 29, 17
+  offset: 0, 0
+  index: -1
+  split: 14, 14, 7, 9
+  pad: -1, -1, -1, -1

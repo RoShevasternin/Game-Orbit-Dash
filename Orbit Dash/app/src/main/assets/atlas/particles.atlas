@@ -1,0 +1,138 @@
+particles.png
+size: 1447, 878
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+circle_buy
+  rotate: false
+  xy: 716, 1
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+circle_cube
+  rotate: false
+  xy: 1, 227
+  size: 636, 636
+  orig: 636, 636
+  offset: 0, 0
+  index: -1
+circle_idle
+  rotate: false
+  xy: 1221, 1
+  size: 225, 225
+  orig: 225, 225
+  offset: 0, 0
+  index: -1
+circle_shared
+  rotate: false
+  xy: 817, 1
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+coin_buy
+  rotate: false
+  xy: 1, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+coin_collect
+  rotate: false
+  xy: 66, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_1
+  rotate: false
+  xy: 131, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_2
+  rotate: false
+  xy: 196, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_3
+  rotate: false
+  xy: 261, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_4
+  rotate: false
+  xy: 326, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_5
+  rotate: false
+  xy: 391, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_6
+  rotate: false
+  xy: 456, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_7
+  rotate: false
+  xy: 521, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_9
+  rotate: false
+  xy: 586, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+confetti_10
+  rotate: false
+  xy: 651, 1
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+star_def_buy
+  rotate: false
+  xy: 918, 1
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+star_def_shared
+  rotate: false
+  xy: 1019, 1
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+star_yellow
+  rotate: false
+  xy: 1120, 1
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+wave_upgrade
+  rotate: false
+  xy: 638, 227
+  size: 650, 650
+  orig: 650, 650
+  offset: 0, 0
+  index: -1

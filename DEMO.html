@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbit Dash · MASTER DESIGN SPEC</title>
+<style>
+  :root { --bg:#0e1024; --ring:#2b3060; --player:#00e5ff; --gem:#ffd54a; --spike:#ff3d68;
+          --shield:#4dd9ff; --magnet:#c07bff; --pulse:#ff9f2e; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#07091a;color:#fff;font-family:Inter,system-ui,sans-serif;padding:36px 22px 90px}
+  h1{font-size:21px;letter-spacing:4px;font-weight:800}
+  .sub{color:rgba(255,255,255,.5);font-size:12px;margin-top:8px;max-width:860px;line-height:1.6}
+  .sub b{color:var(--player)}
+  h2{font-size:13px;letter-spacing:3px;font-weight:800;color:rgba(255,255,255,.9);
+     margin:52px 0 6px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)}
+  .note{color:rgba(255,255,255,.42);font-size:11px;margin-bottom:16px;max-width:860px;line-height:1.6}
+  .screens{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .ph{width:272px;flex:none}
+  .ph svg{width:272px;height:604px;border-radius:14px;outline:1px solid rgba(255,255,255,.12);display:block;background:#0b0d20}
+  .ph h3{font-size:11px;letter-spacing:2px;font-weight:800;color:rgba(255,255,255,.85);margin:10px 0 4px}
+  .ph ul{list-style:none}
+  .ph li{font-size:9.5px;color:rgba(255,255,255,.45);line-height:1.55}
+  .cells{display:flex;gap:16px;flex-wrap:wrap}
+  .cell{width:118px;text-align:center}
+  .box{height:96px;background:#0b0e22;border:1px solid rgba(255,255,255,.08);border-radius:12px;
+       display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .cap{font-size:9px;letter-spacing:.5px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.5}
+  .cap b{color:rgba(255,255,255,.85)}
+  table{border-collapse:collapse;font-size:10.5px}
+  th,td{padding:6px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07)}
+  th{color:rgba(255,255,255,.45);letter-spacing:1.5px;font-weight:700;font-size:9.5px}
+  td{color:rgba(255,255,255,.75)}
+  td.k{font-weight:700;color:#fff}
+  .swatch{width:84px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.14);position:relative}
+  .hex{position:absolute;left:6px;bottom:3px;font-size:8px;color:rgba(255,255,255,.9);
+       text-shadow:0 1px 2px rgba(0,0,0,.8);font-family:ui-monospace,monospace}
+  .gl{max-width:900px;background:#0b0e22;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px 22px}
+  .gl li{font-size:12px;line-height:1.75;color:rgba(255,255,255,.78);margin-left:18px}
+  .gl b{color:var(--player)} .gl code{font-family:ui-monospace,monospace;font-size:11px;
+       background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<h1>ORBIT DASH · MASTER DESIGN SPEC v1.0</h1>
+<div class="sub">
+Сітка: <b>360×800</b> design-px → світ гри = ×2 (<b>720×1600</b>, центр поля CY=610w) → експорт растру @3x = 1080.
+Safe area: 48dp зверху, 34dp знизу. Шрифт <b>Inter</b> (Extra Bold / Semi Bold / Medium). Правило контенту:
+<b>усі спрайти в атласі білі, колір = tint із палітри теми (5 ролей: bg · ring · player · gem · spike)</b>.
+Екрани нижче — фінальний вигляд; точні розміри обʼєктів — у таблиці §4 (істина у world-юнітах).
+</div>
+
+<h2>01 · ЕКРАНИ (8)</h2>
+<div class="note">Порядок гравця: Splash → Menu → Game → Game Over; з меню: Shop / Daily / Ranks. Восьмий — стан гри після покупки ORBIT III (з 30-ї секунди). HUD скрізь: щит = піпси (жодних «S:2»), таймер комбо = дуга навколо кульки.</div>
+<div class="screens" id="screens"></div>
+
+<h2>02 · UI-КОМПОНЕНТИ ТА СТАНИ</h2>
+<div class="note">Радіуси: кнопка L r16, кнопка M r14, картка r16, ціна r10, чип r10, піпс r3, тайл скіна r14. Літери кнопок — Extra Bold, letter-spacing 2. Тінь-світіння кнопок: 0/0/blur 22–28 кольором заливки, альфа .3–.45.</div>
+<div class="cells" id="comps"></div>
+
+<h2>03 · ІГРОВІ ОБʼЄКТИ — ПОШАРОВО</h2>
+<div class="note">Кожен обʼєкт = біла база з атласа + tint + (для станів) примітиви ShapeDrawer. Бустерні кольори фіксовані для всіх тем: S #4dd9ff · M #c07bff · 2 #ffd54a · ≈ #ffffff · P #ff9f2e.</div>
+<div class="cells" id="objs"></div>
+
+<h2>04 · ТОЧНІ РОЗМІРИ (істина — world-юніти; design = world ÷ 2)</h2>
+<div class="note">На екранах-превʼю ігрові обʼєкти намальовані трохи більшими для читабельності. У коді бери ЦІ числа.</div>
+<table>
+<tr><th>Обʼєкт</th><th>world</th><th>design</th><th>примітка</th></tr>
+<tr><td class="k">Кулька гравця</td><td>r 20</td><td>r 10</td><td>highlight r5 офсет (−6,−6); glow-спрайт ~84</td></tr>
+<tr><td class="k">Кільце щита</td><td>r 30, w 2.5</td><td>r 15</td><td>#4dd9ff α.8, пульс ±1</td></tr>
+<tr><td class="k">Дуга комбо</td><td>r 40, w 4</td><td>r 20</td><td>трек α.25 повний; frac = comboT/вікно; від −90°</td></tr>
+<tr><td class="k">Супутники</td><td>орбіта r 31, точка r 2.6</td><td>r 15.5</td><td>кількість = mult−1 (макс 4), 260°/с</td></tr>
+<tr><td class="k">Гем</td><td>ромб 15×10</td><td>7.5×5</td><td>обертання 120°/с; глінт −80°/с; ring III: ×2, білий ореол</td></tr>
+<tr><td class="k">Шип</td><td>зірка R24 / r10.8, 8 пром.</td><td>R12</td><td>обертання 40°/с; чорне ядро r5.5 α.4; danger: glow ×1.5, пульс 12 Гц</td></tr>
+<tr><td class="k">Бустер</td><td>гекс r22, stroke 3</td><td>r11</td><td>пульс масштабу ±12% · 6 Гц; літера 18 Bold</td></tr>
+<tr><td class="k">Трейл</td><td>24 точки, w 1.5→13</td><td>—</td><td>стрічка strip; glow-пас ×2.1 ширини additive</td></tr>
+<tr><td class="k">Кільця (2 орбіти)</td><td>r 190 / 320</td><td>95 / 160</td><td>активне: німб w16 α.30 + ядро w5.5 + пунктир r+9 (dash 16/30)</td></tr>
+<tr><td class="k">Кільця (ORBIT III)</td><td>r 140 / 235 / 330</td><td>70 / 117.5 / 165</td><td>стискання лерпом 2.5/с; привид-пунктир з 28-ї с</td></tr>
+<tr><td class="k">HUD: рахунок</td><td>—</td><td>центр, y 46, 30 EB</td><td>білий, ds white α.35</td></tr>
+<tr><td class="k">HUD: геми</td><td>—</td><td>x 18, y 44, 14 SB</td><td>«◆ N», колір gem</td></tr>
+<tr><td class="k">HUD: піпси щита</td><td>—</td><td>16×10 r3, y 32, правий відступ 18, крок 20</td><td>повний #4dd9ff + glow; порожній white α.14; втрата: спалах білим 3 кадри</td></tr>
+<tr><td class="k">HUD: COMBO xN</td><td>—</td><td>центр, y 78, 14 EB</td><td>колір player + ds</td></tr>
+<tr><td class="k">HUD: активний бустер</td><td>—</td><td>гекс r18 (327,60); бар 54×3 (300..354, y74)</td><td>колір бустера; бар = t/повного</td></tr>
+</table>
+
+<h2>05 · ЕФЕКТИ, СТАНИ, ТАЙМІНГИ</h2>
+<table>
+<tr><th>Подія</th><th>послідовність / значення</th></tr>
+<tr><td class="k">Тап (зміна орбіти)</td><td>реакція на touchDown (≤50 мс); сквош кульки 0.88 по радіальній осі 70–120 мс; 4 іскри; тік 300/340 Гц за напрямком; вібро 8 мс; хвиля «приземлення» r20→48 · 0.25 с</td></tr>
+<tr><td class="k">Near-miss</td><td>gap 26–90w при перетині rel=0 → hit-stop 30 мс; «CLOSE! +5·mult» білий; іскри; драбинка півтонів від 950 Гц по комбо; вібро 12 мс</td></tr>
+<tr><td class="k">Щит зʼїв удар</td><td>hit-stop 40 мс; піпс-спалах; синя хвиля r16→110 · 0.35 с; invuln 1.2 с (миготіння 5 Гц); вібро 30 мс</td></tr>
+<tr><td class="k">Смерть</td><td>hit-stop 80 мс → slow-mo ×0.35 · 0.8 с: вибух 46 часток із засмоктуванням до центру, 3 хвилі (player + #ff4d6d + #4dd9ff «хроматика»), flash α.32→0 · 0.2 с, шейк 1.0 → екран</td></tr>
+<tr><td class="k">ORBIT III</td><td>28 с: привид зовнішнього кільця пунктиром (α до .35, блимає 10 Гц) → 30 с: стискання радіусів + flash .3 + хвиля з центру 60→520 + «ORBIT III ONLINE» 1.8 с + бас</td></tr>
+<tr><td class="k">Slow-mo (бустер)</td><td>timescale 0.6; холодна віньєтка rgba(160,210,255,.26) по краях</td></tr>
+<tr><td class="k">Frenzy</td><td>золота віньєтка rgba(255,213,74,.16); геми ×2; спавн ×1.5 (85% гемів)</td></tr>
+<tr><td class="k">Dim (Game Over)</td><td>rgba(4,5,11,.78) + за можливості blur</td></tr>
+<tr><td class="k">Драбинки звуку</td><td>геми: 700 Гц + півтон за ланцюжок ≤2 с (кап 12); near-miss: 950 Гц + півтон за комбо</td></tr>
+</table>
+
+<h2>06 · ПАЛІТРИ — 8 ТЕМ × 5 РОЛЕЙ</h2>
+<div class="note">Ціни: NEON 0 · SUNSET/TOXIC/ICE 150 · SYNTH/MAGMA 250 · VOID 400 · GOLD 600. Тема = лише ці 5 кольорів; перемикання = лерп 0.35 с.</div>
+<table id="palTable"></table>
+
+<h2>07 · GL ES 2.0 — ПРАВИЛА РЕАЛІЗАЦІЇ</h2>
+<div class="gl"><ul>
+<li><b>Білий атлас + tint.</b> glow / ball / highlight / gem / spike / spike-core / particle — білі; колір через <code>batch.setColor(theme.role)</code>. Зміна теми = заміна 5 <code>Color</code>, нуль текстур.</li>
+<li><b>Плавний перехід теми:</b> тримай current+target палітри, <code>Color.lerp(target, 8f*dt)</code> для всіх 5 ролей.</li>
+<li><b>Glow-прохід</b> additive (<code>SRC_ALPHA, ONE</code>) до ядер; далі bloom: bright-pass → gaussian ping-pong FBO ½→¼ → additive composite.</li>
+<li><b>ShapeDrawer</b> (колір-аргумент): кільця, пунктир (фаза = офсет сегментів або шейдер <code>fract(atan·k−u_t)</code>), дуга комбо, стрілка, піпси, гекс-контур.</li>
+<li><b>Шейдери-квади:</b> фон (радіальний градієнт u_bgColor + 2 октави noise, дихання від швидкості), віньєтки станів (radial-alpha, u_color), flash/dim — прості квади.</li>
+<li><b>Трейл</b> — Mesh triangle-strip 24×2 з vertex-кольорами (градієнт безкоштовно), другий пас ×2.1 ширини під glow.</li>
+<li><b>Бюджет:</b> атлас ≤1024², 3 FBO, ~6 шейдерів; фолбек — вимкнути bloom, контраст ролей тримає читабельність.</li>
+</ul></div>
+
+<script>
+(function(){
+const P={bg:'#0e1024',ring:'#2b3060',ringB:'#525ab6',player:'#00e5ff',gem:'#ffd54a',spike:'#ff3d68',
+         shield:'#4dd9ff',magnet:'#c07bff',pulse:'#ff9f2e',w:'#ffffff'};
+const gf=(c,r)=>`filter:drop-shadow(0 0 ${r}px ${c})`;
+let UID=0;
+
+// ---------- примітиви (рядкові SVG-хелпери)
+const txt=(x,y,fs,fw,fill,s,{ls=0,a='middle',op=1,glow=null,mono=false}={})=>
+ `<text x="${x}" y="${y}" font-size="${fs}" font-weight="${fw}" fill="${fill}" opacity="${op}"
+   text-anchor="${a}" letter-spacing="${ls}" ${glow?`style="${gf(glow,14)}"`:''}
+   ${mono?'font-family="ui-monospace,monospace"':''}>${s}</text>`;
+const rct=(x,y,w,h,f,{r=0,op=1,st=null,sw=1,so=1,glow=null}={})=>
+ `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${f}" fill-opacity="${op}"
+   ${st?`stroke="${st}" stroke-width="${sw}" stroke-opacity="${so}"`:''} ${glow?`style="${gf(glow,10)}"`:''}/>`;
+const crc=(x,y,r,f,{op=1,st=null,sw=1,so=1,dash=null,glow=null,gr=9}={})=>
+ `<circle cx="${x}" cy="${y}" r="${r}" fill="${f||'none'}" ${f?`fill-opacity="${op}"`:''}
+   ${st?`stroke="${st}" stroke-width="${sw}" stroke-opacity="${so}"`:''}
+   ${dash?`stroke-dasharray="${dash}"`:''} ${glow?`style="${gf(glow,gr)}"`:''}/>`;
+
+const starPts=(cx,cy,R,r,rot)=>{let p=[];for(let k=0;k<16;k++){const a=rot+k*Math.PI/8,rr=k%2?r:R;
+ p.push((cx+Math.cos(a)*rr).toFixed(1)+','+(cy+Math.sin(a)*rr).toFixed(1));}return p.join(' ');};
+const hexPts=(cx,cy,r)=>{let p=[];for(let k=0;k<6;k++){const a=-Math.PI/2+k*Math.PI/3;
+ p.push((cx+Math.cos(a)*r).toFixed(1)+','+(cy+Math.sin(a)*r).toFixed(1));}return p.join(' ');};
+
+const gemD=(x,y,s,fill,gl)=>`<g style="${gf(gl,8)}">
+ <rect x="${x-s/2}" y="${y-s/2}" width="${s}" height="${s}" rx="2"
+   transform="rotate(45 ${x} ${y})" fill="${fill}"/>
+ <circle cx="${x}" cy="${y}" r="${s*0.2}" fill="#fff" opacity=".9"/></g>`;
+const spikeS=(x,y,R,rot,danger)=>`<g style="filter:drop-shadow(0 0 ${danger?13:8}px ${P.spike})">
+ <polygon points="${starPts(x,y,R,R*0.45,rot)}" fill="${P.spike}"/>
+ <circle cx="${x}" cy="${y}" r="${R*0.23}" fill="#000" opacity=".4"/></g>`;
+const hexB=(x,y,r,ch,c)=>`<g style="${gf(c,8)}">
+ <polygon points="${hexPts(x,y,r)}" fill="none" stroke="${c}" stroke-width="2.6"/>
+ ${txt(x,y+r*0.28,r*0.75,700,c,ch)}</g>`;
+const pipsG=(rightX,y,full,total)=>{let s='';for(let i=0;i<total;i++){
+ const filled=i<full, x=rightX-(total-i)*20;
+ s+=rct(x,y,16,10,filled?P.shield:P.w,{r:3,op:filled?1:.14,glow:filled?P.shield:null});}return s;};
+
+const btn=(x,y,w,h,kind,label,fs)=>{
+ let f,tc,st='',gl=null;
+ if(kind==='p'){f=P.player;tc=P.bg;gl=P.player;}
+ else if(kind==='g'){f=P.gem;tc=P.bg;gl=P.gem;}
+ else if(kind==='w'){f='#fff';tc='#111';}
+ else{f='rgba(255,255,255,.08)';tc='#fff';st=`stroke="rgba(255,255,255,.18)" stroke-width="1"`;}
+ return `<g ${gl?`style="${gf(gl,12)}"`:''}><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h>48?16:14}" fill="${f}" ${st}/>
+   ${txt(x+w/2,y+h/2+fs*0.36,fs,800,tc,label,{ls:2})}</g>`;};
+
+const header=(title,right)=>`
+ ${`<g><rect x="20" y="20" width="76" height="32" rx="10" fill="rgba(255,255,255,.08)"/>${txt(58,41,11,600,'#fff','← BACK',{ls:1})}</g>`}
+ ${txt(180,42,16,800,'#fff',title,{ls:4})}
+ ${txt(340,41,13,600,P.gem,right,{a:'end'})}`;
+
+const banner=y=>`${rct(0,y,360,52,P.w,{op:.06})}
+ <line x1="0" y1="${y}" x2="360" y2="${y}" stroke="#fff" stroke-opacity=".1"/>
+ ${txt(180,y+30,10,500,'#fff','BANNER 320×50',{ls:2,op:.35})}`;
+
+const bgDef=(uid,lift)=>`<defs><radialGradient id="bg${uid}" cx=".5" cy=".4" r=".8">
+ <stop offset="0" stop-color="${lift}"/><stop offset=".55" stop-color="${P.bg}"/>
+ <stop offset="1" stop-color="#090b1c"/></radialGradient></defs>
+ <rect width="360" height="800" fill="url(#bg${uid})"/>`;
+const stars=(n=22,seed=1)=>{let s='';for(let i=0;i<n;i++){
+ const x=14+((i*97+seed*31)%332), y=22+((i*173+seed*57)%756), z=1.4+(i%3)*0.7;
+ s+=`<rect x="${x}" y="${y}" width="${z}" height="${z}" fill="#fff" opacity="${(0.14+(i%4)*0.08).toFixed(2)}"/>`;}return s;};
+
+// поле: кільця + гравець
+const rings2=(activeOuter=true)=>{
+ const cx=180,cy=305;
+ let s=crc(cx,cy,95,null,{st:P.ring,sw:3});
+ s+=crc(cx,cy,160,null,{st:P.player,sw:10,so:.16});
+ s+=crc(cx,cy,160,null,{st:P.ringB,sw:4.5,glow:P.player,gr:10});
+ s+=crc(cx,cy,169,null,{st:P.player,sw:2,so:.5,dash:'8 15'});
+ return s;};
+const player=(x,y,{arrow=false,arcFrac=.7,sats=2,r=11}={})=>{
+ let s='';
+ for(let i=3;i>=1;i--) s+=crc(x-14-i*13,y+i*3.4,r-2.5*i,P.player,{op:.32-.09*i});
+ s+=crc(x,y,r,P.player,{glow:P.player,gr:12});
+ s+=crc(x-3,y-3,3,'#fff',{op:.92});
+ s+=crc(x,y,20,null,{st:P.player,sw:2.5,so:.25});
+ const end=-Math.PI/2+Math.PI*2*arcFrac;
+ s+=`<path d="M ${x} ${y-20} A 20 20 0 ${arcFrac>.5?1:0} 1 ${(x+20*Math.cos(end)).toFixed(1)} ${(y+20*Math.sin(end)).toFixed(1)}"
+      fill="none" stroke="${P.player}" stroke-width="2.5"/>`;
+ for(let k=0;k<sats;k++){const a=(k*(360/Math.max(1,sats))+30)*Math.PI/180;
+  const sx=x+Math.cos(a)*15.5, sy=y+Math.sin(a)*15.5;
+  s+=crc(sx,sy,2.4,'#fff',{glow:P.player,gr:6});}
+ if(arrow) s+=`<polygon points="${x},${y-24} ${x-5},${y-16} ${x+5},${y-16}" fill="#fff" opacity=".7"/>`;
+ return s;};
+
+// ---------- екрани
+function scr(build,uid){return `<svg viewBox="0 0 360 800" xmlns="http://www.w3.org/2000/svg"
+  font-family="Inter,system-ui,sans-serif">${build(uid)}</svg>`;}
+
+const S_splash=u=>bgDef(u,'#1c2148')+stars(20,3)+
+ crc(180,300,210/2+5,P.player,{op:.06,glow:P.player,gr:60})+
+ crc(180,300,110,null,{st:P.ring,sw:4})+crc(180,300,70,null,{st:P.ring,sw:4})+
+ crc(180,190,13,P.player,{glow:P.player,gr:14})+gemD(250,300,16,P.gem,P.gem)+
+ txt(180,486,44,800,P.player,'ORBIT',{ls:12,glow:P.player})+
+ txt(180,542,44,800,P.gem,'DASH',{ls:12,glow:P.gem})+
+ txt(180,648,13,500,'#fff','TAP TO START',{ls:3,op:.45})+
+ txt(180,764,10,500,'#fff','com.lewydo.orbitdash',{op:.25});
+
+const S_menu=u=>bgDef(u,'#1c2148')+stars(20,5)+
+ crc(180,190,80,P.player,{op:.06,glow:P.player,gr:50})+
+ crc(180,190,75,null,{st:P.ring,sw:4})+crc(180,190,47,null,{st:P.ring,sw:4})+
+ crc(180,115,10,P.player,{glow:P.player,gr:12})+gemD(227,190,13,P.gem,P.gem)+
+ txt(180,302,36,800,P.player,'ORBIT',{ls:10,glow:P.player})+
+ txt(180,348,36,800,P.gem,'DASH',{ls:10,glow:P.gem})+
+ txt(120,412,13,600,'#fff','BEST 847',{op:.65})+txt(196,412,13,600,P.gem,'◆ 1 250')+
+ txt(268,412,13,600,'#fff','DAY 3',{op:.45})+
+ btn(30,452,300,54,'p','PLAY',18)+
+ btn(30,516,300,42,'s','PLAY + MAGNET · AD',12)+
+ btn(30,568,93,42,'s','SHOP',12)+btn(133,568,93,42,'s','DAILY',12)+btn(236,568,93,42,'s','RANKS',12)+
+ crc(219,574,5,P.gem,{glow:P.gem,gr:6})+
+ btn(30,620,300,42,'g','+25 GEMS · AD',12)+
+ txt(180,690,11,500,'#fff','Tap or Space — switch orbit',{op:.35})+
+ banner(748);
+
+const S_game=u=>bgDef(u,'#181d3e')+stars(24,7)+
+ crc(180,305,120,P.player,{op:.05,glow:P.player,gr:60})+
+ rings2()+player(180,145,{sats:2,arcFrac:.7})+
+ gemD(340,325,13,P.gem,P.gem)+gemD(120,381,12,P.gem,P.gem)+
+ spikeS(235,227,16,0.4,true)+hexB(85,265,15,'M',P.magnet)+
+ txt(180,52,30,800,'#fff','847',{glow:'#ffffff'})+
+ txt(18,50,14,600,P.gem,'◆ 128',{a:'start'})+pipsG(342,32,2,3)+
+ txt(180,82,14,800,P.player,'COMBO x3',{ls:2,glow:P.player})+
+ txt(262,204,13,800,'#fff','CLOSE! +15')+
+ txt(180,540,14,700,'#fff','TAP = SWITCH ORBIT',{ls:2,op:.7});
+
+const S_over=u=>bgDef(u,'#181d3e')+
+ crc(180,305,160,null,{st:P.ring,sw:4,so:.6})+crc(180,305,95,null,{st:P.ring,sw:3,so:.6})+
+ rct(0,0,360,800,'#04050b',{op:.78})+
+ txt(180,130,26,800,P.spike,'GAME OVER',{ls:6,glow:P.spike})+
+ `<g>${rct(84,148,192,22,P.gem,{r:11,op:.14})}${txt(180,163,10,600,P.gem,'NEW BEST → LEADERBOARD',{ls:1.5})}</g>`+
+ txt(180,236,52,800,'#fff','847',{glow:'#ffffff'})+
+ txt(180,270,12,600,'#fff','BEST 847',{op:.55})+
+ txt(180,296,16,600,P.gem,'◆ +34 · x2')+
+ btn(40,330,280,44,'p','REVIVE · AD',13)+
+ btn(40,384,280,44,'g','x2 GEMS · AD',13)+
+ btn(40,438,280,44,'s','RESTART',13)+
+ btn(40,492,280,44,'s','MENU',13)+
+ `${rct(40,552,280,110,P.w,{r:16,op:.06,st:'#fff',so:.12})}${txt(180,612,11,500,'#fff','MREC 300×250',{ls:2,op:.4})}`;
+
+const card=(y,h,tint)=>tint
+ ? rct(20,y,320,h,P.gem,{r:16,op:.08,st:P.gem,so:.32})
+ : rct(20,y,320,h,P.w,{r:16,op:.05,st:'#fff',so:.09});
+const priceBtn=(x,y,label,f,tc)=>`<g>${rct(x-64,y,64,36,f,{r:10})}${txt(x-32,y+23,12,800,tc,label)}</g>`;
+const pips5=(x,y,lvl,max)=>{let s='';for(let i=0;i<max;i++)
+ s+=rct(x+i*18,y,14,7,i<lvl?P.player:P.w,{r:2,op:i<lvl?1:.12});return s;};
+
+const S_shop=u=>bgDef(u,'#141833')+header('SHOP','◆ 1 250')+
+ card(70,74,true)+txt(36,90,13,800,P.gem,'ORBIT III',{a:'start',ls:2})+
+ txt(36,110,10,500,'#fff','Third ring from 30s · gems ×2',{a:'start',op:.55})+
+ priceBtn(324,88,'500 ◆',P.gem,P.bg)+
+ card(154,86)+txt(36,174,12,800,'#fff','MAGNET',{a:'start',ls:2})+
+ txt(36,192,10,500,'#fff','Wider gem pickup',{a:'start',op:.45})+
+ pips5(36,206,2,5)+priceBtn(324,176,'90 ◆',P.player,P.bg)+
+ card(250,86)+txt(36,270,12,800,'#fff','SHIELD',{a:'start',ls:2})+
+ txt(36,288,10,500,'#fff','Start with charges',{a:'start',op:.45})+
+ pips5(36,302,1,3)+priceBtn(324,272,'114 ◆',P.player,P.bg)+
+ txt(20,366,12,800,'#fff','SKINS',{a:'start',ls:3})+
+ (()=>{const PALS=[['NEON · ON','#0e1024','#2b3060','#00e5ff',1],['SYNTH · 250','#160222','#4a1566','#ff3ec8',0],
+   ['VOID · 400','#070310','#2a1b52','#a86bff',0],['GOLD · 600','#14100a','#5c4a22','#ffe27a',0]];
+  let s='';PALS.forEach((p,i)=>{const x=20+i*83;
+   s+=rct(x,380,72,72,p[1],{r:14,st:p[4]?'#fff':p[2],sw:p[4]?2.5:1.5});
+   s+=crc(x+36,416,17,null,{st:p[2],sw:3});
+   s+=crc(x+36,399,5.5,p[3],{glow:p[3],gr:7});
+   s+=txt(x+36,468,8,500,'#fff',p[0],{op:p[4]?.9:.5});});return s;})()+
+ card(492,66)+txt(36,512,12,800,'#fff','REMOVE ADS',{a:'start',ls:2})+
+ txt(36,530,9,500,'#fff','Removes banner, MREC, interstitial',{a:'start',op:.45})+
+ priceBtn(324,508,'$3.99','#fff','#111')+
+ banner(748);
+
+const S_daily=u=>bgDef(u,'#141833')+header('MISSIONS','◆ 1 250')+
+ card(70,152)+txt(36,92,12,800,'#fff','DAILY STREAK',{a:'start',ls:2})+
+ (()=>{const REW=[10,15,20,30,40,60,100];let s='';for(let i=0;i<7;i++){
+   const x=42+i*46, reached=i<3, today=i===2;
+   s+=crc(x,122,15,reached?P.gem:P.w,{op:reached?(today?1:.35):.08,
+     st:today?'#fff':null,sw:2});
+   s+=txt(x,126,10,600,today?P.bg:'#fff',String(i+1),{mono:true,op:reached||today?1:.6});
+   s+=txt(x,148,7.5,500,'#fff','+'+REW[i],{op:.4});}return s;})()+
+ btn(36,164,288,40,'g','CLAIM DAY 3 · +20 ◆',12)+
+ (()=>{const M=[['Collect 40 gems',28,40,'+20 ◆',0],['6 near-misses',6,6,'+25 ◆',1],['Play 3 runs',1,3,'+15 ◆',0]];
+  let s='';M.forEach((m,i)=>{const y=246+i*96, done=m[1]>=m[2];
+   s+=card(y,86);
+   s+=txt(36,y+22,12,700,'#fff',m[0],{a:'start'});
+   s+=rct(36,y+38,200,6,P.w,{r:3,op:.1});
+   s+=rct(36,y+38,200*Math.min(1,m[1]/m[2]),6,done?P.gem:P.player,{r:3});
+   s+=txt(36,y+60,9,500,'#fff',`${m[1]} / ${m[2]}`,{a:'start',op:.45});
+   s+=priceBtn(324,y+24,done?m[3]:m[3],done?P.gem:'rgba(255,255,255,.08)',done?P.bg:'rgba(255,255,255,.5)');});
+  return s;})()+
+ txt(180,580,9,500,'#fff','Місії оновлюються щодня · стрік скидається без входу',{op:.35});
+
+const S_ranks=u=>bgDef(u,'#141833')+header('RANKS','↻')+
+ card(70,100)+txt(36,92,10,500,'#fff','YOUR NAME · BEST 847',{a:'start',op:.5})+
+ rct(36,104,216,38,P.w,{r:12,op:.08,st:'#fff',so:.15})+
+ txt(48,128,12,600,'#fff','VELDAN',{a:'start',mono:true})+
+ `<g>${rct(260,104,64,38,P.player,{r:12})}${txt(292,128,12,800,P.bg,'SAVE')}</g>`+
+ txt(36,160,8.5,500,'#fff','Нік і рекорд видно гравцям · у релізі — Play Games',{a:'start',op:.35})+
+ (()=>{const R=[['1','NOVA','1 984',P.gem,0],['2','KAI','1 750','#c8d6e5',0],['3','VELDAN · YOU','847','#cd7f32',1],
+   ['4','LUNA','512','rgba(255,255,255,.5)',0],['5','REX','488','rgba(255,255,255,.5)',0]];
+  let s='';R.forEach((r,i)=>{const y=192+i*54;
+   s+= r[4]? rct(20,y,320,44,P.player,{r:12,op:.12,st:P.player,so:.5})
+           : rct(20,y,320,44,P.w,{r:12,op:.05,st:'#fff',so:.08});
+   s+=txt(40,y+28,12,700,r[3],r[0],{mono:true});
+   s+=txt(62,y+28,12,700,'#fff',r[1],{a:'start'});
+   s+=txt(328,y+28,12,700,P.gem,r[2],{a:'end',mono:true});});return s;})();
+
+const S_orbit3=u=>bgDef(u,'#181d3e')+stars(26,11)+
+ crc(180,305,120,P.player,{op:.05,glow:P.player,gr:60})+
+ crc(180,305,70,null,{st:P.ring,sw:3})+
+ crc(180,305,165,null,{st:P.ring,sw:3.5})+txt(180,128,12,700,P.gem,'x2',{op:.6})+
+ crc(180,305,117.5,null,{st:P.player,sw:10,so:.16})+
+ crc(180,305,117.5,null,{st:P.ringB,sw:4.5,glow:P.player,gr:10})+
+ crc(180,305,126,null,{st:P.player,sw:2,so:.5,dash:'8 15'})+
+ crc(180,305,150,null,{st:P.gem,sw:2,so:.22})+
+ player(180,187.5,{arrow:true,sats:4,arcFrac:.8})+
+ gemD(110,335,12,P.gem,P.gem)+
+ `<g style="${gf('#ffffff',10)}">${gemD(304,254,14,'#ffe27a','#ffffff')}</g>`+
+ spikeS(285,358,15,0.4,true)+hexB(126,350,15,'P',P.pulse)+
+ txt(180,52,28,800,'#fff','1 245',{glow:'#ffffff'})+
+ txt(18,50,14,600,P.gem,'◆ 312',{a:'start'})+pipsG(342,32,2,3)+
+ txt(180,82,14,800,P.player,'COMBO x5',{ls:2,glow:P.player})+
+ txt(180,476,20,800,P.gem,'ORBIT III ONLINE',{ls:3,glow:P.gem,op:.92});
+
+const SCREENS=[
+ ['00 SPLASH / BRAND',S_splash,['емблема: кільця r110/r70, кулька r13, гем 16','титули 44 EB ls12 + glow','пакет 10 M α.25 y764']],
+ ['01 MENU',S_menu,['емблема r75/r47 · титули 36 EB ls10','статистика y412 · 13 SB','PLAY 300×54 · ряд 3×93×42 · крапка-нотиф на DAILY','банер y748 360×52']],
+ ['02 GAME · 2 орбіти',S_game,['кільця r95 / r160 (активне: німб+ядро+пунктир r+9)','гравець: трейл 3 фейди · дуга комбо r20 · 2 супутники','HUD: 847/◆128/піпси 2з3 · COMBO y82','туторіал до 3-го рану, y540']],
+ ['03 GAME OVER',S_over,['dim α.78 поверх тьмяних кілець','пілюля NEW BEST · рахунок 52 EB','кнопки 280×44 крок 54 · MREC 280×110']],
+ ['04 SHOP',S_shop,['ORBIT III картка 74h з gem-тінтом','апгрейд-картка 86h: піпси 14×7 r2','скіни 72×72 r14 крок 83 · REMOVE ADS 66h']],
+ ['05 MISSIONS / DAILY',S_daily,['стрік: 7 кіл d30 крок 46 · CLAIM 288×40','місія 86h: прогрес 200×6 · клейм праворуч','нагороди: 15–45 ◆ · стрік 10→100']],
+ ['06 RANKS',S_ranks,['нік: інпут 216×38 + SAVE 64×38','рядок 44h крок 54 · медалі: gem/срібло/бронза','свій рядок: player α.12 + рамка α.5']],
+ ['07 GAME · ORBIT III',S_orbit3,['кільця r70/117.5/165 · активне середнє','стрілка напрямку над кулькою · 4 супутники (x5)','гем ring III: ×2 більший, білий ореол','анонс 20 EB gem · echo-кільце r150']],
+];
+document.getElementById('screens').innerHTML=SCREENS.map(([t,fn,notes])=>{
+ const u=++UID;
+ return `<div class="ph">${scr(fn,u)}<h3>${t}</h3><ul>${notes.map(n=>`<li>· ${n}</li>`).join('')}</ul></div>`;
+}).join('');
+
+// ---------- компоненти
+const compCell=(w,h,inner,cap)=>`<div class="cell" style="width:${w}px"><div class="box" style="height:${h}px">
+ <svg width="${w-14}" height="${h-14}" viewBox="0 0 ${w-14} ${h-14}" font-family="Inter,system-ui,sans-serif">${inner}</svg></div>
+ <div class="cap">${cap}</div></div>`;
+const comps=[];
+comps.push(compCell(200,86,btn(6,14,174,44,'p','PLAY',15),'<b>Primary</b> · fill player · текст bg<br>glow 0/0/24 player α.4'));
+comps.push(compCell(200,86,btn(6,14,174,44,'g','+25 GEMS · AD',12),'<b>Gem</b> · reward-дії'));
+comps.push(compCell(200,86,btn(6,14,174,44,'s','RESTART',12),'<b>Secondary</b> · white α.08 + stroke α.18'));
+comps.push(compCell(200,86,`<g opacity=".4">${btn(6,14,174,44,'p','PLAY',15)}</g>`,'<b>Disabled</b> · будь-яка кнопка α.4'));
+comps.push(compCell(150,86,`${rct(10,22,120,36,P.gem,{r:11,op:.14})}${txt(70,44,9.5,600,P.gem,'NEW BEST',{ls:1.5})}`,'<b>Пілюля-бейдж</b> · gem α.14 · r999'));
+comps.push(compCell(150,86,`<g>${rct(24,22,92,34,P.gem,{r:12,op:.15})}${gemD(44,39,9,P.gem,P.gem)}${txt(82,44,11,700,P.gem,'+25')}</g>`,'<b>Toast</b> · 1.3 с · y88'));
+comps.push(compCell(150,86,pipsG(120,32,2,3),'<b>Піпси щита</b> 16×10 r3 крок 20<br>повний #4dd9ff+glow · порожній α.14'));
+comps.push(compCell(180,86,`${rct(16,36,140,6,P.w,{r:3,op:.1})}${rct(16,36,96,6,P.player,{r:3})}`,'<b>Прогрес</b> 6h r3 · трек α.1<br>заповнення player / gem (done)'));
+comps.push(compCell(200,96,(()=>{let s='';const st=[[.08,'#fff',0,'до'],[1,P.gem,1,'сьогодні'],[.35,P.gem,0,'взято']];
+ st.forEach((c,i)=>{const x=36+i*64;s+=crc(x,34,15,c[1],{op:c[0],st:c[2]?'#fff':null,sw:2});
+  s+=txt(x,38,10,600,c[2]?P.bg:'#fff',String(i+3),{mono:true});
+  s+=txt(x,64,7.5,500,'#fff',c[3],{op:.45});});return s;})(),'<b>Стрік-день</b> d30 · 3 стани'));
+comps.push(compCell(220,86,`${rct(8,22,150,36,P.w,{r:12,op:.08,st:'#fff',so:.15})}${txt(20,44,11,600,'#fff','VELDAN',{a:'start',mono:true})}<g>${rct(164,22,52,36,P.player,{r:12})}${txt(190,44,11,800,P.bg,'SAVE')}</g>`,'<b>Інпут ніка</b> ≤12 симв + SAVE'));
+comps.push(compCell(200,86,`${rct(10,20,180,44,P.w,{r:12,op:.06,st:'#fff',so:.12})}${txt(100,46,10,500,'#fff','BANNER 320×50 / MREC 300×250',{op:.4})}`,'<b>Ad-плейсхолдери</b> · банер: меню/шоп<br>MREC: game over · noAds ховає'));
+document.getElementById('comps').innerHTML=comps.join('');
+
+// ---------- обʼєкти пошарово
+const objs=[];
+const oc=(inner,cap)=>objs.push(compCell(118,110,`<g transform="translate(52,48)">${inner}</g>`,cap));
+oc(`${crc(0,0,30,'#fff',{op:.14})}${crc(0,0,18,'#fff',{op:.22})}`,'<b>glow.png</b> біла пляма 64px<br>tint = роль · additive');
+oc(crc(0,0,20,'#fff'),'<b>ball.png</b> r20w · tint player');
+oc(`${crc(0,0,20,'#20263f')}${crc(-6,-6,5,'#fff',{op:.92})}`,'<b>highlight</b> r5 (−6,−6) · без tint');
+oc(player(0,4,{sats:2,arcFrac:.72,r:11}).replaceAll('180','0'),'<b>гравець зібраний</b><br>щит r30w · дуга r40w · сати r31w');
+oc(pipsG(30,-5,2,3),'<b>піпси 2/3</b>');
+oc(`${rct(-36,-5,16,10,P.shield,{r:3,glow:P.shield})}${rct(-14,-5,16,10,'#fff',{r:3,glow:'#ffffff'})}${rct(8,-5,16,10,'#fff',{r:3,op:.14})}`,'<b>втрата заряду</b> · спалах 3 кадри');
+oc(`${crc(0,0,26,null,{st:P.shield,sw:2,so:.4})}${crc(0,0,34,null,{st:P.shield,sw:3,so:.9})}`,'<b>хвиля щита</b> r16→110w · .35с');
+oc(`<polygon points="${starPts(0,0,22,9.9,-Math.PI/2)}" fill="#fff"/>`,'<b>spike.png</b> білий · R24/r10.8w');
+oc(spikeS(0,0,22,-Math.PI/2,false),'<b>шип tint</b> + ядро r5.5 α.4 · 40°/с');
+oc(spikeS(0,0,22,-Math.PI/2,true),'<b>danger</b> glow ×1.5 · пульс 12 Гц');
+oc(gemD(0,0,16,P.gem,P.gem)+`<polygon points="0,-22 1.8,0 0,22 -1.8,0" fill="#fff" opacity=".5"/><polygon points="-22,0 0,1.8 22,0 0,-1.8" fill="#fff" opacity=".5"/>`,'<b>гем</b> ромб 15×10w + глінт −80°/с');
+oc(`<g style="${gf('#fff',10)}">${gemD(0,0,18,'#ffe27a','#ffffff')}</g>`,'<b>гем ring III</b> ×2 · білий ореол');
+['S','M','2','≈','P'].forEach((ch,i)=>{const c=[P.shield,P.magnet,P.gem,'#ffffff',P.pulse][i];
+ const cap=['SHIELD +заряд','MAGNET 8с','GEM ×2 10с','SLOW-MO 4с','PULSE миттєвий'][i];
+ oc(hexB(0,0,22,ch,c),`<b>${cap}</b>`);});
+oc(`<defs><linearGradient id="tg9" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0" stop-color="${P.player}" stop-opacity="0"/><stop offset=".55" stop-color="${P.player}" stop-opacity=".45"/>
+  <stop offset="1" stop-color="#aef6ff" stop-opacity=".95"/></linearGradient></defs>
+  <path d="M -46 6 C -20 2, 10 -3, 34 -6 L 34 6 C 10 4, -20 8, -46 10 Z" fill="url(#tg9)" style="${gf(P.player,8)}"/>
+  ${crc(38,0,8,P.player,{glow:P.player,gr:8})}`,'<b>трейл</b> 24 точки · 1.5→13w');
+oc(`${crc(0,0,14,null,{st:P.pulse,sw:5,so:.9})}${crc(0,0,26,null,{st:P.pulse,sw:3,so:.45})}${crc(0,0,36,null,{st:P.pulse,sw:1.5,so:.18})}`,'<b>shockwave</b> r0→r1 easeOut');
+document.getElementById('objs').innerHTML=objs.join('');
+
+// ---------- палітри
+const PALS=[['NEON','#0e1024','#2b3060','#00e5ff','#ffd54a','#ff3d68'],
+ ['SUNSET','#241220','#542a44','#ff9e4d','#ffe08a','#ff4d6d'],
+ ['TOXIC','#0c1a10','#235c31','#7dff5e','#eaff5e','#ff5e5e'],
+ ['ICE','#0e1622','#2b4a6f','#bfe9ff','#6ec6ff','#ff7b9c'],
+ ['SYNTH','#160222','#4a1566','#ff3ec8','#19f7e2','#b44dff'],
+ ['MAGMA','#190805','#58221a','#ff8b2e','#ffd76b','#ff2e55'],
+ ['VOID','#070310','#2a1b52','#a86bff','#64f0c8','#ff4d8d'],
+ ['GOLD','#14100a','#5c4a22','#ffe27a','#7ae0ff','#ff5470']];
+const tbl=document.getElementById('palTable');
+tbl.innerHTML='<tr><th></th><th>BG</th><th>RING</th><th>PLAYER</th><th>GEM</th><th>SPIKE</th></tr>'+
+ PALS.map(p=>'<tr><td class="k">'+p[0]+'</td>'+p.slice(1).map((c,i)=>
+  `<td><div class="swatch" style="background:${c};${i>=2?`box-shadow:0 0 12px ${c}55`:''}"><span class="hex">${c}</span></div></td>`).join('')+'</tr>').join('');
+})();
+</script>
+</body>
+</html>

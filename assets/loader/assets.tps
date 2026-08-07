@@ -4,7 +4,7 @@
         <key>fileFormatVersion</key>
         <int>6</int>
         <key>texturePackerVersion</key>
-        <string>7.10.0</string>
+        <string>8.1.0</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -80,9 +80,9 @@
         <key>maxTextureSize</key>
         <QSize>
             <key>width</key>
-            <int>2048</int>
+            <int>4096</int>
             <key>height</key>
-            <int>2048</int>
+            <int>4096</int>
         </QSize>
         <key>fixedTextureSize</key>
         <QSize>
@@ -124,7 +124,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>../../Idle Merge Cubes/app/src/main/assets/atlas/loader.atlas</filename>
+                <filename>../../Orbit Dash/app/src/main/assets/atlas/loader.atlas</filename>
             </struct>
         </map>
         <key>multiPackMode</key>
@@ -143,6 +143,8 @@
         <key>autoAliasEnabled</key>
         <false/>
         <key>trimSpriteNames</key>
+        <false/>
+        <key>enableCacheBusting</key>
         <false/>
         <key>prependSmartFolderName</key>
         <false/>
@@ -173,7 +175,7 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">cube.png</key>
+            <key type="filename">ball.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -182,13 +184,13 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>186,193,371,385</rect>
+                <rect>30,30,60,60</rect>
                 <key>scale9Paddings</key>
-                <rect>186,193,371,385</rect>
+                <rect>30,30,60,60</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">light_progress.png</key>
+            <key type="filename">gem.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -197,13 +199,13 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>365,147,730,293</rect>
+                <rect>43,43,85,85</rect>
                 <key>scale9Paddings</key>
-                <rect>365,147,730,293</rect>
+                <rect>43,43,85,85</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">progress_frame.png</key>
+            <key type="filename">item_glow.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -212,24 +214,9 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>349,35,698,70</rect>
+                <rect>63,63,126,126</rect>
                 <key>scale9Paddings</key>
-                <rect>349,35,698,70</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">progress_line.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>320,18,639,37</rect>
-                <key>scale9Paddings</key>
-                <rect>320,18,639,37</rect>
+                <rect>63,63,126,126</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -249,7 +236,9 @@
         <key>replaceList</key>
         <array/>
         <key>ignoredWarnings</key>
-        <array/>
+        <array>
+            <string>large-max-texture-size</string>
+        </array>
         <key>commonDivisorX</key>
         <uint>1</uint>
         <key>commonDivisorY</key>

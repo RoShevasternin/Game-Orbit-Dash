@@ -4,7 +4,7 @@
         <key>fileFormatVersion</key>
         <int>6</int>
         <key>texturePackerVersion</key>
-        <string>8.0.0</string>
+        <string>8.1.0</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -80,9 +80,9 @@
         <key>maxTextureSize</key>
         <QSize>
             <key>width</key>
-            <int>2048</int>
+            <int>4096</int>
             <key>height</key>
-            <int>2048</int>
+            <int>4096</int>
         </QSize>
         <key>fixedTextureSize</key>
         <QSize>
@@ -124,7 +124,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>../../Idle Merge Cubes/app/src/main/assets/atlas/brand.atlas</filename>
+                <filename>../../Orbit Dash/app/src/main/assets/atlas/brand.atlas</filename>
             </struct>
         </map>
         <key>multiPackMode</key>
@@ -143,6 +143,8 @@
         <key>autoAliasEnabled</key>
         <false/>
         <key>trimSpriteNames</key>
+        <false/>
+        <key>enableCacheBusting</key>
         <false/>
         <key>prependSmartFolderName</key>
         <false/>

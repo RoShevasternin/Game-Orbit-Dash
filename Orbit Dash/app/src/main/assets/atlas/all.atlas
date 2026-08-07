@@ -1,0 +1,19 @@
+all.png
+size: 75, 44
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+badge_dot
+  rotate: false
+  xy: 1, 1
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+badge_glow
+  rotate: false
+  xy: 32, 1
+  size: 42, 42
+  orig: 42, 42
+  offset: 0, 0
+  index: -1

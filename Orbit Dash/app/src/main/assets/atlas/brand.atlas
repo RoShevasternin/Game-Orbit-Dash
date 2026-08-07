@@ -1,0 +1,40 @@
+brand.png
+size: 628, 1338
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+brand_back
+  rotate: false
+  xy: 2, 712
+  size: 624, 624
+  orig: 624, 624
+  offset: 0, 0
+  index: -1
+brand_front
+  rotate: false
+  xy: 2, 290
+  size: 420, 420
+  orig: 420, 420
+  offset: 0, 0
+  index: -1
+brand_line
+  rotate: false
+  xy: 2, 2
+  size: 438, 3
+  orig: 438, 3
+  offset: 0, 0
+  index: -1
+lewydo
+  rotate: false
+  xy: 2, 66
+  size: 624, 222
+  orig: 624, 222
+  offset: 0, 0
+  index: -1
+slogan
+  rotate: false
+  xy: 2, 7
+  size: 624, 57
+  orig: 624, 57
+  offset: 0, 0
+  index: -1
