@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbit Dash — One-Tap Neon Arcade</title>
+<meta name="description" content="Switch orbits with one tap. Dodge spikes, collect gems, unlock Orbit III and climb the global ranks. Free neon arcade game for Android.">
+
+<meta property="og:title" content="Orbit Dash — One-Tap Neon Arcade">
+<meta property="og:description" content="Switch orbits with one tap. Dodge spikes, collect gems, climb the ranks.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://roshevasternin.github.io/Game-Orbit-Dash/">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%232b3060' stroke-width='5'/%3E%3Ccircle cx='32' cy='6' r='7' fill='%2300e5ff'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:      #0e1024;
+    --ring:    #2b3060;
+    --player:  #00e5ff;
+    --gem:     #ffd54a;
+    --spike:   #ff3d68;
+    --text:    #ffffff;
+    --dim:     rgba(255,255,255,0.55);
+    --faint:   rgba(255,255,255,0.30);
+    --card:    rgba(255,255,255,0.045);
+    --border:  rgba(255,255,255,0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: radial-gradient(circle at 50% 28%, #1c2044 0%, var(--bg) 55%, #080a18 100%);
+    color: var(--text);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .stars span {
+    position: absolute; background: #fff; border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite;
+  }
+  @keyframes twinkle { 0%,100% { opacity: .15; } 50% { opacity: .7; } }
+
+  main { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── HERO ─────────────────────────────────────────────── */
+  .hero { min-height: 92vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 72px 0 48px; }
+
+  .eyebrow {
+    font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: 5px;
+    color: var(--faint); text-transform: uppercase; margin-bottom: 40px;
+  }
+
+  /* Емблема — та сама, що в лоадері гри */
+  .emblem { position: relative; width: 190px; height: 190px; margin-bottom: 40px; filter: drop-shadow(0 0 26px rgba(0,229,255,0.5)); }
+  .emblem .r1, .emblem .r2 { position: absolute; border: 4px solid var(--ring); border-radius: 50%; }
+  .emblem .r1 { inset: 0; }
+  .emblem .r2 { inset: 38px; }
+  .emblem .o1 { position: absolute; inset: 0; animation: spin 7s linear infinite; }
+  .emblem .o2 { position: absolute; inset: 38px; animation: spin 10s linear infinite reverse; }
+  .emblem .player {
+    position: absolute; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--player); top: -13px; left: 50%; margin-left: -13px;
+    box-shadow: 0 0 20px var(--player), 0 0 44px rgba(0,229,255,0.6);
+  }
+  .emblem .gem {
+    position: absolute; width: 17px; height: 17px; border-radius: 3px;
+    background: var(--gem); transform: rotate(45deg);
+    top: -9px; left: 50%; margin-left: -9px;
+    box-shadow: 0 0 16px var(--gem);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  h1 { font-family: "Unbounded", sans-serif; font-weight: 900; line-height: 0.95; font-size: clamp(52px, 9vw, 96px); letter-spacing: 0.06em; }
+  h1 .orbit { color: var(--player); text-shadow: 0 0 34px rgba(0,229,255,0.75), 0 0 8px rgba(0,229,255,0.5); }
+  h1 .dash  { color: var(--gem);    text-shadow: 0 0 34px rgba(255,213,74,0.65), 0 0 8px rgba(255,213,74,0.45); display: block; }
+
+  .tagline { margin-top: 26px; font-size: clamp(16px, 2.4vw, 20px); color: var(--dim); max-width: 460px; }
+  .tagline b { color: var(--text); font-weight: 700; }
+
+  .cta {
+    display: inline-flex; align-items: center; gap: 14px;
+    margin-top: 40px; padding: 18px 34px; border-radius: 20px;
+    background: var(--player); color: var(--bg); text-decoration: none;
+    font-family: "Unbounded", sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 2px;
+    box-shadow: 0 0 34px rgba(0,229,255,0.45);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .cta:hover  { transform: translateY(-2px); box-shadow: 0 0 48px rgba(0,229,255,0.65); }
+  .cta:active { transform: scale(0.97); }
+  .cta svg { width: 22px; height: 22px; }
+
+  .meta {
+    margin-top: 22px; font-family: "Space Mono", monospace;
+    font-size: 12px; letter-spacing: 3px; color: var(--faint);
+  }
+
+  /* ── FEATURES ─────────────────────────────────────────── */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; padding: 24px 0 64px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 24px 20px; transition: border-color .2s ease, transform .2s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--glow, var(--player)); box-shadow: 0 0 26px color-mix(in srgb, var(--glow, var(--player)) 22%, transparent); }
+
+  .card .icon { height: 34px; margin-bottom: 16px; display: flex; align-items: center; }
+  .card h3 { font-family: "Unbounded", sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.6px; margin-bottom: 8px; }
+  .card p  { font-size: 13.5px; line-height: 1.5; color: var(--dim); }
+
+  /* мікро-гліфи фіч — з ігрових сутностей */
+  .g-ring  { width: 28px; height: 28px; border: 3px solid var(--player); border-radius: 50%; position: relative; box-shadow: 0 0 12px rgba(0,229,255,0.5); }
+  .g-ring::after { content: ""; position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--player); top: -6px; left: 50%; margin-left: -4.5px; }
+  .g-rings { width: 30px; height: 30px; border: 2px solid var(--gem); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(255,213,74,0.4); }
+  .g-rings::before { content: ""; width: 14px; height: 14px; border: 2px solid var(--gem); border-radius: 50%; }
+  .g-gem   { width: 16px; height: 16px; background: var(--gem); transform: rotate(45deg); border-radius: 3px; box-shadow: 0 0 14px var(--gem); }
+  .g-skin  { display: flex; gap: 5px; }
+  .g-skin i { width: 12px; height: 12px; border-radius: 50%; }
+  .g-streak { display: flex; gap: 4px; align-items: center; }
+  .g-streak i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.16); }
+  .g-streak i.on { background: var(--gem); box-shadow: 0 0 8px var(--gem); }
+  .g-rank { font-family: "Space Mono", monospace; font-weight: 700; font-size: 20px; color: var(--player); text-shadow: 0 0 14px rgba(0,229,255,0.7); }
+
+  /* ── HOW ──────────────────────────────────────────────── */
+  .how {
+    text-align: center; padding: 8px 0 84px;
+    font-family: "Space Mono", monospace; letter-spacing: 4px; font-size: 14px; color: var(--dim);
+  }
+  .how b { color: var(--text); }
+  .how .hint { animation: pulse 2.4s ease-in-out infinite; display: inline-block; }
+  @keyframes pulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+
+  /* ── FOOTER ───────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 34px 24px 44px; text-align: center; position: relative; z-index: 1;
+  }
+  footer nav { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+  footer a { color: var(--dim); text-decoration: none; font-size: 14px; }
+  footer a:hover { color: var(--player); }
+  footer .pkg { font-family: "Space Mono", monospace; font-size: 11px; letter-spacing: 3px; color: var(--faint); }
+
+  a:focus-visible, .cta:focus-visible { outline: 2px solid var(--player); outline-offset: 3px; border-radius: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .emblem .o1, .emblem .o2, .stars span, .how .hint { animation: none; }
+  }
+  @media (max-width: 560px) {
+    .hero { min-height: 86vh; }
+    .features { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars" aria-hidden="true"></div>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">One-tap neon arcade</div>
+
+    <div class="emblem" aria-hidden="true">
+      <div class="r1"></div>
+      <div class="r2"></div>
+      <div class="o1"><div class="player"></div></div>
+      <div class="o2"><div class="gem"></div></div>
+    </div>
+
+    <h1><span class="orbit">ORBIT</span><span class="dash">DASH</span></h1>
+
+    <p class="tagline">Two orbits. One tap. <b>Switch lanes</b>, graze the spikes for combo,
+    bank the gems before they get you.</p>
+
+    <a class="cta" href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 2.5v19l11-9.5L4 2.5zm12.6 8.1 3.6 3.1c.9.5.9 1.7 0 2.2l-3.6 2 -2.8-2.4 2.8-4.9zM16.6 10.6 6.8 2.2l9.8 5.6v2.8z" opacity="0"/><path d="M3.6 1.8c-.4.2-.6.6-.6 1.1v18.2c0 .5.2.9.6 1.1l9.9-10.2L3.6 1.8zm11.3 8.8 2.6-1.5-2.3-1.3-8.9-5.1 8.6 7.9zm0 2.8-8.6 7.9 11.2-6.4-2.6-1.5zm4.2-2.4-2.9 1.7v.7l2.9 1.7c1.2.7 1.2-4.8 0-4.1z"/></svg>
+      Get it on Google Play
+    </a>
+
+    <div class="meta">FREE · OFFLINE · SINGLE PLAYER</div>
+  </section>
+
+  <section class="features" aria-label="Game features">
+    <div class="card" style="--glow:#00e5ff">
+      <div class="icon"><span class="g-ring"></span></div>
+      <h3>ONE TAP</h3>
+      <p>Tap to jump between orbits. Easy to learn, brutal to master — the ring only speeds up.</p>
+    </div>
+    <div class="card" style="--glow:#ffd54a">
+      <div class="icon"><span class="g-rings"></span></div>
+      <h3>ORBIT III</h3>
+      <p>Unlock the third ring. It comes online mid-run — and every gem on it counts ×2.</p>
+    </div>
+    <div class="card" style="--glow:#ff3ec8">
+      <div class="icon"><span class="g-skin">
+        <i style="background:#00e5ff"></i><i style="background:#ff3ec8"></i><i style="background:#a86bff"></i><i style="background:#ffe27a"></i>
+      </span></div>
+      <h3>NEON SKINS</h3>
+      <p>8 palettes and 7 permanent upgrades. Magnet, shield, combo keeper — build your run.</p>
+    </div>
+    <div class="card" style="--glow:#ffd54a">
+      <div class="icon"><span class="g-streak">
+        <i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i>
+      </span></div>
+      <h3>DAILY MISSIONS</h3>
+      <p>Three fresh missions every day. Keep the streak alive — day seven pays the most.</p>
+    </div>
+    <div class="card" style="--glow:#00e5ff">
+      <div class="icon"><span class="g-rank">#1</span></div>
+      <h3>GLOBAL RANKS</h3>
+      <p>Every new best goes straight to the leaderboard. Beat your friends, then the world.</p>
+    </div>
+  </section>
+
+  <p class="how"><span class="hint"><b>TAP</b> = SWITCH ORBIT</span></p>
+</main>
+
+<footer>
+  <nav>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash">Google Play</a>
+  </nav>
+  <div class="pkg">com.lewydo.orbitdash · © 2026 Lewydo</div>
+</footer>
+
+<script>
+  // Зорі: генеруємо один раз, як MENU_STARS у грі
+  (function () {
+    const holder = document.getElementById('stars');
+    const n = 44;
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      const s = 1 + Math.random() * 2.4;
+      html += '<span style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' +
+        (Math.random() * 100).toFixed(1) + '%;width:' + s.toFixed(1) + 'px;height:' + s.toFixed(1) +
+        'px;--d:' + (2 + Math.random() * 3).toFixed(1) + 's"></span>';
+    }
+    holder.innerHTML = html;
+  })();
+</script>
+
+</body>
+</html>
