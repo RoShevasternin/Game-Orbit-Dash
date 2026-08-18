@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "976436582172",
+    "project_id": "orbit-dash-original",
+    "storage_bucket": "orbit-dash-original.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:976436582172:android:7a62076ce31def083a4cd9",
+        "android_client_info": {
+          "package_name": "com.lewydo.orbitdash"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCE1tQ1FYc7k4bl52iCqOC63tCgxAvu-rU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
