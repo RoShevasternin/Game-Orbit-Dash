@@ -30,8 +30,15 @@ class MsdfStyle internal constructor(
     val manager: MsdfManager,
     var font   : MsdfFont,
     var size   : Float,
-    var color  : Color = Color.WHITE,
+    color      : Color = Color.WHITE,
 ) {
+
+    /**
+     * ВЛАСНА копія: стиль не має ділити Color-інстанс із викликачем.
+     * Інакше styleA.color.set(...) непомітно фарбує styleB, створений
+     * з тієї ж константи. Виклики .cpy() на місцях більше не потрібні.
+     */
+    var color = Color(color)
 
     /** Letter-spacing у % (Figma). */
     var letterSpacing = 0f

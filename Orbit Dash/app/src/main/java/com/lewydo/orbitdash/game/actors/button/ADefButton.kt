@@ -112,9 +112,13 @@ class ADefButton(
      */
     var bgOverride: Color? = null
 
-    var radius: Float
-        get() = aBg.radius
-        set(value) { aBg.radius = value }
+    /**
+     * Бекінг-поле, а не делегат до aBg: applyVariant() перезаписує фон
+     * повністю і мусить знати, який радіус ВІДНОВИТИ. Делегат цю памʼять
+     * втрачав — кастомний радіус зникав при першій зміні варіанта.
+     */
+    var radius: Float = RADIUS
+        set(value) { field = value; aBg.radius = value }
 
     // ------------------------------------------------------------------------
     // Lifecycle
@@ -155,7 +159,7 @@ class ADefButton(
 
     /** Геометрія й заливка — те, що НЕ залежить від теми. */
     private fun applyVariant() {
-        aBg.radius = RADIUS
+        aBg.radius = radius
         when (variant) {
             Variant.PRIMARY, Variant.ACCENT -> {
                 aBg.fillAlpha   = 1f

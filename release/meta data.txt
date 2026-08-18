@@ -1,5 +1,5 @@
-alias: 
-pass:  
+alias: h6gRjuUU78ajsHJQ21
+pass:  juy7YthasngJK90kAhsf
 
-policy: 
-terms: 
+policy: https://roshevasternin.github.io/Game-Orbit-Dash/privacy.html
+Site: https://roshevasternin.github.io/Game-Orbit-Dash

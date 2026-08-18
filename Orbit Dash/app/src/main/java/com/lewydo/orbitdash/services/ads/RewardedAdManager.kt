@@ -5,7 +5,6 @@ import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.lewydo.orbitdash.BuildConfig
 import com.lewydo.orbitdash.MainActivity
-import com.lewydo.orbitdash.R
 import com.lewydo.orbitdash.util.log
 
 class RewardedAdManager(private val activity: MainActivity) {
@@ -14,9 +13,30 @@ class RewardedAdManager(private val activity: MainActivity) {
         private const val REWARDED_ID = BuildConfig.ADMOB_REWARDED_ID
     }
 
+    // @Volatile: пишеться на UI-потоці, читається (isReady) з GL-потоку гри
+    @Volatile
     private var rewardedAd: RewardedAd? = null
 
     val isReady: Boolean get() = rewardedAd != null
+
+    /**
+     * Смикається при КОЖНІЙ зміні isReady: true після успішного load,
+     * false — після показу, фейлу завантаження чи фейлу показу.
+     *
+     * УВАГА, ПОТІК: колбек приходить на UI-потоці AdMob. Підписник з
+     * ігрового боку зобовʼязаний перестрибнути в GL сам:
+     *
+     *     rewarded.onAvailabilityChanged = { ready ->
+     *         Gdx.app.postRunnable { aPanelMenu.refresh(ready) }
+     *     }
+     *
+     * Тримаємо один слухач, а не список: споживач у грі один — активний
+     * екран. Новий екран просто перезаписує підписку, старий занулює
+     * свою в dispose().
+     */
+    var onAvailabilityChanged: ((Boolean) -> Unit)? = null
+
+    private fun notifyAvailability() { onAvailabilityChanged?.invoke(isReady) }
 
     fun load() {
         activity.runOnUiThread {
@@ -27,10 +47,12 @@ class RewardedAdManager(private val activity: MainActivity) {
                     override fun onAdLoaded(ad: RewardedAd) {
                         rewardedAd = ad
                         log("Rewarded ad loaded")
+                        notifyAvailability()
                     }
                     override fun onAdFailedToLoad(error: LoadAdError) {
                         rewardedAd = null
                         log("Rewarded ad failed: ${error.message}")
+                        notifyAvailability()
                     }
                 }
             )
@@ -51,11 +73,13 @@ class RewardedAdManager(private val activity: MainActivity) {
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
                     rewardedAd = null
-                    load()  // одразу завантажуємо наступну
+                    notifyAvailability()   // офер зник — меню має погасити кнопки
+                    load()                 // …і повернути їх, щойно доїде наступна
                     onDismissed()
                 }
                 override fun onAdFailedToShowFullScreenContent(error: AdError) {
                     rewardedAd = null
+                    notifyAvailability()
                     load()
                     onFailed()
                 }
@@ -64,5 +88,8 @@ class RewardedAdManager(private val activity: MainActivity) {
         }
     }
 
-    fun destroy() { rewardedAd = null }
+    fun destroy() {
+        onAvailabilityChanged = null
+        rewardedAd = null
+    }
 }

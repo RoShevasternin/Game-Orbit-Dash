@@ -27,6 +27,9 @@ class PlayerModel(
 
     val currentSkinId: Int get() = state.skinIdFlow.value
 
+    /** Читати тільки ПІСЛЯ isLoadedFlow: до завантаження тут порожньо. */
+    val pid: String get() = state.pidFlow.value
+
     /** Тему НЕ чіпаємо тут — на flow підписаний GDXGame, джерело правди одне. */
     fun setSkin(id: Int) {
         if (!ThemeManager.isValidId(id) || id == currentSkinId) return

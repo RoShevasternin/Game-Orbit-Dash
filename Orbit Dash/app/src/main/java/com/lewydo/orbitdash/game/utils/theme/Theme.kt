@@ -69,6 +69,9 @@ object ThemeManager {
     /** Чи існує така палітра — використовуй перед збереженням id. */
     fun isValidId(id: Int) = id in palettes.indices
 
+    /** Ім'я палітри для аналітики/UI. Кривий id ковтаємо, як і всюди тут. */
+    fun nameOf(id: Int) = palettes[id.coerceIn(0, palettes.lastIndex)].name
+
     /** Миттєво, без анімації: старт гри з уже завантаженим save. */
     fun initWith(id: Int) {
         currentId = id.coerceIn(0, palettes.lastIndex)

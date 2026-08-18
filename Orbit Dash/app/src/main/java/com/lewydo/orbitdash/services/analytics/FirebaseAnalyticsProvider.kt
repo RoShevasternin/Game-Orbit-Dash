@@ -10,73 +10,102 @@ class FirebaseAnalyticsProvider : AnalyticsProvider {
     private val fa = Firebase.analytics
 
     private object Event {
-        const val CUBE_MILESTONE          = "cube_milestone"
-        const val BUY_LEVEL_UPGRADE       = "buy_level_upgrade"
-        const val GOAL_COMPLETED          = "goal_completed"
-        const val GOAL_FAILED             = "goal_failed"
-        const val COLLECT_MERGE_BONUS     = "collect_merge_bonus"
-        const val COLLECT_MERGE_BONUS_X2  = "collect_merge_bonus_x2"
-        const val COLLECT_OFFLINE         = "collect_offline"
-        const val COLLECT_OFFLINE_X2      = "collect_offline_x2"
-        const val COLLECT_NEW_LEVEL       = "collect_new_level"
-        const val COLLECT_NEW_LEVEL_X2    = "collect_new_level_x2"
-        const val AD_WATCHED              = "ad_watched"
+        const val RUN_START       = "run_start"
+        const val RUN_END         = "run_end"
+        const val MISSION_CLAIMED = "mission_claimed"
+        const val STREAK_CLAIMED  = "streak_claimed"
+        const val AD_REWARD       = "ad_reward"
     }
 
     private object Param {
-        const val CUBE_LEVEL  = "cube_level"
-        const val BUY_LEVEL   = "buy_level"
-        const val GOAL_TYPE   = "goal_type"
-        const val REWARD      = "reward"
-        const val AMOUNT      = "amount"
-        const val PLACEMENT   = "placement"
+        const val START_BOOST  = "start_boost"
+        const val SCORE        = "score"
+        const val DURATION     = "duration"
+        const val DEATH_RING   = "death_ring"
+        const val NEW_BEST     = "new_best"
+        const val MISSION_TYPE = "mission_type"
+        const val DAY          = "day"
+        const val PLACEMENT    = "placement"
     }
 
-    // Tutorial
-    override fun tutorialBegin()    = fa.logEvent(FirebaseAnalytics.Event.TUTORIAL_BEGIN,    null)
-    override fun tutorialComplete() = fa.logEvent(FirebaseAnalytics.Event.TUTORIAL_COMPLETE, null)
+    private object Prop {
+        const val HAS_ORBIT3  = "has_orbit3"
+        const val SKIN_ACTIVE = "skin_active"
+        const val NO_ADS      = "no_ads"
+        const val BEST_BUCKET = "best_bucket"
+    }
 
-    // Progression
-    override fun levelUp(level: Int) =
-        fa.logEvent(FirebaseAnalytics.Event.LEVEL_UP, bundle {
-            putInt(FirebaseAnalytics.Param.LEVEL, level)
+    private inline fun bundle(block: Bundle.() -> Unit) = Bundle().apply(block)
+
+    // ------------------------------------------------------------------ Runs
+    override fun runStart(startBoost: String) =
+        fa.logEvent(Event.RUN_START, bundle {
+            putString(Param.START_BOOST, startBoost)
         })
 
-    override fun cubeMilestone(cubeLevel: Int) =
-        fa.logEvent(Event.CUBE_MILESTONE, bundle {
-            putInt(Param.CUBE_LEVEL, cubeLevel)
+    // VALUE = зароблені геми: стандартний параметр, який Firebase сам
+    // агрегує у «цінність події» — звіти й аудиторії будують без рук.
+    override fun runEnd(score: Int, durationSec: Int, gemsEarned: Int, deathRing: Int, newBest: Boolean) =
+        fa.logEvent(Event.RUN_END, bundle {
+            putLong(Param.SCORE, score.toLong())
+            putLong(Param.DURATION, durationSec.toLong())
+            putLong(FirebaseAnalytics.Param.VALUE, gemsEarned.toLong())
+            putString(Param.DEATH_RING, deathRing.toString())
+            putString(Param.NEW_BEST, newBest.toString())
         })
 
-    override fun buyLevelUpgrade(newBuyLevel: Int) =
-        fa.logEvent(Event.BUY_LEVEL_UPGRADE, bundle {
-            putInt(Param.BUY_LEVEL, newBuyLevel)
+    // ------------------------------------------------------------------ Meta
+    override fun missionClaimed(type: String, reward: Int) =
+        fa.logEvent(Event.MISSION_CLAIMED, bundle {
+            putString(Param.MISSION_TYPE, type)
+            putLong(FirebaseAnalytics.Param.VALUE, reward.toLong())
         })
 
-    // Goals
-    override fun goalCompleted(goalType: String, reward: Long) =
-        fa.logEvent(Event.GOAL_COMPLETED, bundle {
-            putString(Param.GOAL_TYPE, goalType)
-            putLong(Param.REWARD, reward)
+    override fun streakClaimed(day: Int, reward: Int) =
+        fa.logEvent(Event.STREAK_CLAIMED, bundle {
+            putLong(Param.DAY, day.toLong())
+            putLong(FirebaseAnalytics.Param.VALUE, reward.toLong())
         })
 
-    override fun goalFailed(goalType: String) =
-        fa.logEvent(Event.GOAL_FAILED, bundle {
-            putString(Param.GOAL_TYPE, goalType)
-        })
+    override fun tutorialComplete() =
+        fa.logEvent(FirebaseAnalytics.Event.TUTORIAL_COMPLETE, null)
 
-    // Economy
-    override fun collectMergeBonus(amount: Long)   = fa.logEvent(Event.COLLECT_MERGE_BONUS,    bundle { putLong(Param.AMOUNT, amount) })
-    override fun collectMergeBonusX2(amount: Long) = fa.logEvent(Event.COLLECT_MERGE_BONUS_X2, bundle { putLong(Param.AMOUNT, amount) })
-    override fun collectOffline(amount: Long)      = fa.logEvent(Event.COLLECT_OFFLINE,        bundle { putLong(Param.AMOUNT, amount) })
-    override fun collectOfflineX2(amount: Long)    = fa.logEvent(Event.COLLECT_OFFLINE_X2,     bundle { putLong(Param.AMOUNT, amount) })
-    override fun collectNewLevel(amount: Long)     = fa.logEvent(Event.COLLECT_NEW_LEVEL,      bundle { putLong(Param.AMOUNT, amount) })
-    override fun collectNewLevelX2(amount: Long)   = fa.logEvent(Event.COLLECT_NEW_LEVEL_X2,   bundle { putLong(Param.AMOUNT, amount) })
-
-    // Ads
-    override fun adWatched(placement: String) =
-        fa.logEvent(Event.AD_WATCHED, bundle {
+    // ------------------------------------------------------------------- Ads
+    override fun adReward(placement: String) =
+        fa.logEvent(Event.AD_REWARD, bundle {
             putString(Param.PLACEMENT, placement)
         })
 
-    private fun bundle(block: Bundle.() -> Unit) = Bundle().apply(block)
+    // --------------------------------------------------------------- Economy
+    //  Стандартні події віртуальної валюти: Firebase малює по них готові
+    //  sink/source-звіти економіки без жодного налаштування.
+    override fun earnGems(amount: Int, source: String) =
+        fa.logEvent(FirebaseAnalytics.Event.EARN_VIRTUAL_CURRENCY, bundle {
+            putString(FirebaseAnalytics.Param.VIRTUAL_CURRENCY_NAME, "gems")
+            putLong(FirebaseAnalytics.Param.VALUE, amount.toLong())
+            putString(FirebaseAnalytics.Param.SOURCE, source)
+        })
+
+    override fun spendGems(amount: Int, item: String) =
+        fa.logEvent(FirebaseAnalytics.Event.SPEND_VIRTUAL_CURRENCY, bundle {
+            putString(FirebaseAnalytics.Param.VIRTUAL_CURRENCY_NAME, "gems")
+            putLong(FirebaseAnalytics.Param.VALUE, amount.toLong())
+            putString(FirebaseAnalytics.Param.ITEM_NAME, item)
+        })
+
+    // ------------------------------------------------------- User properties
+    override fun setUserId(pid: String)         { fa.setUserId(pid) }
+    override fun setHasOrbit3(owned: Boolean)   { fa.setUserProperty(Prop.HAS_ORBIT3, owned.toString()) }
+    override fun setActiveSkin(name: String)    { fa.setUserProperty(Prop.SKIN_ACTIVE, name) }
+    override fun setNoAds(owned: Boolean)       { fa.setUserProperty(Prop.NO_ADS, owned.toString()) }
+
+    /** Бакети замість сирого числа: властивість міняється рідко, зрізи стабільні. */
+    override fun setBestBucket(best: Int) {
+        val bucket = when {
+            best < 500  -> "0_499"
+            best < 2000 -> "500_1999"
+            else        -> "2000_plus"
+        }
+        fa.setUserProperty(Prop.BEST_BUCKET, bucket)
+    }
 }

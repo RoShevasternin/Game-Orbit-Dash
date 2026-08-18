@@ -98,7 +98,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     // ------------------------------------------------------------------------
 
     val settings  by lazy { Settings() }
-    val analytics by lazy { AnalyticsManager() }
+    val analytics get() = AnalyticsManager
 
     // ------------------------------------------------------------------------
     // Misc
@@ -173,6 +173,11 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     private fun collectModelPlayer() {
         coroutine.launch {
             modelPlayer.isLoadedFlow.first { it }
+
+            // Ідентичність і властивості юзера — ДО будь-якої події екранів,
+            // інакше перші run_start підуть без userId і не зшиються.
+            AnalyticsManager.setUserId(modelPlayer.pid)
+            AnalyticsManager.setActiveSkin(ThemeManager.nameOf(modelPlayer.currentSkinId))
 
             // Перше застосування — миттєве: гравець не має бачити,
             // як його золотий скін «переїжджає» з неонового

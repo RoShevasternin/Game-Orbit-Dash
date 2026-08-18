@@ -1,28 +1,34 @@
 package com.lewydo.orbitdash.services.analytics
 
+// ----------------------------------------------------------------------------
+//  Схема подій Orbit Dash. Один інтерфейс — багато бекендів (Firebase, TikTok).
+//
+//  УСІ методи мають default {} — провайдер перекриває ЛИШЕ те, що його мережа
+//  вміє переварити. TikTok, наприклад, ігнорує економіку і ловить тільки
+//  сигнали цінності юзера для алгоритму закупівлі.
+// ----------------------------------------------------------------------------
 interface AnalyticsProvider {
 
-    // Tutorial
-    fun tutorialBegin()
-    fun tutorialComplete()
+    // Runs — серце гри
+    fun runStart(startBoost: String) {}
+    fun runEnd(score: Int, durationSec: Int, gemsEarned: Int, deathRing: Int, newBest: Boolean) {}
 
-    // Progression
-    fun levelUp(level: Int)
-    fun cubeMilestone(cubeLevel: Int)   // тільки для важливих рівнів: 3,5,7,10...
-    fun buyLevelUpgrade(newBuyLevel: Int)
+    // Meta
+    fun missionClaimed(type: String, reward: Int) {}
+    fun streakClaimed(day: Int, reward: Int) {}
+    fun tutorialComplete() {}
 
-    // Goals
-    fun goalCompleted(goalType: String, reward: Long)
-    fun goalFailed(goalType: String)
+    // Ads
+    fun adReward(placement: String) {}
 
-    // Economy
-    fun collectMergeBonus(amount: Long)
-    fun collectMergeBonusX2(amount: Long)
-    fun collectOffline(amount: Long)
-    fun collectOfflineX2(amount: Long)
-    fun collectNewLevel(amount: Long)
-    fun collectNewLevelX2(amount: Long)
+    // Economy — віртуальна валюта «gems»
+    fun earnGems(amount: Int, source: String) {}
+    fun spendGems(amount: Int, item: String) {}
 
-    // Ads (для майбутнього)
-    fun adWatched(placement: String)
+    // User identity & properties — зрізи аудиторії
+    fun setUserId(pid: String) {}
+    fun setHasOrbit3(owned: Boolean) {}
+    fun setActiveSkin(name: String) {}
+    fun setNoAds(owned: Boolean) {}
+    fun setBestBucket(best: Int) {}
 }
