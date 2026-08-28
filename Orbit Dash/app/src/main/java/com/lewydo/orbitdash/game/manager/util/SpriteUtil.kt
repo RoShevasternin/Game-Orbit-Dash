@@ -38,6 +38,14 @@ class SpriteUtil {
 
         val badge_dot  = getAllRegion("badge_dot")
         val badge_glow = getAllRegion("badge_glow")
+        val shield_pip = getAllRegion("shield_pip")
+        val boost_hex  = getAllRegion("boost_hex")
+
+        val icon_gem_x2   = getAllRegion("icon_gem_x2")
+        val icon_magnet   = getAllRegion("icon_magnet")
+        val icon_pulse    = getAllRegion("icon_pulse")
+        val icon_shield   = getAllRegion("icon_shield")
+        val icon_slow_mo  = getAllRegion("icon_slow_mo")
 
         //val listGlarePanelGame = List(4) { getAllRegion("glare_panel_game_${it.inc()}") }
 

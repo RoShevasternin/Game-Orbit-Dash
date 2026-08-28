@@ -1,6 +1,6 @@
 <resources>
     <style name="Base.Theme.OrbitDash" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowBackground">@color/black</item>
     </style>
 
     <style name="Theme.OrbitDash" parent="Base.Theme.OrbitDash" />

@@ -37,20 +37,6 @@ fun runGDX(block: Block) {
     Gdx.app.postRunnable { block.invoke() }
 }
 
-fun Float.divOr(num: Float, or: Float): Float = if (this != 0f && num != 0f) this / num else or
-
-fun Vector2.divOr(scalar: Float, or: Float): Vector2 {
-    x = x.divOr(scalar, or)
-    y = y.divOr(scalar, or)
-    return this
-}
-
-fun Vector2.divOr(scalar: Vector2, or: Float): Vector2 {
-    x = x.divOr(scalar.x, or)
-    y = y.divOr(scalar.y, or)
-    return this
-}
-
 fun captureScreenShot(region: TextureRegion, x: Int, y: Int, w: Int, h: Int) {
     Gdx.gl.glBindTexture(GL20.GL_TEXTURE_2D, region.texture.textureObjectHandle)
     Gdx.gl20.glCopyTexSubImage2D(GL20.GL_TEXTURE_2D, 0, 0, 0, x, y, w, h)

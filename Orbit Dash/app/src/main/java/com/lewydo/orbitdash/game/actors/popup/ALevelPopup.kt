@@ -61,11 +61,11 @@ class ALevelPopup(override val screen: AdvancedScreen) : AdvancedGroup() {
     // ------------------------------------------------------------------------
 
     private fun collectXp() {
-        coroutine?.launch {
-            gdxGame.modelPlayer.xpFlow.collect {
-                runGDX { updateXpUI() }
-            }
-        }
+//        coroutine?.launch {
+//            gdxGame.modelPlayer.xpFlow.collect {
+//                runGDX { updateXpUI() }
+//            }
+//        }
     }
 
     // ------------------------------------------------------------------------

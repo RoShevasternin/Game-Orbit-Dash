@@ -1,5 +1,5 @@
 all.png
-size: 75, 44
+size: 213, 440
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
@@ -15,5 +15,54 @@ badge_glow
   xy: 32, 1
   size: 42, 42
   orig: 42, 42
+  offset: 0, 0
+  index: -1
+boost_hex
+  rotate: false
+  xy: 1, 77
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+icon_gem_x2
+  rotate: false
+  xy: 107, 77
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+icon_magnet
+  rotate: false
+  xy: 1, 198
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+icon_pulse
+  rotate: false
+  xy: 107, 198
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+icon_shield
+  rotate: false
+  xy: 1, 319
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+icon_slow_mo
+  rotate: false
+  xy: 107, 319
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+shield_pip
+  rotate: false
+  xy: 75, 1
+  size: 120, 75
+  orig: 120, 75
   offset: 0, 0
   index: -1

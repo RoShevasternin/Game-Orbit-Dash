@@ -96,8 +96,15 @@ class SaveGameStateManager(
         ╔════════════════════════════════════════════╗
         ║  $title
         ╠════════════════════════════════════════════╣
-        ║  XP           : ${data.xp}
+        ║  PID          : ${data.pid}
         ║  SKIN_ID      : ${data.skinId}
+        ╟────────────────────────────────────────────╢
+        ║  GEMS         : ${data.gems}
+        ║  BEST         : ${data.best}
+        ║  RUNS         : ${data.runs}
+        ╟────────────────────────────────────────────╢
+        ║  ORBIT III    : ${if (data.orbit3) "OWNED" else "—"}
+        ║  NO ADS       : ${if (data.noAds) "OWNED" else "—"}
         ╚════════════════════════════════════════════╝
     """.trimIndent())
     }

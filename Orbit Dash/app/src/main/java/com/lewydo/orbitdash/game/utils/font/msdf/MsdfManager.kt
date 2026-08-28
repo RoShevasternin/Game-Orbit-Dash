@@ -24,6 +24,10 @@ class MsdfManager : Disposable {
         "font/msdf/Inter-Medium.json",
         "font/msdf/Inter-Medium.png",
     )
+    val fontInter_Bold = MsdfFont(
+        "font/msdf/Inter-Bold.json",
+        "font/msdf/Inter-Bold.png",
+    )
     val fontInter_ExtraBold = MsdfFont(
         "font/msdf/Inter-ExtraBold.json",
         "font/msdf/Inter-ExtraBold.png",
@@ -46,6 +50,7 @@ class MsdfManager : Disposable {
             innerShader,
 
             fontInter_Medium,
+            fontInter_Bold,
             fontInter_ExtraBold,
         )
     }

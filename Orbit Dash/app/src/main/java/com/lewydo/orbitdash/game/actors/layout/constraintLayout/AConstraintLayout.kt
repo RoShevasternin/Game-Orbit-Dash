@@ -3,7 +3,6 @@ package com.lewydo.orbitdash.game.actors.layout.constraintLayout
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedGroup
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
-import com.lewydo.orbitdash.game.utils.global.GlobalEvents
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  AConstraintLayout  —  оптимізована версія (push-модель + кешовані anchors)
@@ -19,6 +18,9 @@ import com.lewydo.orbitdash.game.utils.global.GlobalEvents
 //    8. Нуль алокацій hot path — ArrayList reuse, без filter/map
 //    9. childSnapshots         — відстежуємо розміри дітей (для HUG дітей типу AAutoLayout)
 //   10. childrenChanged()      — ЄДИНИЙ шов синхронізації складу дітей (див. нижче)
+//   11. isAdding guard         — add() не тягне повну перебудову списків спостереження
+//   12. HashMap-lookup         — watchChild/watchAnchor за O(1), а не лінійним пошуком
+//   13. Збереження snapshot-ів — rebuildWatchLists() не губить необроблені зміни розміру
 //
 //  ЧОМУ childrenChanged(), А НЕ removeActor():
 //  libGDX видаляє акторів кількома шляхами — removeActor(actor),
@@ -29,6 +31,12 @@ import com.lewydo.orbitdash.game.utils.global.GlobalEvents
 //  ЗНИКНЕННЯ ANCHOR-А НЕ ВБИВАЄ ЗАЛЕЖНОГО: посилання обнуляється, вузол
 //  лишається живим. Актор застигає по тій осі, що втратила anchor, але
 //  друга вісь, resize і update() працюють далі.
+//
+//  ПОЗИЦІЯ ДІТЕЙ НЕ ВІДСТЕЖУЄТЬСЯ — свідомо. Layout реагує на зміну РОЗМІРУ
+//  дитини, але не на зміну її x/y. Тому актор можна анімувати через
+//  Actions.moveBy / scaleTo, і констрейнт не буде з цим боротися.
+//  Увага: layout() перераховує ВСІ вузли безумовно, тож абсолютний moveTo
+//  краще не використовувати — після випадкового invalidateHierarchy() буде ривок.
 //
 //  ПОРЯДОК LAYOUT ДЛЯ КОЖНОГО АКТОРА:
 //    1. Виставити розмір (dimension resolution)
@@ -66,9 +74,13 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
     // Захист від рекурсії: layout() → resolveNode → setSize → sizeChanged → layout()
     private var isLayouting = false
 
+    // Захист від зайвої роботи: addActor() всередині add() стріляє childrenChanged(),
+    // але add() і так реєструє актора вручну — повна перебудова там непотрібна.
+    private var isAdding = false
+
     // Snapshot-и тільки для ЗОВНІШНІХ anchor-ів (не this)
     // layout (this) відстежується через sizeChanged() — без snapshot
-    private val anchorSnapshots = HashMap<Actor, FloatArray>()
+    private val anchorSnapshots  = HashMap<Actor, FloatArray>()
     private val anchorActorsList = ArrayList<Actor>()
     private val anchorArraysList = ArrayList<FloatArray>()
 
@@ -78,6 +90,7 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
     // Snapshot-и для дітей layout — відстежуємо зміни їх розміру.
     // Потрібно для HUG дітей (наприклад AAutoLayout) — коли дитина змінює розмір,
     // її позиція (center, topToBottom тощо) має автоматично перерахуватись.
+    private val childSnapshots  = HashMap<Actor, FloatArray>()
     private val childSnapActors = ArrayList<Actor>()
     private val childSnapArrays = ArrayList<FloatArray>()
 
@@ -87,7 +100,7 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
         val params = CLParams(this).apply(block)
 
         if (params.widthMode == Dimension.FIXED && params.heightMode == Dimension.FIXED) {
-            require(actor.width > 0f || actor.height > 0f) {
+            require(actor.width > 0f && actor.height > 0f) {
                 "AConstraintLayout.add(): встанови setSize() або використай fillParent()/fillWidth()/fillHeight().\n" +
                         "Actor: ${actor::class.simpleName}"
             }
@@ -101,7 +114,12 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
             if (anchor !== this) watchAnchor(anchor)
         }
 
+        // isAdding — щоб childrenChanged() не тягнув повну перебудову списків:
+        // реєстрація актора йде вручну наступним рядком
+        isAdding = true
         addActor(actor)
+        isAdding = false
+
         watchChild(actor) // відстежуємо розмір дитини
 
         // Виставляємо розмір і позицію одразу — без кадру затримки
@@ -136,12 +154,16 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
         nodes.clear()
         dirtyQueue.clear()
         anyDirty = false
+
         anchorSnapshots.clear()
         anchorActorsList.clear()
         anchorArraysList.clear()
         hasExternalAnchors = false
+
+        childSnapshots.clear()
         childSnapActors.clear()
         childSnapArrays.clear()
+
         clearChildren()
     }
 
@@ -153,7 +175,7 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
 
     override fun childrenChanged() {
         super.childrenChanged()
-        if (isLayouting) return
+        if (isLayouting || isAdding) return
         syncWithChildren()
     }
 
@@ -189,15 +211,44 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
     /** Anchor мертвий, якщо це не сам layout і вже не його дитина. */
     private fun isDead(a: Actor?) = a != null && a !== this && a.parent !== this
 
+    /**
+     * Перебудувати обидва списки спостереження з нуля, викинувши мертвих.
+     *
+     * Snapshot-масиви для акторів, що лишилися, ПЕРЕВИКОРИСТОВУЮТЬСЯ, а не
+     * створюються заново. Інакше зміна розміру, яку checkChildren()/checkAnchors()
+     * ще не встиг обробити, була б перезаписана поточним значенням і загубилась.
+     */
     private fun rebuildWatchLists() {
+        // ── anchor-и ──
+        val oldAnchors = HashMap(anchorSnapshots)
         anchorSnapshots.clear(); anchorActorsList.clear(); anchorArraysList.clear()
         hasExternalAnchors = false
+
         nodes.values.forEach { node ->
-            node.anchors.forEach { if (it !== this) watchAnchor(it) }
+            node.anchors.forEach { anchor ->
+                if (anchor !== this && anchor !in anchorSnapshots) {
+                    val snap = oldAnchors[anchor]
+                        ?: floatArrayOf(anchor.x, anchor.y, anchor.width, anchor.height)
+                    anchorSnapshots[anchor] = snap
+                    anchorActorsList.add(anchor)
+                    anchorArraysList.add(snap)
+                    hasExternalAnchors = true
+                }
+            }
         }
 
-        childSnapActors.clear(); childSnapArrays.clear()
-        children.forEach { watchChild(it) }
+        // ── діти ──
+        val oldChildren = HashMap(childSnapshots)
+        childSnapshots.clear(); childSnapActors.clear(); childSnapArrays.clear()
+
+        children.forEach { actor ->
+            if (actor !in childSnapshots) {
+                val snap = oldChildren[actor] ?: floatArrayOf(actor.width, actor.height)
+                childSnapshots[actor] = snap
+                childSnapActors.add(actor)
+                childSnapArrays.add(snap)
+            }
+        }
     }
 
     // ── sizeChanged: розмір layout змінився ──────────────────────────────────
@@ -399,21 +450,19 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
     }
 
     // ── Child watching ────────────────────────────────────────────────────────
-    // Відстежуємо зміни розміру дітей — необхідно коли дитина сама змінює свій
+    // Відстежуємо зміни РОЗМІРУ дітей — необхідно коли дитина сама змінює свій
     // розмір (наприклад AAutoLayout з sizingW/H = HUG). В такому разі позиція
     // дитини (center, topToBottom тощо) має автоматично перерахуватись.
+    //
+    // Позиція (x/y) і scale дітей НЕ відстежуються — це навмисно, щоб анімації
+    // через Actions.moveBy / scaleTo не конфліктували з констрейнтами.
 
     private fun watchChild(actor: Actor) {
-        if (actor in childSnapActors) return
+        if (actor in childSnapshots) return
+        val snap = floatArrayOf(actor.width, actor.height)
+        childSnapshots[actor] = snap
         childSnapActors.add(actor)
-        childSnapArrays.add(floatArrayOf(actor.width, actor.height))
-    }
-
-    private fun unWatchChild(actor: Actor) {
-        val i = childSnapActors.indexOf(actor)
-        if (i >= 0) {
-            childSnapActors.removeAt(i); childSnapArrays.removeAt(i)
-        }
+        childSnapArrays.add(snap)
     }
 
     private fun checkChildren() {
@@ -452,13 +501,17 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
     override fun dispose() {
         nodes.clear()
         dirtyQueue.clear()
+        anyDirty = false
+
         anchorSnapshots.clear()
         anchorActorsList.clear()
         anchorArraysList.clear()
-        anyDirty = false
         hasExternalAnchors = false
+
+        childSnapshots.clear()
         childSnapActors.clear()
         childSnapArrays.clear()
+
         super.dispose()
     }
 }

@@ -3,7 +3,7 @@ package com.lewydo.orbitdash.game.utils
 const val WIDTH_UI  = 360f
 const val HEIGHT_UI = 800f
 
-const val TIME_ANIM_SCREEN = 0.27f
+const val TIME_ANIM_SCREEN = 0.4f
 
 // ------------------------------------------------------------------------
 // MATH

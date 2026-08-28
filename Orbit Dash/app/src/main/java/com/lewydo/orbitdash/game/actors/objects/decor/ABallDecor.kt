@@ -1,55 +1,47 @@
-package com.lewydo.orbitdash.game.actors.objects
+package com.lewydo.orbitdash.game.actors.objects.decor
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
 import com.lewydo.orbitdash.game.utils.SizeScaler
+import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 
-class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
+class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 40f)
 
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow    = Image(gdxGame.assetsLoader.item_glow)
-    private val aDiamond = Image(gdxGame.assetsLoader.gem)
-
-    // ------------------------------------------------------------------------
-    // Field
-    // ------------------------------------------------------------------------
-    var spin: Float
-        get() = aDiamond.rotation
-        set(value) { aDiamond.rotation = value }
+    private val aGlow = Image(gdxGame.assetsLoader.item_glow)
+    private val aBall = Image(gdxGame.assetsLoader.ball)
 
     // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
         addGlow()
-        addDiamond()
+        addBall()
 
         syncTheme()
     }
+
+    private var themeVersion = -1
 
     override fun act(delta: Float) {
         super.act(delta)
-        syncTheme()
-
-        aDiamond.setOrigin(Align.center)
-    }
-
-    private fun syncTheme() {
-        aGlow.color.set(ThemeManager.current.gem).apply { a = aGlow.color.a }
-        aDiamond.color.set(ThemeManager.current.gem).apply { a = aDiamond.color.a }
+        if (themeVersion != ThemeManager.version) {
+            themeVersion = ThemeManager.version
+            syncTheme()
+        }
     }
 
     override fun sizeChanged() {
         super.sizeChanged()
-        if (aGlow.parent != null) aGlow.setSizeScaled(100f, 100f)
+        if (aGlow.parent == null) return
+        aGlow.setSizeScaled(100f, 100f)
     }
 
     // ------------------------------------------------------------------------
@@ -60,9 +52,16 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         add(aGlow) { center() }
     }
 
-    private fun addDiamond() {
-        add(aDiamond) { fillParent() }
-        aDiamond.setOrigin(Align.center)
+    private fun addBall() {
+        add(aBall) { fillParent() }
+    }
+
+    // ------------------------------------------------------------------------
+    // Theme
+    // ------------------------------------------------------------------------
+    private fun syncTheme() {
+        aGlow.setColorRGB(ThemeManager.current.player)
+        aBall.setColorRGB(ThemeManager.current.player)
     }
 
 }

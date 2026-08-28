@@ -2,6 +2,7 @@ package com.lewydo.orbitdash.game.utils.theme
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.lewydo.orbitdash.util.log
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ТЕМА = 5 КОЛЬОРІВ-РОЛЕЙ: bg, ring, player, gem, spike.
@@ -58,13 +59,28 @@ object ThemeManager {
     )
 
     /** Читай це в акторах. Уже проінтерпольоване. */
-    val current = ThemeColors()
+    val current = ThemeColors().apply { set(palettes[0]) }
 
     var currentId = 0
         private set
 
     private var target = palettes[0]
-    private const val LERP_SPEED = 8f   // ≈0.35 с на повний перехід
+
+    /** Скільки триває перехід між скінами. */
+    private const val TRANSITION_TIME = 2f
+
+    /** 4 сталі часу = ~98% шляху, далі доводимо точно в кінці. */
+    private val lerpSpeed = 4f / TRANSITION_TIME
+
+    private var transitionT = 0f
+
+    /**
+     * Зростає РІВНО тоді, коли current змінився: стрибок (initWith) або
+     * черговий кадр лерпу. Актор тримає своє значення і синхронізується,
+     * лише коли вони розійшлись — тобто ніколи в спокої і щокадру в переході.
+     */
+    var version = 0
+        private set
 
     /** Чи існує така палітра — використовуй перед збереженням id. */
     fun isValidId(id: Int) = id in palettes.indices
@@ -72,21 +88,33 @@ object ThemeManager {
     /** Ім'я палітри для аналітики/UI. Кривий id ковтаємо, як і всюди тут. */
     fun nameOf(id: Int) = palettes[id.coerceIn(0, palettes.lastIndex)].name
 
-    /** Миттєво, без анімації: старт гри з уже завантаженим save. */
     fun initWith(id: Int) {
         currentId = id.coerceIn(0, palettes.lastIndex)
         target = palettes[currentId]
         current.set(target)
+
+        transitionT = 0f
+        version++
     }
 
     /** Гравець вибрав скін — перехід доанімується сам в update(). */
     fun switchTo(id: Int) {
+        if (id == currentId) return
         currentId = id.coerceIn(0, palettes.lastIndex)
         target = palettes[currentId]
+        transitionT = TRANSITION_TIME
     }
 
     /** Раз на кадр, поруч із ShaderClock.update() у GDXGame.render(). */
     fun update(delta: Float = Gdx.graphics.deltaTime) {
-        current.lerp(target, (LERP_SPEED * delta).coerceAtMost(1f))
+        if (transitionT <= 0f) return
+
+        transitionT -= delta
+        current.lerp(target, (lerpSpeed * delta).coerceAtMost(1f))
+        if (transitionT <= 0f) current.set(target)
+
+        version++
+
+        log("dd = $version")
     }
 }

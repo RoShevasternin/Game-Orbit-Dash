@@ -13,7 +13,6 @@
 -keepattributes LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile
 
-
 # ParticleEmitter
 -keepclassmembers class com.badlogic.gdx.graphics.g2d.ParticleEmitter {
     *** particles;

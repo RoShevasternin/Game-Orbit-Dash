@@ -1,5 +1,6 @@
 package com.lewydo.orbitdash.game.utils.actor
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
@@ -69,6 +70,13 @@ fun Actor.setOrigin(vector: Vector2) {
 
 fun Actor.setSize(vector: Vector2) {
     setSize(vector.x, vector.y)
+}
+
+/** Міняє RGB, лишаючи альфу актора недоторканою.
+ *  Потрібно скрізь, де колір приходить із теми, а прозорість
+ *  належить самому актору (glow-шари, приглушені стани, анімації). */
+fun Actor.setColorRGB(color: Color) {
+    this.color.set(color.r, color.g, color.b, this.color.a)
 }
 
 // ------------------------------------------------------------------------

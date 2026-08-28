@@ -205,6 +205,41 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">boost_hex.png</key>
+            <key type="filename">icon_gem_x2.png</key>
+            <key type="filename">icon_magnet.png</key>
+            <key type="filename">icon_pulse.png</key>
+            <key type="filename">icon_shield.png</key>
+            <key type="filename">icon_slow_mo.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>26,30,53,60</rect>
+                <key>scale9Paddings</key>
+                <rect>26,30,53,60</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">shield_pip.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>30,19,60,37</rect>
+                <key>scale9Paddings</key>
+                <rect>30,19,60,37</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
         </map>
         <key>fileLists</key>
         <map type="SpriteSheetMap">

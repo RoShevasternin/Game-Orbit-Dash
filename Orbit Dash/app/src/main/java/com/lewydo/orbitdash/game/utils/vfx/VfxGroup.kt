@@ -158,7 +158,7 @@ open class VfxGroup(
             GL20.GL_ONE,       GL20.GL_ONE_MINUS_SRC_ALPHA
         )
 
-        drawChildrenWithoutTransform(batch, parentAlpha)
+        drawChildrenWithoutTransform(batch, 1f)
 
         batch.flush()
         FboStack.pop()

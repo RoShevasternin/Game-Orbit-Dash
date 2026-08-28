@@ -134,10 +134,11 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     override fun render() {
         ShaderClock.update()
         ThemeManager.update()
-        ScreenUtils.clear(backgroundColor)
-        super.render()
 
         syncTheme()
+
+        ScreenUtils.clear(backgroundColor)
+        super.render()
     }
 
     override fun pause() {
@@ -178,6 +179,10 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
             // інакше перші run_start підуть без userId і не зшиються.
             AnalyticsManager.setUserId(modelPlayer.pid)
             AnalyticsManager.setActiveSkin(ThemeManager.nameOf(modelPlayer.currentSkinId))
+
+            AnalyticsManager.setHasOrbit3(modelPlayer.orbit3)
+            AnalyticsManager.setNoAds(modelPlayer.noAds)
+            AnalyticsManager.setBestBucket(modelPlayer.best)
 
             // Перше застосування — миттєве: гравець не має бачити,
             // як його золотий скін «переїжджає» з неонового

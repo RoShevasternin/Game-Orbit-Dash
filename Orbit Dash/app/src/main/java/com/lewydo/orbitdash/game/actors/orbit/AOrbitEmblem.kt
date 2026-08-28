@@ -7,10 +7,11 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.actors.objects.ABall
-import com.lewydo.orbitdash.game.actors.objects.AGem
+import com.lewydo.orbitdash.game.actors.objects.decor.ABallDecor
+import com.lewydo.orbitdash.game.actors.objects.decor.AGemDecor
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.SizeScaler
+import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
@@ -64,8 +65,8 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
     private val aOrbitGlowImg = Image(gdxGame.assetsLoader.ORBIT_GLOW)
     private val aRingOuter    = AOrbitRing(screen)
     private val aRingInner    = AOrbitRing(screen)
-    private val aBall         = ABall(screen)
-    private val aGem          = AGem(screen)
+    private val aBall         = ABallDecor(screen)
+    private val aGem          = AGemDecor(screen)
 
     // ------------------------------------------------------------------------
     // Field
@@ -89,9 +90,15 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
         syncTheme()
     }
 
+    private var themeVersion = -1
+
     override fun act(delta: Float) {
         super.act(delta)   // спершу констрейнти розкладуть кільця під поточний розмір
-        syncTheme()
+
+        if (themeVersion != ThemeManager.version) {
+            themeVersion = ThemeManager.version
+            syncTheme()
+        }
 
         if (isSpinning) OrbitEmblemClock.update(delta, BALL_SPEED_DEG, GEM_SPEED_DEG)
 
@@ -170,7 +177,7 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
 
     private fun syncTheme() {
         val t = ThemeManager.current
-        aOrbitGlowImg.color.set(t.player).apply { a = aOrbitGlowImg.color.a }
+        aOrbitGlowImg.setColorRGB(t.player)
         aRingOuter.ringColor.set(t.ring)
         aRingInner.ringColor.set(t.ring)
         // aBall і aGem синхронізують себе самі

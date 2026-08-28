@@ -9,17 +9,17 @@ import com.lewydo.orbitdash.game.actors.debug.ADebugPanel
 import com.lewydo.orbitdash.game.actors.debug.addDebugHud
 import com.lewydo.orbitdash.game.actors.debug.addDebugPanel
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.actors.objects.ABall
+import com.lewydo.orbitdash.game.actors.objects.decor.ABallDecor
 import com.lewydo.orbitdash.game.actors.objects.ABooster
-import com.lewydo.orbitdash.game.actors.objects.AGem
+import com.lewydo.orbitdash.game.actors.objects.decor.AGemDecor
 import com.lewydo.orbitdash.game.actors.objects.ASpike
 import com.lewydo.orbitdash.game.actors.orbit.AOrbitField
+import com.lewydo.orbitdash.game.actors.panel.APanelGameHud
 import com.lewydo.orbitdash.game.engine.RunEngine
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.actor.animHide
 import com.lewydo.orbitdash.game.utils.actor.animShow
-import com.lewydo.orbitdash.game.utils.actor.setSize
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.util.log
@@ -59,11 +59,13 @@ class GameScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
+    private val aPanelGameHud = APanelGameHud(this)
+
     private val aStarField by lazy { AStarField(this) }
     private val aComet     by lazy { AComet(this) }
 
     private val aOrbitField by lazy { AOrbitField(this) }
-    private val aBall       by lazy { ABall(this) }
+    private val aBall       by lazy { ABallDecor(this) }
 
     // ------------------------------------------------------------------------
     // Engine
@@ -89,7 +91,7 @@ class GameScreen : AdvancedScreen() {
     private val activeActors = HashMap<Int, Actor>()
     private val seenIds      = HashSet<Int>()
 
-    private val freeGems   = ArrayList<AGem>(POOL_GEMS)
+    private val freeGems   = ArrayList<AGemDecor>(POOL_GEMS)
     private val freeSpikes = ArrayList<ASpike>(POOL_SPIKES)
     private val freeBoosts = ArrayList<ABooster>(POOL_BOOSTS)
 
@@ -243,7 +245,7 @@ class GameScreen : AdvancedScreen() {
     // Pool
     // ------------------------------------------------------------------------
     private fun acquire(e: RunEngine.Entity): Actor = when (e.kind) {
-        RunEngine.Kind.GEM   -> freeGems.removeLastOrNull()   ?: AGem(this).also { prepare(it, OBJ_SIZE) }
+        RunEngine.Kind.GEM   -> freeGems.removeLastOrNull()   ?: AGemDecor(this).also { prepare(it, OBJ_SIZE) }
         RunEngine.Kind.SPIKE -> freeSpikes.removeLastOrNull() ?: ASpike(this).also { prepare(it, OBJ_SIZE) }
         RunEngine.Kind.BOOST -> (freeBoosts.removeLastOrNull() ?: ABooster(this).also { prepare(it, OBJ_SIZE) })
             .also { it.boost = e.boost ?: RunEngine.Boost.MAGNET }
@@ -263,7 +265,7 @@ class GameScreen : AdvancedScreen() {
 
             actor.isVisible = false
             when (actor) {
-                is AGem     -> freeGems.add(actor)
+                is AGemDecor     -> freeGems.add(actor)
                 is ASpike   -> freeSpikes.add(actor)
                 is ABooster -> freeBoosts.add(actor)
             }

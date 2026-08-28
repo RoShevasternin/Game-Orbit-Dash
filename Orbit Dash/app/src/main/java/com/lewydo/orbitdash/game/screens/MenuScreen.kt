@@ -21,10 +21,14 @@ import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.actor.animDelay
 import com.lewydo.orbitdash.game.utils.actor.disable
 import com.lewydo.orbitdash.game.utils.actor.enable
+import com.lewydo.orbitdash.game.utils.actor.setSize
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.runGDX
+import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.services.analytics.AnalyticsManager
 import com.lewydo.orbitdash.util.log
+import com.selftest.mindora.game.actors.progress.AProgressItemPortrait
 
 // ----------------------------------------------------------------------------
 //  ЧОМУ AHug, А НЕ detach. Політ панелей — це CSS transform:translate у
@@ -168,9 +172,9 @@ class MenuScreen : AdvancedScreen() {
             ads.show(
                 onEarned = {
                     runGDX {
-                        // TODO: PlayerData.gems += amount, коли поле з'явиться
-                        log("earned +$amount gems")
-                        rerollGems()    // наступний офер — свіже число
+                        gdxGame.modelPlayer.addGems(amount, AnalyticsManager.GemSource.AD)
+                        AnalyticsManager.adReward(AnalyticsManager.Placement.GEMS_MENU)
+                        rerollGems()
                     }
                 },
                 onFailed = {
