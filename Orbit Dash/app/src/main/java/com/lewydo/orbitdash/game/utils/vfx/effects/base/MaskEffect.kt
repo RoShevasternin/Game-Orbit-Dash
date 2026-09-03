@@ -1,4 +1,4 @@
-package com.lewydo.orbitdash.game.utils.vfx.effects
+package com.lewydo.orbitdash.game.utils.vfx.effects.base
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
@@ -27,7 +27,7 @@ class MaskEffect() : VfxEffect() {
     constructor(texture: Texture?) : this() { maskTexture = texture }
     constructor(region: TextureRegion?) : this() { maskRegion = region }
 
-    override val fragmentShader = "shader/mask/maskFS.glsl"
+    override val fragmentShader = "shader/base/mask/maskFS.glsl"
 
     /** Маска як регіон (атлас або full-текстура). Головне сховище. */
     var maskRegion: TextureRegion? = null

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.lewydo.orbitdash.game.utils.ShaderClock
 import com.lewydo.orbitdash.game.utils.vfx.VfxContext
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect
 
 // ─────────────────────────────────────────────────────────────────────────────
 // StarFieldEffect — процедурні зорі на весь екран (single-pass).

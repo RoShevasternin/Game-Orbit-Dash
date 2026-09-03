@@ -17,20 +17,44 @@ import com.lewydo.orbitdash.game.manager.util.SoundUtil
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.gdxGame
 
+/**
+ * @param stopEvent true (дефолт) — подія гаситься на цьому акторі: предки її
+ *        не побачать. Для звичайних кнопок це правильно.
+ *
+ *        ⚠️ false ОБОВ'ЯЗКОВО для всього, що лежить у ScrollPane. Скрол
+ *        працює так: ScrollPane слухає touchDown на СОБІ, тобто отримує
+ *        подію ПІСЛЯ дитини, спливанням. event.stop() у дитини це спливання
+ *        обриває — і список перестає скролитись, хоча кліки працюють.
+ *
+ *        Коли stopEvent=false, драг доїжджає до ScrollPane, той починає
+ *        скрол і сам скасовує touch-focus дитини (cancelTouchFocus=true за
+ *        замовчуванням) — тож clicked після скролу НЕ спрацює. Саме те, що
+ *        треба: потягнув список — картка не відкрилась.
+ *
+ * @param sound звук натискання. При stopEvent=true грає на touchDown
+ *        (миттєвий відгук кнопки), при false — на clicked, інакше кожен
+ *        початок скролу клацав би.
+ */
 fun Actor.setOnClickListener(
     sound: SoundUtil.AdvancedSound? = gdxGame.soundUtil.CLICK,
     radius: Float = 10f,
+    stopEvent: Boolean = true,
     block: (Actor) -> Unit
 ) {
     addListener(object : ClickListener() {
         override fun touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int): Boolean {
             if (!super.touchDown(event, x, y, pointer, button)) return false
-            sound?.let { gdxGame.soundUtil.play(it) }
-            event.stop()
+            if (stopEvent) {
+                sound?.let { gdxGame.soundUtil.play(it) }
+                event.stop()
+            }
             return true
         }
 
-        override fun clicked(event: InputEvent, x: Float, y: Float) = block(event.listenerActor)
+        override fun clicked(event: InputEvent, x: Float, y: Float) {
+            if (!stopEvent) sound?.let { gdxGame.soundUtil.play(it) }
+            block(event.listenerActor)
+        }
     }.apply { tapSquareSize = radius })
 }
 

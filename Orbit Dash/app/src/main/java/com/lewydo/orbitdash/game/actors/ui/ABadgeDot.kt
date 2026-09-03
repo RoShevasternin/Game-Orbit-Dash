@@ -38,7 +38,7 @@ class ABadgeDot(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     // Actors
     // ------------------------------------------------------------------------
     private val aGlow = Image(gdxGame.assetsAll.badge_glow)
-    private val aDot  = Image(gdxGame.assetsAll.badge_dot)
+    private val aDot  = Image(gdxGame.assetsLoader.circle)
 
     // ------------------------------------------------------------------------
     // Lifecycle

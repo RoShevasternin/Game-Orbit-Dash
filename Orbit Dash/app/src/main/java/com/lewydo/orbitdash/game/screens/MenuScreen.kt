@@ -28,7 +28,8 @@ import com.lewydo.orbitdash.game.utils.runGDX
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.services.analytics.AnalyticsManager
 import com.lewydo.orbitdash.util.log
-import com.selftest.mindora.game.actors.progress.AProgressItemPortrait
+import com.lewydo.orbitdash.game.actors.progress.AProgressItemPortrait
+import com.lewydo.orbitdash.game.actors.ui.base.ACircle
 
 // ----------------------------------------------------------------------------
 //  ЧОМУ AHug, А НЕ detach. Політ панелей — це CSS transform:translate у
@@ -121,14 +122,29 @@ class MenuScreen : AdvancedScreen() {
         add(aMain) { fillParent() }
         addActor(aTitlesAnchor)
 
-        addPanels()
+        //addPanels()
+
+        circle.setCircle(150f, 100f)
+        //circle.setSize(150f, 150f)
+        //circle.blur = 100f
+        circle.debug()
+
+        add(circle) { center(); verticalBias = 0.3f }
+
+
+
 
         addDebugHud(ADebugHud(this@MenuScreen))
     }
 
+    val circle = ACircle(this@MenuScreen)
+
+
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         val v = stageUI.screenToStageCoordinates(Vector2(screenX.toFloat(), screenY.toFloat()))
         aStarField.animRippleAt(v.x, v.y)
+
+        log("d = ${circle.width}")
         return false
     }
 

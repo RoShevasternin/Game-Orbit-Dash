@@ -1,0 +1,298 @@
+{
+  "type": "all-projects",
+  "version": "2.0",
+  "exportDate": "2026-08-29T13:03:45.646Z",
+  "projects": [
+    {
+      "id": "proj-imc-seed",
+      "name": "IMC",
+      "desc": "Idle Merge Cubes",
+      "icon": "🎮",
+      "categories": [
+        {
+          "id": 0,
+          "title": "СТАРТ",
+          "subtitle": "MVP",
+          "icon": "⚡"
+        },
+        {
+          "id": 1,
+          "title": "ОСНОВА",
+          "subtitle": "MVP v2",
+          "icon": "⚡"
+        },
+        {
+          "id": 2,
+          "title": "UPDATE v2",
+          "subtitle": "v2",
+          "icon": "📱"
+        },
+        {
+          "id": 3,
+          "title": "Можливо але не точно",
+          "subtitle": "50 на 50",
+          "icon": "🤔"
+        }
+      ],
+      "tasks": [
+        {
+          "categoryId": 0,
+          "title": "Offline Dialog + x2 Ad ✅",
+          "details": "<h4>Статус: ГОТОВО!</h4>"
+        },
+        {
+          "categoryId": 0,
+          "title": "BUY Button Animation ✅",
+          "details": "<h4>Статус: ГОТОВО!</h4>"
+        },
+        {
+          "categoryId": 0,
+          "title": "Idle Bar + Collect ✅",
+          "details": "<h4>Статус: ГОТОВО!</h4>"
+        },
+        {
+          "categoryId": 0,
+          "title": "Flying Numbers",
+          "details": "<h4>Що зробити:</h4><ul><li>+50 🪙 летить до UI counter</li><li>+10 XP летить до XP bar</li><li>Smooth curve animation</li></ul>"
+        },
+        {
+          "categoryId": 0,
+          "title": "Flying Numbers 2",
+          "details": "Оптимізуй, зроби пул тих лейблів, і зроби між ними відступи що б будь які значення там будуть а між хп та коін лейблами буде відступ що б юзер чітко бачив скільки він отримав монет та хп"
+        },
+        {
+          "categoryId": 0,
+          "title": "<h4><strong>🔥ОПТИМІЗАЦІЯ PreRenderable</strong></h4>",
+          "details": "Оптивізовуємо роботу з шейдерами"
+        },
+        {
+          "categoryId": 0,
+          "title": "Flying Numbers 3",
+          "details": "Реалізуй Дригання Level Panel та Balance Panel коли FlyingLabel долітають до них і зникають"
+        },
+        {
+          "categoryId": 0,
+          "title": "Effect - Collect",
+          "details": "Створи ефект розльоту монеток коли буде клік на кнопки COLLECT"
+        },
+        {
+          "categoryId": 0,
+          "title": "Музика Звуки Вібрації",
+          "details": "Зрозуміло"
+        },
+        {
+          "categoryId": 0,
+          "title": "Brand Animation",
+          "details": "Реалізуй анімацію серцебиття бренду"
+        },
+        {
+          "categoryId": 0,
+          "title": "Tutorial",
+          "details": "Рука"
+        },
+        {
+          "categoryId": 0,
+          "title": "<h4><strong>🔥 ДУЖЕ ВАЖЛИВО! - ОПТИМІЗУЙ FPS</strong></h4>",
+          "details": "ОПТИМІЗУЙ FPS"
+        },
+        {
+          "categoryId": 1,
+          "title": "Підсвітка Grid",
+          "details": "Підсвіти ігрову панель знизу"
+        },
+        {
+          "categoryId": 1,
+          "title": "Firebase",
+          "details": "Analitics\nCrashlitics\nEvents"
+        },
+        {
+          "categoryId": 1,
+          "title": "Banner Ads",
+          "details": "<p>AdMob - banner 50dp внизу екрану</p>"
+        },
+        {
+          "categoryId": 1,
+          "title": "AAutoSizeLabel -> ALabel",
+          "details": "Перероби AAutoSizeLabel з ALabel"
+        },
+        {
+          "categoryId": 1,
+          "title": "FrameBuffer - (пул буферів розміром з Екран)",
+          "details": "(закрив бо Claude каже це не дасть оптимізації а тільки нашкодить)\n<p>\n<p>\nПитання: А що якщо не брать кожного разу новий буфер з пулу в залежності від розміру\n\nВідповідь: А просто створи пул з 10 буферів розміром з екран і їх перевикористовувати, тоді ми зможемо динамічно міняти розмір груп ефектів і не буде створюватись кожного разу новий буфер а братиметься той самий"
+        },
+        {
+          "categoryId": 1,
+          "title": "Idle Income -> Merge Bonus",
+          "details": "<h4>🔄 Merge Bonus — активний збір замість пасивного таймера</h4>\n\n<h4>Суть зміни:</h4>\n<p>\n  Раніше прогрес-бар \"Idle Income\" заповнювався автоматично по таймеру (кожні 10 секунд = повний бар).\n  Тепер бар <b>Merge Bonus</b> заповнюється виключно від мерджів кубів — це змушує юзера активно грати\n  щоб отримати нагороду, а не просто чекати.\n</p>\n\n<h4>Як працює:</h4>\n<ul>\n  <li>Кожен мердж двох кубів додає <b>+1 крок</b> до прогрес-бару</li>\n  <li>Ціль заповнення — <b>рандомна від 10 до 20 мерджів</b> (генерується заново після кожного collect)</li>\n  <li>Коли бар повний → з'являються кнопки <b>Collect</b> і <b>Collect ×2</b></li>\n  <li>Після collect → прогрес скидається + генерується нова рандомна ціль</li>\n</ul>\n\n<h4>Enchanted куби:</h4>\n<p>Будь-який мердж з enchanted кубом (<code>💰⚡💣⭐</code>) <b>заповнює бар повністю</b> одразу — бонус за рідкісний мердж.</p>\n\n<h4>UI:</h4>\n<ul>\n  <li>Бар показує лічильник: <code>7 / 13 merges</code> (де 13 — поточна рандомна ціль)</li>\n  <li>Заголовок панелі: <b>Merge Bonus</b> (замість \"Idle Income\")</li>\n  <li>Collect панель показує кількість монет + підпис <code>merge bonus!</code></li>\n</ul>"
+        },
+        {
+          "categoryId": 1,
+          "title": "<h4>🔼 BUY Level Progression</h4>",
+          "details": "<h4>🔼 BUY Level Progression</h4>\n<p>Рівень куба який купується через BUY автоматично зростає залежно від максимального куба досягнутого на панелі.</p>\n<ul>\n  <li>До куба 5 — BUY дає куб <b>рівня 1</b></li>\n  <li>Куб 5–6 → BUY дає куб <b>рівня 2</b></li>\n  <li>Куб 7–8 → BUY дає куб <b>рівня 3</b></li>\n  <li>Куб 9–10 → BUY дає куб <b>рівня 4</b></li>\n  <li>і так далі кожні 2 рівні куба +1 до BUY</li>\n</ul>\n<p>При апгрейді BUY рівня — всі куби на панелі нижче нового рівня автоматично підвищуються до нового BUY рівня. Анімація: кнопка BUY спалахує золотом + <code>BUY upgraded! Lv.X</code> флоатить на екрані.</p>\n<p>Під кнопкою BUY є хінт: <code>🔓 Reach cube X → BUY lv.Y</code> з прогрес-баром до наступного апгрейду.</p>\n<p>Математика: кожен тир потребує рівно ×2 більше натискань BUY ніж попередній (gap між ціллю і BUY рівнем +1 кожен тир).</p>"
+        },
+        {
+          "categoryId": 1,
+          "title": "ABuyHint",
+          "details": "Перероби його так як в дизайні, і зроби що б плавно заповнювався прогрес і до кінця"
+        },
+        {
+          "categoryId": 1,
+          "title": "AutoLayout & Constraint з T6 | Skinly",
+          "details": "Заміни і додай AutoLayout, видали linear group horizontal vertical та table"
+        },
+        {
+          "categoryId": 1,
+          "title": "EventManager",
+          "details": "Визнач всі необхідні івенти в грі які хочеш відслідковувати та їх параметри, і шли з одного місця EventManager Firebase Event та TikTok Event"
+        },
+        {
+          "categoryId": 1,
+          "title": "Goals System",
+          "details": "<div style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 800px;\">\n\n  <h2>🎯 Система досягнень (Goals System)</h2>\n\n  <p>\n    Планується додати панель задач (Goals Panel), яка буде розміщена між <b>TopPanel</b> та <b>GridPanel</b>.\n    Панель показує поточні задачі гравця та винагороди за їх виконання.\n  </p>\n\n  <hr>\n\n  <h3>📌 Приклади задач</h3>\n\n  <ul>\n    <li>Дійди до куба рівня <b>5️⃣</b></li>\n    <li>Розмісти на панелі <b>4 куба рівня 3️⃣</b></li>\n  </ul>\n\n  <p>\n    Біля кожної задачі відображається винагорода (наприклад: <b>+50 🪙</b>), щоб гравець одразу розумів цінність виконання.\n  </p>\n\n  <hr>\n\n  <h3>✅ Поведінка при виконанні</h3>\n\n  <ul>\n    <li>Задача стає сірою</li>\n    <li>Перекреслюється двома червоними лініями (X)</li>\n    <li>Відтворюється звук нагороди (монети)</li>\n    <li>Монети анімаційно летять у панель балансу</li>\n  </ul>\n\n  <hr>\n\n  <h3>🧩 Типи задач</h3>\n\n  <h4>1. Прості</h4>\n  <p>\n    Досягти певного рівня куба:\n  </p>\n  <ul>\n    <li>Рівні: 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣</li>\n  </ul>\n\n  <h4>2. Комбіновані</h4>\n  <p>\n    Розмістити кілька кубів різних рівнів:\n  </p>\n  <ul>\n    <li>2 куби рівня 4️⃣</li>\n    <li>6 кубів рівня 5️⃣</li>\n    <li>1 куб рівня 2️⃣</li>\n  </ul>\n\n  <h4>3. На час ⏱</h4>\n  <p>\n    Досягти цілі за обмежений час:\n  </p>\n  <ul>\n    <li>Дійди до куба рівня <b>7️⃣</b> за <b>60 секунд</b></li>\n  </ul>\n\n  <p>\n    Для таких задач у панелі <b>GOALS 🎯</b> відображається таймер.\n  </p>\n\n  <hr>\n\n  <h3>💡 Додатково</h3>\n\n  <ul>\n    <li>Показ винагороди біля кожної задачі</li>\n    <li>Можливість комбінування різних типів задач</li>\n    <li>Чіткий візуальний фідбек при завершенні</li>\n  </ul>\n\n</div>\n\n<div style=\"font-family: Arial, sans-serif; color: #ffffff; background: #1a1a2e; padding: 20px; border-radius: 16px; width: 420px;\">\n\n  <!-- HEADER -->\n  <div style=\"font-size: 20px; font-weight: bold; margin-bottom: 12px;\">\n    🎯 GOALS\n  </div>\n\n  <!-- SIMPLE GOAL -->\n  <div style=\"background: #222244; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;\">\n    <div>\n      Дійди до куба <b>5️⃣</b>\n    </div>\n    <div style=\"color: gold;\">+50 🪙</div>\n  </div>\n\n  <!-- COMBINED GOAL -->\n  <div style=\"background: #222244; padding: 12px; border-radius: 12px; margin-bottom: 10px;\">\n    <div>Розмісти на панелі:</div>\n    <div style=\"margin-top: 6px;\">\n      • 4 куба <b>3️⃣</b><br>\n      • 2 куби <b>4️⃣</b>\n    </div>\n    <div style=\"margin-top: 8px; color: gold;\">+120 🪙</div>\n  </div>\n\n  <!-- TIME GOAL -->\n  <div style=\"background: #222244; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;\">\n    <div>\n      Дійди до куба <b>7️⃣</b><br>\n      <span style=\"color: #ff7675;\">⏱ 60s</span>\n    </div>\n    <div style=\"color: gold;\">+200 🪙</div>\n  </div>\n\n  <!-- COMPLETED GOAL -->\n  <div style=\"background: #333333; padding: 12px; border-radius: 12px; margin-top: 10px; position: relative; color: #888;\">\n    Дійди до куба <b>3️⃣</b>\n    <div style=\"position: absolute; top: 0; left: 0; right: 0; bottom: 0;\">\n      <div style=\"width: 100%; height: 2px; background: red; transform: rotate(10deg); position: absolute; top: 50%;\"></div>\n      <div style=\"width: 100%; height: 2px; background: red; transform: rotate(-10deg); position: absolute; top: 50%;\"></div>\n    </div>\n  </div>\n\n</div>"
+        },
+        {
+          "categoryId": 1,
+          "title": "Goals System v2",
+          "details": "Треба доробити Complete та Failed.\n\n- COMPLETE - треба анімація появи монеток і що б вони летіли в баланс.\n\n- і треба додати звук Fail та Complete\n\n- є БАГ коли задача на час і дивимось рекламу а потім закриваєм рекламу то час зупинився або перейдемо на наступний екран і повернемось то час ішов далі хоча мав би стати на паузу а при поверненні відновитися"
+        },
+        {
+          "categoryId": 1,
+          "title": "Buy Upgrade | Sound & Vibro",
+          "details": "Додай звуки і вібро на buy UPGRADE"
+        },
+        {
+          "categoryId": 1,
+          "title": "Enchanted Cubes ✨",
+          "details": "<h4>✨ Enchanted Cubes — 4 Powers</h4>\n<p>10% шанс при BUY. Активується коли мерджиш enchanted куб (з будь-яким того ж рівня).</p>\n<ul>\n  <li><b>💰 Coin Surge</b> — ×5 монет від мерджу + тонни монет летять на панель монет + Merge Bonus заповнюється повністю</li>\n  <li><b>⚡ Shock</b> — всі куби в тому ж рядку і колонці отримують +1 рівень, з кожного летять монети і XP + Merge Bonus заповнюється повністю</li>\n  <li><b>💣 Bomb</b> — ВСІ куби на полі +1 рівень, спалах червоного на весь екран, потім з кожного куба летять монети + XP (з затримкою після вибуху) + Merge Bonus заповнюється повністю</li>\n  <li><b>⭐ Star</b> — результат мерджу +2 рівні замість +1 + Merge Bonus заповнюється повністю</li>\n</ul>\n<p>Якщо мерджаться 2 enchanted куби — спрацьовують обидві сили. Візуал: пульсуюча кольорова рамка + іконка в куті куба.</p>"
+        },
+        {
+          "categoryId": 1,
+          "title": "Clear Grid",
+          "details": "Треба виправити бо грід очищається а на кнопці BUY не змінюється куб що купується, типу доходиш до buy рівня 10 очищаєш грід але при купівлі потім має залишатись з куба рівня 10 а воно пише 10 але купує куб першого рівня"
+        },
+        {
+          "categoryId": 2,
+          "title": "Rewarded Ads",
+          "details": "Реклама на х2"
+        },
+        {
+          "categoryId": 2,
+          "title": "Leaderboards",
+          "details": "<p>Google Play Games таблиця лідерів</p>"
+        },
+        {
+          "categoryId": 2,
+          "title": "Camera Shake",
+          "details": "При мердж дрижить екран"
+        },
+        {
+          "categoryId": 2,
+          "title": "Clickable Bubbles",
+          "details": "<p>Фонові бульбашки - клік = невелика винагорода</p>"
+        },
+        {
+          "categoryId": 2,
+          "title": "Push Notifications",
+          "details": "<p>FCM - нагадування про idle earnings</p>"
+        },
+        {
+          "categoryId": 2,
+          "title": "IAP",
+          "details": "<p>IAP - coin packs, starter pack, remove ads</p>"
+        },
+        {
+          "categoryId": 0,
+          "title": "<h4>UPDATE from Rbux Counter</h4>",
+          "details": "Button\nCheckBox"
+        },
+        {
+          "categoryId": 3,
+          "title": "Daily Login",
+          "details": "<p>7-денний календар винагород</p>"
+        }
+      ],
+      "completedTasks": {
+        "0-0": true,
+        "0-1": true,
+        "0-2": true,
+        "0-4": true,
+        "0-3": true,
+        "0-5": true,
+        "0-6": true,
+        "1-1": true,
+        "1-0": true,
+        "0-7": true,
+        "0-8": true,
+        "0-9": true,
+        "0-10": true,
+        "0-12": true,
+        "0-11": true,
+        "3-3": false,
+        "2-3": false,
+        "1-2": true,
+        "1-3": true,
+        "1-4": true,
+        "1-5": true,
+        "1-6": true,
+        "1-7": true,
+        "1-8": true,
+        "1-13": false,
+        "1-9": true,
+        "1-10": true,
+        "1-11": true,
+        "1-12": true,
+        "2-1": false,
+        "2-0": true
+      },
+      "collapsedCategories": {
+        "0": true,
+        "1": false,
+        "2": false,
+        "3": true
+      }
+    },
+    {
+      "id": "proj-1787405352761-989",
+      "name": "Orbit Dash",
+      "desc": "Orbit Dash [game v2]",
+      "icon": "🚀",
+      "categories": [
+        {
+          "id": 0,
+          "title": "📋 Основа",
+          "subtitle": "MVP",
+          "icon": "📋"
+        }
+      ],
+      "tasks": [
+        {
+          "categoryId": 0,
+          "title": "🎨 Figma Design",
+          "details": "<h4>✨ Робимо Дизайн Гри в Figma!</h4>\n\nhttps://www.figma.com/design/WMH6Wm1NVhx9CI4MYD2Lnx/VELDAN?node-id=5305-2651&p=f&t=cXnCP5nnGHyGIXCM-0"
+        },
+        {
+          "categoryId": 0,
+          "title": "Пройти Closed Test в PlayMarket",
+          "details": "Пройти Закритий тест 12 юзерів на 14 днів"
+        },
+        {
+          "categoryId": 0,
+          "title": "GameHud",
+          "details": "Зробити панель GameGud"
+        },
+        {
+          "categoryId": 0,
+          "title": "Публікація в PlayMarket",
+          "details": "Перший реліз в PlayMarket"
+        }
+      ],
+      "completedTasks": {
+        "0-0": true,
+        "0-1": true
+      },
+      "collapsedCategories": {
+        "0": false
+      }
+    }
+  ]
+}

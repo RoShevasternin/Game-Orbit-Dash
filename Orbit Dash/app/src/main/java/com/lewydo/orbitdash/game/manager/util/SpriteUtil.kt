@@ -8,7 +8,7 @@ import com.lewydo.orbitdash.game.utils.TextureEmpty
 class SpriteUtil {
 
     class Brand {
-        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.BRAND.data.atlas.findRegion(name)
+        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.BRAND.data.atlas.findRegion(name) ?: error("Регіон '$name' відсутній в atlas/brand.atlas — перепакуй атлас")
 
         val brand_back  = getRegion("brand_back")
         val brand_front = getRegion("brand_front")
@@ -18,10 +18,10 @@ class SpriteUtil {
     }
 
     class Loader {
-        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.data.atlas.findRegion(name)
+        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.data.atlas.findRegion(name) ?: error("Регіон '$name' відсутній в atlas/loader.atlas — перепакуй атлас")
 
         val item_glow = getRegion("item_glow")
-        val ball      = getRegion("ball")
+        val circle    = getRegion("circle")
         val gem       = getRegion("gem")
 
         val ORBIT_GLOW = SpriteManager.EnumTexture.ORBIT_GLOW.data.texture
@@ -36,10 +36,10 @@ class SpriteUtil {
         // ATLAS ALL
         // ------------------------------------------------------------------------------
 
-        val badge_dot  = getAllRegion("badge_dot")
         val badge_glow = getAllRegion("badge_glow")
         val shield_pip = getAllRegion("shield_pip")
         val boost_hex  = getAllRegion("boost_hex")
+        val spike      = getAllRegion("spike")
 
         val icon_gem_x2   = getAllRegion("icon_gem_x2")
         val icon_magnet   = getAllRegion("icon_magnet")

@@ -13,7 +13,7 @@ class App: Application() {
         super.onCreate()
         appContext = applicationContext
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener { log("FCM token: $it") }
+        //FirebaseMessaging.getInstance().token.addOnSuccessListener { log("FCM token: $it") }
 
     }
 

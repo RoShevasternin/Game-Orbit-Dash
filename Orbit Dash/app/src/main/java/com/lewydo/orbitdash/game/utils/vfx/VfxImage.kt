@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedGroup
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
-import com.lewydo.orbitdash.game.utils.vfx.effects.VfxEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect
 
 /**
  * Зображення з шейдерним ефектом — БЕЗ FBO.

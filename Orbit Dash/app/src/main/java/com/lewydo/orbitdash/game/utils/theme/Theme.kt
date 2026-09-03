@@ -114,7 +114,5 @@ object ThemeManager {
         if (transitionT <= 0f) current.set(target)
 
         version++
-
-        log("dd = $version")
     }
 }

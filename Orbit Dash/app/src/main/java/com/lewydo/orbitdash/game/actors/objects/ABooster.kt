@@ -38,7 +38,7 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
     // Actors
     // ------------------------------------------------------------------------
     private val aGlow  = Image(gdxGame.assetsLoader.item_glow)
-    private val aShape = Image(gdxGame.assetsLoader.ball)   // TEMP-арт
+    private val aShape = Image(gdxGame.assetsLoader.circle)   // TEMP-арт
 
     // ------------------------------------------------------------------------
     // Field

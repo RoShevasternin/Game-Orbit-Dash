@@ -79,6 +79,21 @@ class AMsdfLabel(
     var useFigmaBox = true
         set(value) { field = value; invalidateHierarchy(); autoPack() }
 
+    /**
+     * Кольорова розмітка в тексті: `"Question 1[#FFFFFFCC] of 12"`.
+     *
+     * Вимкнено за замовчуванням, бо markupEnabled — властивість ШРИФТА, спільна
+     * для всіх лейблів. Вмикаємо точково, навколо операцій цього лейбла.
+     *
+     * ⚠️ Базовий колір стилю МНОЖИТЬСЯ на колір розмітки (Label.cache.tint).
+     * Тому для стилю з markup базовий колір має бути білим, інакше «білий»
+     * фрагмент вийде тонованим.
+     *
+     * ⚠️ Літерал `[` у звичайному тексті екранується подвоєнням: `[[`.
+     */
+    var markup = false
+        set(value) { field = value; invalidateHierarchy(); autoPack() }
+
     var worldSize: Float = worldSize
         set(value) {
             field = value
@@ -97,6 +112,7 @@ class AMsdfLabel(
     fun setLetterSpacing(percent: Float): AMsdfLabel { letterSpacingPercent = percent; return this }
     fun setLineHeight(percent: Float): AMsdfLabel { lineHeightPercent = percent; return this }
     fun figmaBox(enabled: Boolean = true): AMsdfLabel { useFigmaBox = enabled; return this }
+    fun markup(enabled: Boolean = true): AMsdfLabel { markup = enabled; return this }
 
     fun addEffect(effect: MsdfEffect): AMsdfLabel {
         effects.add(effect); effects.sortBy { it.layer }; return this
@@ -125,14 +141,21 @@ class AMsdfLabel(
     private val oldTransform = Matrix4()
     private var transformApplied = false
 
-    private var spacingApplied = 0
+    private var spacingApplied   = 0
+    private var markupApplied    = false
     private var lineDeltaApplied = 0f     // скільки додано зараз
-    private var spacingDepth   = 0     // глибина вкладених push (проти подвійного)
+    private var spacingDepth     = 0      // глибина вкладених push (проти подвійного)
 
     private fun pushSpacing() {
         if (!ready) return                    // виклик із super-конструктора
         spacingDepth++
         if (spacingDepth > 1) return          // вже застосовано зовнішнім push
+        // markup читається під час layout (парсинг GlyphLayout), тож вмикати
+        // треба до super.layout / prefWidth / draw і вимикати одразу після.
+        if (markup && !font.bitmapFont.data.markupEnabled) {
+            font.bitmapFont.data.markupEnabled = true
+            markupApplied = true
+        }
         // letter-spacing → advance гліфів
         if (letterSpacingPercent != 0f) {
             val add = (font.glyphSize * letterSpacingPercent / 100f).toInt()
@@ -166,6 +189,10 @@ class AMsdfLabel(
             data.lineHeight -= lineDeltaApplied
             data.down = -data.lineHeight
             lineDeltaApplied = 0f
+        }
+        if (markupApplied) {
+            font.bitmapFont.data.markupEnabled = false
+            markupApplied = false
         }
     }
 

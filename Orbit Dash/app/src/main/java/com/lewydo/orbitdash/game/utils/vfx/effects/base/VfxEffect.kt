@@ -1,4 +1,4 @@
-package com.lewydo.orbitdash.game.utils.vfx.effects
+package com.lewydo.orbitdash.game.utils.vfx.effects.base
 
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.lewydo.orbitdash.game.utils.vfx.Blit

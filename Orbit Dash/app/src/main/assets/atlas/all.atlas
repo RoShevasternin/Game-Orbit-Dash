@@ -1,68 +1,68 @@
 all.png
-size: 213, 440
+size: 922, 122
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
-badge_dot
-  rotate: false
-  xy: 1, 1
-  size: 30, 30
-  orig: 30, 30
-  offset: 0, 0
-  index: -1
 badge_glow
   rotate: false
-  xy: 32, 1
+  xy: 1, 1
   size: 42, 42
   orig: 42, 42
   offset: 0, 0
   index: -1
 boost_hex
   rotate: false
-  xy: 1, 77
+  xy: 44, 1
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
 icon_gem_x2
   rotate: false
-  xy: 107, 77
+  xy: 150, 1
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
 icon_magnet
   rotate: false
-  xy: 1, 198
+  xy: 256, 1
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
 icon_pulse
   rotate: false
-  xy: 107, 198
+  xy: 362, 1
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
 icon_shield
   rotate: false
-  xy: 1, 319
+  xy: 468, 1
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
 icon_slow_mo
   rotate: false
-  xy: 107, 319
+  xy: 574, 1
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
 shield_pip
   rotate: false
-  xy: 75, 1
+  xy: 680, 1
   size: 120, 75
   orig: 120, 75
+  offset: 0, 0
+  index: -1
+spike
+  rotate: false
+  xy: 801, 1
+  size: 120, 120
+  orig: 120, 120
   offset: 0, 0
   index: -1

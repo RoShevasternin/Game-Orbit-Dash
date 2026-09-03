@@ -1,4 +1,4 @@
-package com.selftest.mindora.game.actors.progress
+package com.lewydo.orbitdash.game.actors.progress
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.ui.Image

@@ -115,9 +115,15 @@ export default function OrbitDash() {
   const [storageOk, setStorageOk] = useState(true);
   const [dev, setDev] = useState(false);
   const [devArm, setDevArm] = useState(false);
+  // DEV: EZ COMBO — комбо за будь-яке ухиляння поруч із шипом (чисто тест).
+  // Реф, а не стейт у рушії: переживає рестарти ранів, рушій читає напряму.
+  const ezRef = useRef(false);
+  const [ezDev, setEzDev] = useState(false);
   const [lb, setLb] = useState({ loading: false, rows: null, err: null });
   const [lbBump, setLbBump] = useState(0);
   const [nameDraft, setNameDraft] = useState("");
+  const [tutOverlay, setTutOverlay] = useState(null); // [TUTORIAL] null | {kind:"combo",gx,gy} | {kind:"end"}
+  const [tutActive, setTutActive] = useState(false);  // [TUTORIAL]
 
   const canvasRef = useRef(null);
   const holderRef = useRef(null);
@@ -130,6 +136,7 @@ export default function OrbitDash() {
   const lastAdRef = useRef(0);
   const quickDeathsRef = useRef(0);
   const pendingBoostRef = useRef(null);
+  const tutorialRef = useRef(false); // [TUTORIAL]
 
   const pal = PALETTES[save.palette] || PALETTES[0];
   const reduced = typeof window !== "undefined" && window.matchMedia
@@ -340,7 +347,8 @@ export default function OrbitDash() {
     const sv = saveRef.current;
     const up = sv.upgrades;
 
-    const mercy = quickDeathsRef.current >= 2;
+    const tut = tutorialRef.current === true; // [TUTORIAL]
+    const mercy = !tut && quickDeathsRef.current >= 2;
     if (mercy) quickDeathsRef.current = 0;
 
     const st = {
@@ -348,11 +356,11 @@ export default function OrbitDash() {
       ringCount: 2, ringR: [...LAYOUT2], target: LAYOUT2, r3a: 0,
       radius: LAYOUT2[0],
       baseSpeed: 100 * (1 - 0.06 * up.slow) * (mercy ? 0.9 : 1), v: 100,
-      shield: up.shield, shieldMax: up.shield, pipFlash: 0,
+      shield: tut ? 0 : up.shield, shieldMax: tut ? 0 : up.shield, pipFlash: 0,
       invuln: 0, shake: 0, freeze: 0, dieT: 0, flashT: 0,
       squash: 0, landed: true, dashOff: 0,
       gemsRun: 0, banked: false, revived: false, bonus: 0, score: 0,
-      combo: 0, comboT: 0, comboWin: 4 + 0.5 * up.keeper,
+      combo: 0, comboT: 0, comboWin: tut ? 8 : 4 + 0.5 * up.keeper,
       gemChain: 0, gemChainT: 0,
       magnetT: 0, frenzyT: 0, slowT: 0, boostTot: 1, announceT: 0,
       durMul: 1 + 0.1 * up.bdur,
@@ -369,9 +377,13 @@ export default function OrbitDash() {
       nebula: Array.from({ length: 3 }, () => ({
         x: rnd(120, 600), y: rnd(200, 1000), vx: rnd(-6, 6), vy: rnd(-5, 5), s: rnd(280, 420),
       })),
-      scale: 1, tutRuns: sv.runs, tutBoostDone: sv.runs > 0,
+      scale: 1, tutRuns: sv.runs, tutBoostDone: tut || sv.runs > 0,
       mercy, mercyDone: !mercy,
       mNear: 0, mBoost: 0,
+      // [TUTORIAL] стан туторіалу
+      tut, tutPhase: 0, tutSw: 0, tutGems: 0, tutDodges: 0,
+      tutWait: 0, tutSpawned: true, tutDialogDone: false,
+      tutAuto: false, tutT4: 0, tutV: 135,
     };
 
     const resize = () => {
@@ -416,13 +428,34 @@ export default function OrbitDash() {
     const pop = (x, y, txt, color) => st.pops.push({ x, y, txt, color, life: 1 });
     const wave = (x, y, r0, r1, life, color, width) => st.waves.push({ x, y, r0, r1, life, life0: life, color, width });
 
+    // [TUTORIAL] спільна логіка стрибка: тап гравця та авто-стрибок у демо
+    const hop = () => {
+      let next = st.ringIndex + st.dir;
+      if (next > st.ringCount - 1 || next < 0) { st.dir = -st.dir; next = st.ringIndex + st.dir; }
+      st.ringIndex = next;
+      if (st.tut && st.tutPhase === 0) st.tutSw++;
+      st.squash = 0.12;
+      st.landed = false;
+      const [sx, sy] = pxy();
+      for (let i = 0; i < 4; i++) st.parts.push({ x: sx, y: sy, vx: rnd(-90, 90), vy: rnd(-90, 90), life: 0.3, c: P().player });
+      beep(st.dir > 0 ? 300 : 340, 0.06, "square", 0.07, 200);
+      buzz(8);
+    };
+
+    // ІСКРА КОМБО: за ORB_OFF px ПЕРЕД кожним шипом (по ходу руху) висить іскра —
+    // той самий білий супутник, що крутиться навколо м'ячика при комбо.
+    // Спіймав іскру = комбо. Підбір: ±ORB_PICK px по дузі та ±45 по радіусу,
+    // тож ловиться і на кільці, і в момент стрибка. Вікно ПРОСТОРОВЕ, а не
+    // часове — працює однаково на будь-якій швидкості й будь-якому кільці.
+    const ORB_OFF = 52, ORB_PICK = 32;
+
     const spawn = (forceGem, ringOpt, angOpt) => {
-      const ring = ringOpt !== undefined ? ringOpt : Math.floor(Math.random() * st.ringCount);
       const a = angOpt !== undefined ? norm(angOpt) : norm(st.angle + rnd(120, 170));
-      for (const e of st.ents) if (e.ring === ring && Math.abs(angDiff(e.a, a)) < 20) return;
-      const spikeCh = Math.min(0.62, 0.42 + st.time * 0.004);
+      const spikeCh = st.tut ? 0.35 : Math.min(0.62, 0.42 + st.time * 0.004); // [TUTORIAL] у туторіалі шипів менше
       const gem = forceGem || (st.frenzyT > 0 ? Math.random() < 0.85 : Math.random() >= spikeCh);
-      st.ents.push({ ring, a, kind: gem ? "gem" : "spike", s: 0, rr: st.ringR[ring], prevRel: undefined });
+      const ring = ringOpt !== undefined ? ringOpt : Math.floor(Math.random() * st.ringCount);
+      for (const e of st.ents) if (e.ring === ring && Math.abs(angDiff(e.a, a)) < 20) return;
+      st.ents.push({ ring, a, kind: gem ? "gem" : "spike", s: 0, rr: st.ringR[ring], prevRel: undefined, orb: !gem });
     };
 
     const spawnBoost = (forceBt) => {
@@ -479,10 +512,81 @@ export default function OrbitDash() {
       st.freeze = Math.max(st.freeze, 0.03);
       const b = 5 * mult();
       st.bonus += b;
-      pop(x, y, "CLOSE! +" + b, "#ffffff");
+      pop(x, y, "COMBO x" + mult(), "#ffffff");
+      wave(x, y, 10, 64, 0.4, "#ffffff", 3);
       burst(x, y, "#ffffff", 5);
       beep(semitone(950, Math.min(10, st.combo)), 0.07, "square", 0.09, 250);
       buzz(12);
+    };
+
+    // [TUTORIAL] ------------------------------------------------ скриптовані спавни
+    const tutSpawnGems = (n) => {
+      for (let k = 0; k < n; k++) spawn(true, k % 2 === 0 ? st.ringIndex : 1 - st.ringIndex, st.angle + 115 + k * 24);
+    };
+    const tutSpike = () => {
+      st.ents.push({ ring: st.ringIndex, a: norm(st.angle + 150), kind: "spike", s: 0, rr: st.ringR[st.ringIndex], prevRel: undefined, tutDodge: true, orb: true });
+    };
+    const respawnDemo = () => {
+      for (let i = st.ents.length - 1; i >= 0; i--) if (st.ents[i].demo || st.ents[i].tutDodge) st.ents.splice(i, 1);
+      // Демо на зовнішній орбіті — далі від центру, сцену краще видно
+      const ring = 1;
+      st.ents.push({ ring, a: norm(st.angle + 150), kind: "spike", s: 0, rr: st.ringR[ring], prevRel: undefined, demo: true, orb: true });
+      st.tutAuto = st.tutDialogDone; // повторний захід після пояснення — знову авто
+    };
+
+    // [TUTORIAL] фазова машина: 0 керування → 1 геми → 2 шипи → 3 демо комбо (авто-стрибок)
+    // → 4 вільна гра з іскрами (спавни як у грі) → 5 завершення
+    const tutTick = (dt) => {
+      if (st.tutWait > 0) {
+        st.tutWait -= dt;
+        if (st.tutWait <= 0 && !st.tutSpawned) {
+          if (st.tutPhase === 1) tutSpawnGems(5);
+          if (st.tutPhase === 2) tutSpike();
+          if (st.tutPhase === 3) respawnDemo();
+          if (st.tutPhase === 4) tutSpawnGems(6);
+          st.tutSpawned = true;
+        }
+        return;
+      }
+      if (st.tutPhase === 0) {
+        if (st.tutSw >= 2) { st.tutPhase = 1; st.tutSpawned = false; st.tutWait = 0.7; }
+      } else if (st.tutPhase === 1) {
+        if (st.tutGems >= 4) { st.tutPhase = 2; st.tutSpawned = false; st.tutWait = 0.9; }
+        else if (st.tutSpawned && !st.ents.some((e) => e.kind === "gem")) tutSpawnGems(3);
+      } else if (st.tutPhase === 2) {
+        if (st.tutDodges >= 2) { st.tutPhase = 3; st.tutSpawned = false; st.tutWait = 1.7; } // темп м'яко росте до референсу демо
+        else if (st.tutSpawned && !st.ents.some((e) => e.tutDodge)) tutSpike();
+      } else if (st.tutPhase === 3) {
+        const dsp = st.ents.find((e) => e.demo);
+        if (dsp) {
+          const orbA = norm(dsp.a - ORB_OFF / dsp.rr / D);
+          const orel = angDiff(orbA, st.angle);
+          // м'ячик під'їхав до іскри — пауза, стрілка і діалог
+          if (!st.tutDialogDone && orel <= 16 && orel > 0 && st.ringIndex === dsp.ring) {
+            st.tutDialogDone = true;
+            st.invuln = Math.max(st.invuln, 1.2);
+            st.state = "tutpause";
+            const gx = CX + Math.cos(orbA * D) * dsp.rr;
+            const gy = CY + Math.sin(orbA * D) * dsp.rr;
+            wave(gx, gy, 14, 80, 0.55, P().player, 4);
+            beep(620, 0.16, "sine", 0.1, 240);
+            setTutOverlay({ kind: "combo", gx: (gx / W) * 100, gy: (gy / H) * 100 });
+          }
+          // авто-демо: тап рівно на іскрі — підбір ловиться в перші кадри стрибка
+          if (st.tutAuto && st.ringIndex === dsp.ring && orel <= ORB_PICK / dsp.rr / D) {
+            st.tutAuto = false;
+            st.invuln = Math.max(st.invuln, 0.9);
+            hop();
+          }
+        }
+      } else if (st.tutPhase === 4) {
+        st.tutT4 += dt;
+        if (st.tutT4 > 12) {
+          st.tutPhase = 5;
+          setTutOverlay({ kind: "end" });
+          beep(660, 0.25, "sine", 0.12, 320);
+        }
+      }
     };
 
     const startDeath = () => {
@@ -515,12 +619,18 @@ export default function OrbitDash() {
     };
 
     const update = (dt) => {
-      const ts = st.slowT > 0 ? 0.6 : 1;
+      const ts = st.tut ? 0.6 : st.slowT > 0 ? 0.6 : 1; // [TUTORIAL] туторіал іде в slow-mo: та сама геометрія, більше часу на реакцію
       const wdt = dt * ts;
 
       st.time += wdt;
-      let v = st.baseSpeed + (300 - st.baseSpeed) * (1 - Math.exp(-st.time / 40));
+      // Розгін м'якший: стеля 280 (було 300), вихід ~55с (було 40). Комбо тепер
+      // просторове і від швидкості не ламається, але керувати приємніше повільніше.
+      let v = st.baseSpeed + (280 - st.baseSpeed) * (1 - Math.exp(-st.time / 55));
       v *= 1 + 0.08 * Math.sin((Math.PI * 2 * st.time) / 20);
+      if (st.tut) { // [TUTORIAL] референс 135/175°/с, візуально ×0.6 — спокійно і читабельно
+        st.tutV += ((st.tutPhase >= 3 ? 175 : 135) - st.tutV) * Math.min(1, 1.6 * dt);
+        v = st.tutV;
+      }
       st.v = v;
       st.angle = norm(st.angle + v * wdt);
       st.radius += (st.ringR[st.ringIndex] - st.radius) * Math.min(1, 14 * wdt);
@@ -542,8 +652,9 @@ export default function OrbitDash() {
       st.frenzyT = Math.max(0, st.frenzyT - dt);
       st.slowT = Math.max(0, st.slowT - dt);
       st.announceT = Math.max(0, st.announceT - dt);
+      if (st.tut) tutTick(dt); // [TUTORIAL]
 
-      if (saveRef.current.orbit3 && st.ringCount === 2 && st.time >= 30) {
+      if (!st.tut && saveRef.current.orbit3 && st.ringCount === 2 && st.time >= 30) {
         st.ringCount = 3; st.target = LAYOUT3; st.announceT = 1.8; st.flashT = 0.3;
         wave(CX, CY, 60, 520, 0.7, P().gem, 9);
         beep(500, 0.4, "sine", 0.12, 500); beep(90, 0.5, "sine", 0.2, -30); buzz(30);
@@ -551,7 +662,7 @@ export default function OrbitDash() {
       for (let i = 0; i < 3; i++) st.ringR[i] += (st.target[i] - st.ringR[i]) * Math.min(1, 2.5 * wdt);
       if (st.ringCount === 3) st.r3a = Math.min(1, st.r3a + 1.5 * dt);
 
-      if (!st.mercyDone && st.time > 1) {
+      if (!st.tut && !st.mercyDone && st.time > 1) {
         st.mercyDone = true;
         for (let k = 0; k < 6; k++) spawn(true, 0, st.angle + 120 + k * 15);
       }
@@ -561,10 +672,17 @@ export default function OrbitDash() {
       st.trail.push({ x: px, y: py });
       if (st.trail.length > 24) st.trail.shift();
 
-      st.spawnT -= wdt * (st.frenzyT > 0 ? 1.5 : 1);
-      if (st.spawnT <= 0) { spawn(); st.spawnT = Math.max(0.5, 1.05 - st.time * 0.011); }
-      st.boostT -= wdt;
-      if (st.boostT <= 0) { spawnBoost(); st.boostT = Math.max(7, rnd(12, 18) - up.bfreq); }
+      if (!st.tut || st.tutPhase === 4) { // [TUTORIAL] фаза-гра: спавни як у грі, шипи вже з іскрами
+        st.spawnT -= wdt * (st.frenzyT > 0 ? 1.5 : 1);
+        if (st.spawnT <= 0) {
+          spawn(st.tut && st.tutT4 < 4.5); // одразу після першого комбо — лише геми, щоб відчути x2
+          st.spawnT = st.tut ? 0.9 : Math.max(0.5, 1.05 - st.time * 0.011);
+        }
+      }
+      if (!st.tut) {
+        st.boostT -= wdt;
+        if (st.boostT <= 0) { spawnBoost(); st.boostT = Math.max(7, rnd(12, 18) - up.bfreq); }
+      }
 
       const arrived = Math.abs(st.radius - st.ringR[st.ringIndex]) < 45;
       for (let i = st.ents.length - 1; i >= 0; i--) {
@@ -589,12 +707,44 @@ export default function OrbitDash() {
         const rel = angDiff(e.a, st.angle);
 
         if (e.kind === "spike" && e.prevRel !== undefined && e.prevRel > 0 && rel <= 0 && st.state === "run") {
-          const gap = Math.abs(st.radius - e.rr);
-          if (gap > 26 && gap < 90) { const [nx, ny] = exy(e); nearMiss(nx, ny); }
+          if (st.tut && e.demo) {
+            // [TUTORIAL] демо-шип пройшов: іскру спіймано — далі; ні — новий захід
+            st.ents.splice(i, 1);
+            if (e.orb) respawnDemo();
+            continue;
+          } else if (st.tut && e.tutDodge) {
+            // [TUTORIAL] фаза ухилянь
+            st.tutDodges++;
+            const [nx, ny] = exy(e);
+            pop(nx, ny, "CLEAN!", "#ffffff");
+            st.ents.splice(i, 1); continue;
+          } else if (!st.tut && ezRef.current && e.orb && Math.abs(st.radius - e.rr) < 145) {
+            // DEV · EZ COMBO: будь-яке ухиляння поруч зараховує комбо (чисто тест)
+            e.orb = false;
+            const [nx, ny] = exy(e);
+            nearMiss(nx, ny);
+          }
         }
         e.prevRel = rel;
 
         if (rel < -60 && !e.pulled) { st.ents.splice(i, 1); continue; }
+
+        // ІСКРА КОМБО: підбір. Радіусне вікно ±45 тримається ще ~30 мс після
+        // тапу, тож правило для гравця просте — «тапни, коли торкнувся іскри».
+        if (e.kind === "spike" && e.orb && e.s > 0.5 && st.state === "run") {
+          const orbA = norm(e.a - ORB_OFF / e.rr / D);
+          const orel = angDiff(orbA, st.angle);
+          if (Math.abs(orel) < ORB_PICK / e.rr / D && Math.abs(st.radius - e.rr) < 45) {
+            e.orb = false;
+            const ox = CX + Math.cos(orbA * D) * e.rr;
+            const oy = CY + Math.sin(orbA * D) * e.rr;
+            nearMiss(ox, oy);
+            if (st.tut && e.demo && st.tutPhase === 3) { // [TUTORIAL] демо вдалося
+              pop(ox, oy - 46, "THAT'S A COMBO!", P().player);
+              st.tutPhase = 4; st.tutT4 = 0; st.tutSpawned = false; st.tutWait = 0.7;
+            }
+          }
+        }
 
         const [ex, ey] = exy(e);
         const sd = Math.hypot(px - ex, py - ey);
@@ -605,6 +755,7 @@ export default function OrbitDash() {
           if (angularHit || (e.pulled && sd < 30)) {
             const val = 1 * (e.ring === 2 ? 2 : 1) * (st.frenzyT > 0 ? 2 : 1) * mult() * (1 + 0.05 * up.value);
             st.gemsRun += val;
+            if (st.tut) st.tutGems++; // [TUTORIAL]
             if (st.combo > 0) st.comboT = st.comboWin;
             st.gemChain = st.gemChainT > 0 ? Math.min(12, st.gemChain + 1) : 0;
             st.gemChainT = 2;
@@ -626,7 +777,18 @@ export default function OrbitDash() {
 
         if (e.kind === "spike" && e.s > 0.5 && e.ring === st.ringIndex && arrived && st.invuln <= 0) {
           if (Math.abs(rel) < ((20 + 17) / st.ringR[e.ring]) / D) {
-            if (st.shield > 0) {
+            if (st.tut) {
+              // [TUTORIAL] у туторіалі не вмираємо
+              st.invuln = 1.2; st.shake = 0.5; st.freeze = Math.max(st.freeze, 0.04);
+              burst(ex, ey, P().spike, 14);
+              wave(ex, ey, 16, 110, 0.35, P().spike, 5);
+              pop(ex, ey, e.demo ? "TOO LATE! AGAIN" : "OOPS!", "#ffffff");
+              const wasDemo = e.demo;
+              st.ents.splice(i, 1);
+              if (wasDemo) respawnDemo();
+              beep(360, 0.15, "square", 0.1, -120); buzz(30);
+              continue;
+            } else if (st.shield > 0) {
               st.shield--; st.pipFlash = 0.15;
               st.invuln = 1.2; st.shake = 0.5; st.freeze = Math.max(st.freeze, 0.04);
               burst(ex, ey, P().spike, 14);
@@ -764,7 +926,7 @@ export default function OrbitDash() {
         ctx.fill();
       }
 
-      if (saveRef.current.orbit3 && st.ringCount === 2 && st.time >= 28 && st.time < 30) {
+      if (!st.tut && saveRef.current.orbit3 && st.ringCount === 2 && st.time >= 28 && st.time < 30) {
         const gf = (st.time - 28) / 2;
         ctx.strokeStyle = rgba(p.gem, 0.35 * gf * (0.6 + 0.4 * Math.sin(st.time * 10)));
         ctx.lineWidth = 2.5;
@@ -882,7 +1044,21 @@ export default function OrbitDash() {
         }
       }
 
-      if (st.state === "run" && (st.invuln <= 0 || Math.floor(st.time * 10) % 2 === 0)) {
+      // ІСКРА КОМБО біля кожного шипа — та сама, що супутник навколо м'ячика
+      for (const e of st.ents) {
+        if (e.kind !== "spike" || !e.orb) continue;
+        const oa = norm(e.a - ORB_OFF / e.rr / D) * D;
+        const ox = CX + Math.cos(oa) * e.rr;
+        const oy = CY + Math.sin(oa) * e.rr;
+        const pl = 1 + 0.15 * Math.sin(st.time * 6 + e.a);
+        ctx.globalCompositeOperation = "lighter";
+        glow(ox, oy, 44 * e.s * pl, p.player, 0.8 * e.s);
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(ox, oy, 6 * e.s * pl, 0, Math.PI * 2); ctx.fill();
+      }
+
+      if ((st.state === "run" || st.state === "tutpause") && (st.invuln <= 0 || Math.floor(st.time * 10) % 2 === 0)) {
         const [px, py] = pxy();
         ctx.globalCompositeOperation = "lighter";
         glow(px, py, 88, p.player, 0.95);
@@ -1035,12 +1211,36 @@ export default function OrbitDash() {
         ctx.globalAlpha = 1;
       }
 
-      if (st.state === "run" && st.time < 3.5 && st.tutRuns < 3) {
+      if (!st.tut && st.state === "run" && st.time < 3.5 && st.tutRuns < 3) {
         const a = 0.55 + 0.45 * Math.sin(st.time * 6);
         ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
         ctx.font = "700 28px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("TAP = SWITCH ORBIT", CX, CY + 330 + 58);
+      }
+
+      // [TUTORIAL] короткі підказки фаз (гра англомовна)
+      if (st.tut && (st.state === "run" || st.state === "tutpause")) {
+        const msgs = [
+          ["TAP TO SWITCH ORBIT", `${Math.min(2, st.tutSw)}/2`],
+          ["COLLECT THE GEMS", `${Math.min(4, st.tutGems)}/4`],
+          ["DODGE THE SPIKES", `${Math.min(2, st.tutDodges)}/2`],
+          [st.tutDialogDone ? "WATCH THE CATCH" : "RIDE INTO THE SPARK", "spark = combo"],
+          ["CATCH SPARKS AT THE SPIKES", st.combo > 0 ? "combo x" + mult() + " — gems pay more" : "grab spark · skip spike"],
+          ["TUTORIAL COMPLETE", "press PLAY to start a real run"],
+        ];
+        const m = msgs[Math.min(5, st.tutPhase)];
+        const a = 0.6 + 0.4 * Math.sin(st.time * 5);
+        ctx.textAlign = "center";
+        ctx.fillStyle = st.tutPhase === 5 ? rgba(p.gem, a) : `rgba(255,255,255,${a.toFixed(2)})`;
+        ctx.font = st.tutPhase === 5 ? "900 36px system-ui, sans-serif" : "700 30px system-ui, sans-serif";
+        ctx.fillText(m[0], CX, CY + 388);
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "700 22px ui-monospace, monospace";
+        ctx.fillText(m[1], CX, CY + 424);
+        ctx.fillStyle = rgba(p.gem, 0.7);
+        ctx.font = "700 18px ui-monospace, monospace";
+        ctx.fillText("TUTORIAL", CX, 152);
       }
     };
 
@@ -1074,15 +1274,10 @@ export default function OrbitDash() {
     engineRef.current = {
       tap: () => {
         if (st.state !== "run" || st.freeze > 0) return;
-        let next = st.ringIndex + st.dir;
-        if (next > st.ringCount - 1 || next < 0) { st.dir = -st.dir; next = st.ringIndex + st.dir; }
-        st.ringIndex = next;
-        st.squash = 0.12;
-        st.landed = false;
-        const [sx, sy] = pxy();
-        for (let i = 0; i < 4; i++) st.parts.push({ x: sx, y: sy, vx: rnd(-90, 90), vy: rnd(-90, 90), life: 0.3, c: P().player });
-        beep(st.dir > 0 ? 300 : 340, 0.06, "square", 0.07, 200);
-        buzz(8);
+        hop();
+      },
+      tutResume: () => { // [TUTORIAL] після діалогу м'ячик сам ловить іскру
+        if (st.state === "tutpause") { st.state = "run"; st.invuln = Math.max(st.invuln, 0.9); st.tutAuto = true; }
       },
       bank: (m) => {
         if (!st.banked) {
@@ -1111,7 +1306,22 @@ export default function OrbitDash() {
 
   // ---------------------------------------------------------- ДІЇ
 
-  const startRun = () => { setDeadInfo(null); setX2done(false); setRunKey((k) => k + 1); setScreen("game"); };
+  const startRun = () => {
+    tutorialRef.current = false; setTutActive(false); setTutOverlay(null); // [TUTORIAL]
+    setDeadInfo(null); setX2done(false); setRunKey((k) => k + 1); setScreen("game");
+  };
+
+  // [TUTORIAL] запуск із DEV-панелі / вихід
+  const startTutorial = () => {
+    setDev(false); setDevArm(false);
+    tutorialRef.current = true; setTutActive(true); setTutOverlay(null);
+    setDeadInfo(null); setX2done(false); setRunKey((k) => k + 1); setScreen("game");
+  };
+  const exitTutorial = (toRun) => {
+    tutorialRef.current = false; setTutActive(false); setTutOverlay(null);
+    if (toRun) { setDeadInfo(null); setX2done(false); setRunKey((k) => k + 1); setScreen("game"); }
+    else setScreen("menu");
+  };
 
   const doRestart = () => {
     if (engineRef.current) engineRef.current.bank(1);
@@ -1205,6 +1415,46 @@ export default function OrbitDash() {
 
   const Gem = ({ size, color }) => (
     <span className="inline-block" style={{ width: size, height: size, background: color || pal.gem, transform: "rotate(45deg)", borderRadius: 2 }} />
+  );
+
+  // [TUTORIAL] м'ячик у "комбо-костюмі": x2 = 1 кулька-супутник, x3 = 2 … x5 = 4
+  const ComboBall = ({ n }) => (
+    <svg width="46" height="46" viewBox="-23 -23 46 46">
+      <circle r="11" fill={pal.player} />
+      <circle cx="-3.5" cy="-3.5" r="3" fill="rgba(255,255,255,0.92)" />
+      {Array.from({ length: n }).map((_, i) => {
+        const a = ((-90 + (i * 360) / n) * Math.PI) / 180;
+        return <circle key={i} cx={Math.cos(a) * 18} cy={Math.sin(a) * 18} r="2.8" fill="#ffffff" />;
+      })}
+    </svg>
+  );
+
+  // [TUTORIAL] схема: м'яч → іскра (спіймай!) → шип
+  const SparkArt = () => (
+    <svg width="100%" height="66" viewBox="0 0 260 66">
+      <line x1="8" y1="36" x2="252" y2="36" stroke={brighten(pal.ring, 2.2)} strokeWidth="3" strokeLinecap="round" />
+      <circle cx="36" cy="36" r="11" fill={pal.player} />
+      <circle cx="32.5" cy="32.5" r="3" fill="rgba(255,255,255,0.92)" />
+      <path d="M 122 34 Q 149 0 176 30" fill="none" stroke={rgba(pal.player, 0.9)} strokeWidth="2.5" strokeDasharray="1 6" strokeLinecap="round" />
+      <circle cx="122" cy="36" r="11" fill={rgba(pal.player, 0.3)} />
+      <circle cx="122" cy="36" r="5.5" fill="#ffffff" />
+      <g transform="translate(176,36)">
+        {Array.from({ length: 8 }).map((_, k) => {
+          const a = (k * 45 * Math.PI) / 180;
+          const a1 = a + (16 * Math.PI) / 180, a2 = a - (16 * Math.PI) / 180;
+          return (
+            <polygon
+              key={k}
+              points={`${Math.cos(a) * 17},${Math.sin(a) * 17} ${Math.cos(a1) * 7},${Math.sin(a1) * 7} ${Math.cos(a2) * 7},${Math.sin(a2) * 7}`}
+              fill={pal.spike}
+            />
+          );
+        })}
+        <circle r="8" fill={pal.spike} />
+        <circle r="3.6" fill="rgba(0,0,0,0.4)" />
+      </g>
+      <text x="122" y="62" textAnchor="middle" fill={rgba(pal.player, 0.95)} fontSize="10" fontWeight="800" fontFamily="ui-monospace, monospace" letterSpacing="1">CATCH IT</text>
+    </svg>
   );
 
   const BannerSim = () => save.noAds ? null : (
@@ -1370,6 +1620,71 @@ export default function OrbitDash() {
             className="absolute inset-0 w-full h-full block"
             onPointerDown={(e) => { e.preventDefault(); engineRef.current && engineRef.current.tap(); }}
           />
+        )}
+
+        {/* DEV: нагадування, що ввімкнено тестовий режим комбо */}
+        {screen === "game" && ezDev && !tutActive && (
+          <div className="absolute font-mono font-bold pointer-events-none" style={{ top: 12, left: 12, fontSize: 11, letterSpacing: 2, color: pal.gem, opacity: 0.8 }}>
+            EZ COMBO
+          </div>
+        )}
+
+        {/* [TUTORIAL] вихід із туторіалу */}
+        {screen === "game" && tutActive && !tutOverlay && (
+          <button
+            onClick={() => exitTutorial(false)}
+            className="absolute top-3 left-3 z-30 rounded-xl px-3 py-2 font-mono text-xs"
+            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
+          >
+            ✕ SKIP
+          </button>
+        )}
+
+        {/* [TUTORIAL] діалог демонстрації комбо — стрілка вказує на іскру в грі */}
+        {screen === "game" && tutOverlay && tutOverlay.kind === "combo" && (
+          <div className="absolute inset-0 z-20" style={{ background: "rgba(4,5,11,0.55)" }}>
+            <div
+              className="absolute animate-bounce font-black"
+              style={{ left: `${tutOverlay.gx}%`, top: `${tutOverlay.gy}%`, transform: "translate(-50%, -170%)", color: pal.player, fontSize: 30, textShadow: `0 0 14px ${rgba(pal.player, 0.9)}, 0 2px 10px rgba(0,0,0,0.7)` }}
+            >
+              ▼
+            </div>
+            <div className="absolute left-1/2 w-full px-6" style={{ top: tutOverlay.gy > 50 ? "7%" : "50%", transform: "translateX(-50%)", maxWidth: 360 }}>
+              <div className="rounded-2xl p-4" style={{ background: pal.bg, border: `2px solid ${pal.player}`, boxShadow: `0 0 40px ${rgba(pal.player, 0.25)}, 0 10px 36px rgba(0,0,0,0.55)` }}>
+                <div className="font-black tracking-widest text-base mb-1 text-center" style={{ color: pal.player }}>COMBO ✦</div>
+                <SparkArt />
+                <div className="text-xs text-center leading-snug mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  Catch the spark right by the spike —<br />each one joins your orbit and raises the combo:
+                </div>
+                <div className="flex items-end justify-center gap-3 mt-2">
+                  {[1, 2, 3, 4].map((n) => (
+                    <div key={n} className="flex flex-col items-center">
+                      <ComboBall n={n} />
+                      <span className="font-mono font-bold" style={{ fontSize: 11, color: n === 4 ? pal.player : "rgba(255,255,255,0.8)" }}>x{n + 1}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-2 font-mono font-bold" style={{ fontSize: 12, color: pal.gem }}>
+                  <Gem size={11} /> gems ×combo <span style={{ color: "rgba(255,255,255,0.45)" }}>·</span> score ×combo
+                </div>
+                <div className="mt-3">
+                  <Btn kind="primary" small onClick={() => { engineRef.current && engineRef.current.tutResume(); setTutOverlay(null); }}>
+                    SHOW ME
+                  </Btn>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* [TUTORIAL] завершення — гра не зупиняється, напис на канвасі + кнопки знизу */}
+        {screen === "game" && tutOverlay && tutOverlay.kind === "end" && (
+          <div className="absolute left-0 right-0 z-30 flex flex-col items-center px-10" style={{ bottom: 26 }}>
+            <div className="w-full flex flex-col gap-2" style={{ maxWidth: 280 }}>
+              <Btn kind="primary" onClick={() => exitTutorial(true)}>PLAY</Btn>
+              <Btn small onClick={() => exitTutorial(false)}>MENU</Btn>
+            </div>
+          </div>
         )}
 
         {screen === "game" && deadInfo && !ad && (
@@ -1618,6 +1933,10 @@ export default function OrbitDash() {
           <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 px-10" style={{ background: "rgba(4,5,11,0.9)" }}>
             <div className="font-mono text-xs tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>DEV PANEL · прибрати в релізі</div>
             <div className="w-full flex flex-col gap-2" style={{ maxWidth: 280 }}>
+              <Btn kind="primary" small onClick={startTutorial}>▶ TUTORIAL</Btn>
+              <Btn small onClick={() => { ezRef.current = !ezRef.current; setEzDev(ezRef.current); beep(ezRef.current ? 760 : 420, 0.1, "sine", 0.09, 200); }}>
+                EZ COMBO: {ezDev ? "ON" : "OFF"} · ухилився = комбо
+              </Btn>
               <Btn kind="gem" small onClick={() => { setSave((s) => ({ ...s, gems: s.gems + 10000 })); flash("+10000"); beep(760, 0.15, "sine", 0.1, 300); }}>
                 +10 000 ◆
               </Btn>

@@ -1,23 +1,25 @@
-package com.lewydo.orbitdash.game.actors.objects.decor
+package com.lewydo.orbitdash.game.actors.objects
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.actors.ui.base.ACircle
+import com.lewydo.orbitdash.game.utils.GameColor
 import com.lewydo.orbitdash.game.utils.SizeScaler
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 
-class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
+class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 40f)
 
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow = Image(gdxGame.assetsLoader.item_glow)
-    private val aBall = ACircle(screen)//Image(gdxGame.assetsLoader.circle)
+    private val aGlow  = Image(gdxGame.assetsLoader.item_glow)
+    private val aBall  = Image(gdxGame.assetsLoader.circle)
+    private val aPoint = Image(gdxGame.assetsLoader.circle).apply { color = GameColor.white_90 }
 
     // ------------------------------------------------------------------------
     // Lifecycle
@@ -25,6 +27,7 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
     override fun addActorsOnGroup() {
         addGlow()
         addBall()
+        addPoint()
 
         syncTheme()
     }
@@ -41,8 +44,10 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
 
     override fun sizeChanged() {
         super.sizeChanged()
+        setOrigin(Align.center)
         if (aGlow.parent == null) return
         aGlow.setSizeScaled(100f, 100f)
+        aPoint.setSizeScaled(10f, 10f)
     }
 
     // ------------------------------------------------------------------------
@@ -55,6 +60,12 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
 
     private fun addBall() {
         add(aBall) { fillParent() }
+    }
+
+    private fun addPoint() {
+        val padding = 10f.toActual
+        aPoint.setSizeScaled(10f, 10f)
+        add(aPoint) { startToStart(margin = padding); topToTop(margin = padding) }
     }
 
     // ------------------------------------------------------------------------

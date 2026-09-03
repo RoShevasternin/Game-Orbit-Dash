@@ -53,16 +53,16 @@ class RunEngine(
      * на ран, приходить сюди явно. Тому ран відтворюваний: Config + seed + тапи.
      */
     data class Config(
-        val upMagnet : Int = 0,      // 0..5  ширше вікно підбору гемів
-        val upShield : Int = 0,      // 0..3  стартові заряди щита
-        val upSlow   : Int = 0,      // 0..5  повільніший старт (-6%/рівень)
-        val upBdur   : Int = 0,      // 0..5  +10% тривалості бустів
-        val upBfreq  : Int = 0,      // 0..5  бусти спавняться частіше
-        val upKeeper : Int = 0,      // 0..5  комбо тримається довше
-        val upValue  : Int = 0,      // 0..10 +5% цінності гема
-        val orbit3   : Boolean = false,
+        val upMagnet  : Int = 0,      // 0..5  ширше вікно підбору гемів
+        val upShield  : Int = 0,      // 0..3  стартові заряди щита
+        val upSlow    : Int = 0,      // 0..5  повільніший старт (-6%/рівень)
+        val upBdur    : Int = 0,      // 0..5  +10% тривалості бустів
+        val upBfreq   : Int = 0,      // 0..5  бусти спавняться частіше
+        val upKeeper  : Int = 0,      // 0..5  комбо тримається довше
+        val upValue   : Int = 0,      // 0..10 +5% цінності гема
+        val orbit3    : Boolean = false,
         val startBoost: Boost? = null,   // буст з рекламної кнопки меню
-        val mercy    : Boolean = false,  // після 2 швидких смертей: -10% старт + доріжка гемів
+        val mercy     : Boolean = false,  // після 2 швидких смертей: -10% старт + доріжка гемів
     )
 
     enum class Phase { RUN, DEAD }
@@ -155,6 +155,11 @@ class RunEngine(
         100f * (1f - 0.06f * config.upSlow) * (if (config.mercy) 0.9f else 1f)
 
     var shield = config.upShield; private set
+
+    /** Максимум, досягнутий у ЦЬОМУ рані. Визначає, скільки слотів існує:
+     *  витрачений щит лишає порожню капсулу, а не прибирає її. */
+    var shieldMax = config.upShield; private set
+
     var invuln = 0f;        private set
 
     var gemsRun  = 0f;      private set   // float: value-апгрейд дає дроби
@@ -165,6 +170,21 @@ class RunEngine(
     var score = 0;          private set
 
     var combo    = 0f;      private set
+    // ------------------------------------------------------------------------
+    //  ЗОНА NEAR-MISS — різниця РАДІУСІВ, не відстань між об'єктами.
+    //
+    //  Спайк зараховується, коли він проскочив повз (rel змінив знак) і при
+    //  цьому його кільце віддалене від твого на gap юнітів. Ближче за nearMin —
+    //  це вже зіткнення, далі за nearMax — надто безпечно.
+    //
+    //  ВАЖЛИВО ПРО БАЛАНС: кільця стоять на 190 і 320, різниця 130. Тобто
+    //  спайк на СУСІДНЬОМУ кільці має gap=130 і в зону 26..90 не входить —
+    //  near-miss ловиться ЛИШЕ під час перельоту між кільцями. Це робить
+    //  комбо рідкісним. Підняти nearMax до ~145 = зараховувати сусіднє кільце.
+    // ------------------------------------------------------------------------
+    var nearMin = 26f
+    var nearMax = 90f
+
     var comboT   = 0f;      private set
     val comboWin = 4f + 0.5f * config.upKeeper
 
@@ -352,12 +372,36 @@ class RunEngine(
         ))
     }
 
+    // ------------------------------------------------------------------------
+    // Debug
+    // ------------------------------------------------------------------------
+
+    /**
+     * DEBUG: підкинути бустер попереду гравця, на ЙОГО кільці — щоб він
+     * гарантовано долетів до нього, а не проїхав повз по сусідньому.
+     * Кут 90° уперед: досить часу побачити, замало щоб забути про нього.
+     */
+    fun debugSpawnBoost(bt: Boost) {
+        _entities.add(Entity(
+            id    = nextId++,
+            kind  = Kind.BOOST,
+            boost = bt,
+            ring  = ringIndex,
+            a     = norm(angle + 90f),
+            rr    = ringR[ringIndex],
+        ))
+    }
+
     private fun applyBoost(bt: Boost, e: Entity?) {
         boostUsed++
         listener?.onBoostApplied(bt, e)
 
         when (bt) {
-            Boost.SHIELD -> { shield = min(3, shield + 1); return }
+            Boost.SHIELD -> {
+                shield = min(3, shield + 1)
+                shieldMax = max(shieldMax, shield)
+                return
+            }
 
             Boost.PULSE -> {
                 // Хвиля вбиває спайки в секторі перед гравцем; кожен = +15 бонусу
@@ -438,7 +482,7 @@ class RunEngine(
             val pr = e.prevRel
             if (e.kind == Kind.SPIKE && pr != null && pr > 0f && rel <= 0f && phase == Phase.RUN) {
                 val gap = abs(radius - e.rr)
-                if (gap > 26f && gap < 90f) nearMiss(e)
+                if (gap > nearMin && gap < nearMax) nearMiss(e)
             }
             e.prevRel = rel
 
@@ -452,16 +496,16 @@ class RunEngine(
                     // у градуси через радіус кільця — на меншому колі те саме
                     // «тіло» гема займає більший кут
                     val angularHit = e.ring == ringIndex && arrived &&
-                        abs(rel) < (20f + er) / ringR[e.ring] * RAD_TO_DEG &&
-                        abs(radius - e.rr) < 45f
+                            abs(rel) < (20f + er) / ringR[e.ring] * RAD_TO_DEG &&
+                            abs(radius - e.rr) < 45f
                     val pulledHit = e.pulled && dist(e) < 30f
 
                     if (angularHit || pulledHit) {
                         val v = 1f *
-                            (if (e.ring == 2) 2f else 1f) *          // ORBIT III: геми x2
-                            (if (frenzyT > 0f) 2f else 1f) *
-                            comboMult() *
-                            (1f + 0.05f * config.upValue)
+                                (if (e.ring == 2) 2f else 1f) *          // ORBIT III: геми x2
+                                (if (frenzyT > 0f) 2f else 1f) *
+                                comboMult() *
+                                (1f + 0.05f * config.upValue)
                         gemsRun += v
                         gemCount++
                         if (combo > 0f) comboT = comboWin            // гем підтримує комбо

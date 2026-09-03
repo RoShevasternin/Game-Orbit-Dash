@@ -5,7 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.vfx.VfxGroup
-import com.lewydo.orbitdash.game.utils.vfx.effects.BlurEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
 
 /**
  * Gaussian blur на VfxGroup + BlurEffect.

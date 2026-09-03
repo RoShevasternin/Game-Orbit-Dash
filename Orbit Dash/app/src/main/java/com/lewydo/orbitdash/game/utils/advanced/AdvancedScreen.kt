@@ -97,7 +97,7 @@ abstract class AdvancedScreen(
         stageUI.root.addActor(rootConstraintLayout)
         rootConstraintLayout.addActorsOnRootConstraintLayout()
 
-        Gdx.input.inputProcessor = inputMultiplexer.apply { addProcessors(this@AdvancedScreen, stageUI) }
+        Gdx.input.inputProcessor = inputMultiplexer.apply { addProcessors(stageUI, this@AdvancedScreen) }
         Gdx.input.setCatchKey(Input.Keys.BACK, true)
 
         collectBannerHeightFlow()

@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.vfx.VfxGroup
-import com.lewydo.orbitdash.game.utils.vfx.effects.MaskEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.MaskEffect
 
 /**
  * Маскування через alpha-текстуру або атласний регіон.

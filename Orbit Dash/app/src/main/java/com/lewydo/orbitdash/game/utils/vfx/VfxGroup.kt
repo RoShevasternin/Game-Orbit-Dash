@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.utils.ScreenUtils
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedGroup
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
-import com.lewydo.orbitdash.game.utils.vfx.effects.VfxEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect
 
 /**
  * Scene2D актор з ping-pong ефект пайплайном — INLINE РЕНДЕРИНГ.

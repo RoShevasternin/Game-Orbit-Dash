@@ -10,8 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.captureScreenShot
 import com.lewydo.orbitdash.game.utils.vfx.VfxGroup
-import com.lewydo.orbitdash.game.utils.vfx.effects.BlurEffect
-import com.lewydo.orbitdash.game.utils.vfx.effects.MaskEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.MaskEffect
 import com.lewydo.orbitdash.util.currentClassName
 
 /**

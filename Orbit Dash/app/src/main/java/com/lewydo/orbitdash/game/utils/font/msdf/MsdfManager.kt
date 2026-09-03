@@ -15,10 +15,10 @@ import com.lewydo.orbitdash.game.utils.font.msdf.effects.InnerShadowEffect
 
 class MsdfManager : Disposable {
 
-    val fillShader   = MsdfEffectShader("shader/msdf/msdf_fill.glsl")
-    val strokeShader = MsdfEffectShader("shader/msdf/msdf_stroke.glsl")
-    val shadowShader = MsdfEffectShader("shader/msdf/msdf_shadow.glsl")
-    val innerShader  = MsdfEffectShader("shader/msdf/msdf_inner_shadow.glsl")
+    val fillShader   = MsdfEffectShader("shader/base/msdf/msdf_fill.glsl")
+    val strokeShader = MsdfEffectShader("shader/base/msdf/msdf_stroke.glsl")
+    val shadowShader = MsdfEffectShader("shader/base/msdf/msdf_shadow.glsl")
+    val innerShader  = MsdfEffectShader("shader/base/msdf/msdf_inner_shadow.glsl")
 
     val fontInter_Medium = MsdfFont(
         "font/msdf/Inter-Medium.json",

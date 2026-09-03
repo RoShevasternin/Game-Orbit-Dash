@@ -3,7 +3,7 @@ size: 297, 429
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
-ball
+circle
   rotate: false
   xy: 2, 2
   size: 120, 120

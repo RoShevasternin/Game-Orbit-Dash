@@ -68,7 +68,7 @@ class ADebugPanel(
             btn.height = H_DEBUG
             btn.radius = 8f
             add(btn)
-            btn.setOnClickListener { item.onClick(btn) }
+            btn.setOnClickListener() { item.onClick(btn) }
         }
     }
 

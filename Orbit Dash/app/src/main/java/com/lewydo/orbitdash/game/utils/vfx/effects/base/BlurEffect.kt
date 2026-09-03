@@ -1,4 +1,4 @@
-package com.lewydo.orbitdash.game.utils.vfx.effects
+package com.lewydo.orbitdash.game.utils.vfx.effects.base
 
 import com.lewydo.orbitdash.game.utils.vfx.Blit
 import com.lewydo.orbitdash.game.utils.vfx.PingPong
@@ -22,7 +22,7 @@ import com.lewydo.orbitdash.game.utils.vfx.VfxContext
  */
 class BlurEffect(var radius: Float = 8f) : VfxEffect() {
 
-    override val fragmentShader = "shader/blur/gaussianBlurFS.glsl"
+    override val fragmentShader = "shader/base/blur/gaussianBlurFS.glsl"
 
     // Multi-pass: override render() а не setUniforms()
     override fun render(pingPong: PingPong, ctx: VfxContext) {
