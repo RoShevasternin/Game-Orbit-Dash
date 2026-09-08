@@ -30,6 +30,16 @@ open class AdvancedStage(viewport: Viewport) : Stage(viewport) {
     fun update(screenWidth: Int, screenHeight: Int, centerCamera: Boolean) {
         viewport.update(screenWidth, screenHeight, centerCamera)
         root.setSize(viewport.worldWidth, viewport.worldHeight)
+
+        // Екранний viewport для FboStack — ТУТ, а не лише в render(): resize()
+        // передує першому кадру, а VfxTextures.update() іде ДО сцени. Без цього
+        // перший FboStack.pop() дав би glViewport(0,0,0,0) до першого apply().
+        FboStack.setScreen(
+            viewport.screenX,
+            viewport.screenY,
+            viewport.screenWidth,
+            viewport.screenHeight
+        )
     }
 
     fun render() {

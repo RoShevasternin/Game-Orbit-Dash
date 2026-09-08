@@ -2,7 +2,7 @@ package com.lewydo.orbitdash.game.actors.objects.decor
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.actors.ui.base.ACircle
+import com.lewydo.orbitdash.game.actors.vfx.msdf.AMsdfImage
 import com.lewydo.orbitdash.game.utils.SizeScaler
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
@@ -17,7 +17,7 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
     // Actors
     // ------------------------------------------------------------------------
     private val aGlow = Image(gdxGame.assetsLoader.item_glow)
-    private val aBall = ACircle(screen)//Image(gdxGame.assetsLoader.circle)
+    private val aBall = AMsdfImage(screen, gdxGame.assetsMsdf.circle)
 
     // ------------------------------------------------------------------------
     // Lifecycle

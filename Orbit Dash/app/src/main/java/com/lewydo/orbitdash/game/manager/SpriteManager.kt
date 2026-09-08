@@ -55,6 +55,19 @@ class SpriteManager(var assetManager: AssetManager) {
         initGroups()
     }
 
+
+    /**
+     * Синхронно завантажити й ініціалізувати атласи — для того, що потрібно
+     * ДО лоадера: BRAND на бренд-екрані, MSDF з першого кадру будь-якого екрана.
+     * Блокує потік на час завантаження, тож лише для дрібних атласів.
+     */
+    fun loadAtlasNow(vararg atlases: EnumAtlas) {
+        loadableAtlasList = atlases.map { it.data }.toMutableList()
+        loadAtlas()
+        assetManager.finishLoading()
+        initAtlas()
+    }
+
     // ------------------------------------------------------------------------
     // EnumAtlas
     // ------------------------------------------------------------------------
@@ -65,6 +78,7 @@ class SpriteManager(var assetManager: AssetManager) {
 
         ALL     (AtlasData("atlas/all.atlas")),
         _9_PATCH(AtlasData("atlas/9_patch.atlas")),
+        MSDF    (AtlasData("atlas/msdf.atlas")),
     }
 
     // ------------------------------------------------------------------------
@@ -80,6 +94,7 @@ class SpriteManager(var assetManager: AssetManager) {
         ORBIT_GLOW(TextureData("textures/loader/orbit_glow.png")),
 
 //        // All
+        star    (TextureData("textures/star.png")),
 //        LIGHT    (TextureData("textures/all/LIGHT.png")),
 //
 //        // All | panel

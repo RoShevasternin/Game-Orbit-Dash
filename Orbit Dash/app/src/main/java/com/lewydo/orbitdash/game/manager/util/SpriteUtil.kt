@@ -1,51 +1,88 @@
 package com.lewydo.orbitdash.game.manager.util
 
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.NinePatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.utils.TextureEmpty
+import com.lewydo.orbitdash.game.utils.vfx.VfxTexture
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.MsdfShapeEffect
+import kotlin.math.roundToInt
 
 class SpriteUtil {
 
-    class Brand {
-        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.BRAND.data.atlas.findRegion(name) ?: error("Регіон '$name' відсутній в atlas/brand.atlas — перепакуй атлас")
+    class Msdf {
+        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.MSDF.region(name)
 
-        val brand_back  = getRegion("brand_back")
-        val brand_front = getRegion("brand_front")
-        val brand_line  = getRegion("brand_line")
-        val lewydo      = getRegion("lewydo")
-        val slogan      = getRegion("slogan")
+        /** Те саме число, що PXRANGE у assets/msdf/gen-msdf.command. Один на атлас. */
+        val PX_RANGE = 8f
+
+        /** Сторінка атласу. Одна: кілька іконок у 1024² вміщаються з запасом. */
+        val texture: Texture = SpriteManager.EnumAtlas.MSDF.data.atlas.textures.first().apply {
+            setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
+        }
+
+        /** Спільний ефект на всі фігури цього атласу — юніформи в них однакові. */
+        val effect = MsdfShapeEffect(texture, PX_RANGE)
+
+        // ── ВЕКТОР: регіони, назва = ім'я SVG без розширення ────────────────
+        //    Малювати AMsdfImage(screen, msdf.star) — розмір = розмір фігури.
+        //    Звичайний Image(msdf.star) дасть кашу: msdf-шейдера в нього немає.
+        val star   = getRegion("star")
+        val circle = getRegion("circle")
+
+        val aaa = getRegion("aaa")
+        val aaaGlow = VfxTexture(186f, 101f, base = aaa, shape = effect,
+            post = listOf(BlurEffect(radius = 2f)), density = 1f)
+
+        // ── РАСТР: запечені VfxTexture — ТІЛЬКИ заради ефектів ──────────────
+        //    Це вже картинка фіксованої роздільності: малювати РІВНО в розмірі
+        //    запікання, інший розмір → .resized(w, h). Деталі — docs/msdf-usage.md.
+        //    Регіон стабільний: змінив параметр ефекту — усі споживачі оновились.
+
+        //    val star_48   = VfxTexture(48f, 48f, base = star, shape = effect)
+        //    val star_glow = VfxTexture(128f, 128f, base = star, shape = effect, post = listOf(BlurEffect(radius = 2f)), density = 1f)
+    }
+
+    class Brand {
+        private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.BRAND.region(name)
+
+        val brand_back  = region("brand_back")
+        val brand_front = region("brand_front")
+        val brand_line  = region("brand_line")
+        val lewydo      = region("lewydo")
+        val slogan      = region("slogan")
     }
 
     class Loader {
-        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.data.atlas.findRegion(name) ?: error("Регіон '$name' відсутній в atlas/loader.atlas — перепакуй атлас")
+        private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.region(name)
 
-        val item_glow = getRegion("item_glow")
-        val circle    = getRegion("circle")
-        val gem       = getRegion("gem")
+        val item_glow = region("item_glow")
+        val circle    = region("circle")
+        val gem       = region("gem")
 
         val ORBIT_GLOW = SpriteManager.EnumTexture.ORBIT_GLOW.data.texture
     }
 
     class All {
-        private fun getAllRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.ALL.data.atlas.findRegion(name) ?: error("Регіон '$name' відсутній в atlas/all.atlas — перепакуй атлас")
-
-        private fun get9Patch(name: String): NinePatch = SpriteManager.EnumAtlas._9_PATCH.data.atlas.createPatch(name) ?: error("Регіон '$name' відсутній в atlas/_9_patch.atlas — перепакуй атлас")
+        private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.ALL.region(name)
+        private fun patch(name: String): NinePatch = SpriteManager.EnumAtlas._9_PATCH.ninePatch(name)
 
         // ------------------------------------------------------------------------------
         // ATLAS ALL
         // ------------------------------------------------------------------------------
 
-        val badge_glow = getAllRegion("badge_glow")
-        val shield_pip = getAllRegion("shield_pip")
-        val boost_hex  = getAllRegion("boost_hex")
-        val spike      = getAllRegion("spike")
+        val badge_glow = region("badge_glow")
+        val shield_pip = region("shield_pip")
+        val boost_hex  = region("boost_hex")
+        val spike      = region("spike")
 
-        val icon_gem_x2   = getAllRegion("icon_gem_x2")
-        val icon_magnet   = getAllRegion("icon_magnet")
-        val icon_pulse    = getAllRegion("icon_pulse")
-        val icon_shield   = getAllRegion("icon_shield")
-        val icon_slow_mo  = getAllRegion("icon_slow_mo")
+        val icon_gem_x2   = region("icon_gem_x2")
+        val icon_magnet   = region("icon_magnet")
+        val icon_pulse    = region("icon_pulse")
+        val icon_shield   = region("icon_shield")
+        val icon_slow_mo  = region("icon_slow_mo")
 
         //val listGlarePanelGame = List(4) { getAllRegion("glare_panel_game_${it.inc()}") }
 
@@ -53,7 +90,7 @@ class SpriteUtil {
         // ATLAS 9_PATCH
         // ------------------------------------------------------------------------------
 
-        val panel_coin = get9Patch("panel_coin")
+        val panel_coin = patch("panel_coin")
 
         // ------------------------------------------------------------------------------
         // TEXTURES
@@ -66,10 +103,14 @@ class SpriteUtil {
         val LIGHT    = TextureEmpty //SpriteManager.EnumTexture.LIGHT.data.texture
 
         // All | panel
-        val PANEL_TOP = LIGHT
+        val STAR = SpriteManager.EnumTexture.star.data.texture
 
         // All | dialog
         val DIALOG_CLEAR_GRID = LIGHT
     }
 
 }
+
+/** Спільний геттер регіона: сам знає шлях атласу, тож помилка каже, ЩО перепакувати. */
+private fun SpriteManager.EnumAtlas.region(name: String): TextureRegion = data.atlas.findRegion(name) ?: error("Регіон '$name' відсутній в ${data.path} — перепакуй атлас")
+private fun SpriteManager.EnumAtlas.ninePatch(name: String): NinePatch = data.atlas.createPatch(name) ?: error("NinePatch '$name' відсутній в ${data.path} — перепакуй атлас")

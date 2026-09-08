@@ -17,13 +17,14 @@ import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.runGDX
 import com.lewydo.orbitdash.util.log
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlin.getValue
-import kotlin.time.Duration.Companion.milliseconds
 
 class LoaderScreen : AdvancedScreen() {
+
+    companion object {
+        private val NEXT_SCREEN_NAME = TestScreen::class.java.name
+    }
 
     private val progressFlow     = MutableStateFlow(0f)
     private var isFinishLoading  = false
@@ -63,7 +64,7 @@ class LoaderScreen : AdvancedScreen() {
         add(aMain) { fillParent() }
 
         aMain.onCompletedAnimTapToStart = {
-            gdxGame.navigationManager.navigate(MenuScreen::class.java.name)
+            gdxGame.navigationManager.navigate(NEXT_SCREEN_NAME)
         }
     }
 

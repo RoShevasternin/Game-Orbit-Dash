@@ -37,6 +37,8 @@ open class VfxImage(
     override val screen: AdvancedScreen,
     drawable           : Drawable?  = null,
     var effect         : VfxEffect? = null,
+    /** Внутрішній Image. Підміняється, коли малювати треба інакше — MsdfImage. */
+    inner              : Image      = Image(),
 ) : AdvancedGroup() {
 
     constructor(screen: AdvancedScreen, region : TextureRegion, effect: VfxEffect? = null) :
@@ -48,7 +50,7 @@ open class VfxImage(
     constructor(screen: AdvancedScreen, patch  : NinePatch, effect: VfxEffect? = null) :
             this(screen, NinePatchDrawable(patch), effect)
 
-    private val image = Image()
+    private val image = inner
 
     var drawable: Drawable?
         get()      = image.drawable

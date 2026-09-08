@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.captureScreenShot
+import com.lewydo.orbitdash.game.utils.recreateGlOnlyTexture
 import com.lewydo.orbitdash.game.utils.vfx.VfxGroup
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.MaskEffect
@@ -126,6 +127,23 @@ class ABlurBack(
     fun captureOnce() {
         isScreenshotCaptured = false
         rerenderOnce()
+    }
+
+
+    /**
+     * Контекст перестворено: текстура знімка — GL-only, робимо її заново.
+     * Знімок позначаємо як не зроблений, щоб наступний draw() захопив свіжий
+     * у вже живу текстуру. Кеш групи VfxGroup уже скинув сам.
+     */
+    override fun onContextLost() {
+        if (!::regionScreenShot.isInitialized) return
+        updateBoundsScreenShot()
+        regionScreenShot.recreateGlOnlyTexture(
+            boundsScreenShot.width.toInt(),
+            boundsScreenShot.height.toInt(),
+            Pixmap.Format.RGB888
+        )
+        isScreenshotCaptured = false
     }
 
     private fun updateBoundsScreenShot() {

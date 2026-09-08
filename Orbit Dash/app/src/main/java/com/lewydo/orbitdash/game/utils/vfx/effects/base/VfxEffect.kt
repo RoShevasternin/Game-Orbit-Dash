@@ -102,6 +102,13 @@ abstract class VfxEffect {
     open fun stateKey(): Long = 0L
     open val isEnabled: Boolean get() = true
 
+    /**
+     * Наскільки ефект розповзається ЗА межі свого джерела, у текселях буфера.
+     * Потрібно, щоб VfxTexture сам порахував bleed — поле під ефект назовні.
+     * 0 = ефект нічого не виносить (маска, тінт).
+     */
+    open fun reachTexels(): Float = 0f
+
     // ─── Shader для VfxGroup (Blit — NDC quad) ────────────────────────────
     // Vertex = Blit.VERT: gl_Position = a_position (без матриці)
     val shader: ShaderProgram

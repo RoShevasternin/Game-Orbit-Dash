@@ -21,17 +21,19 @@ import com.lewydo.orbitdash.game.screens.BrandScreen
 import com.lewydo.orbitdash.game.screens.LoaderScreen
 import com.lewydo.orbitdash.game.state.GameState
 import com.lewydo.orbitdash.game.state.SaveGameStateManager
-import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.GameColor
 import com.lewydo.orbitdash.game.utils.Settings
 import com.lewydo.orbitdash.game.utils.ShaderClock
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedGame
 import com.lewydo.orbitdash.game.utils.disposeAll
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfManager
+import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.runGDX
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.game.utils.vfx.Blit
+import com.lewydo.orbitdash.game.utils.vfx.FboStack
 import com.lewydo.orbitdash.game.utils.vfx.VfxShaderCache
+import com.lewydo.orbitdash.game.utils.vfx.VfxTextures
 import com.lewydo.orbitdash.services.analytics.AnalyticsManager
 import com.lewydo.orbitdash.util.currentClassName
 import com.lewydo.orbitdash.util.log
@@ -50,6 +52,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     val assetsBrand  by lazy { SpriteUtil.Brand() }
     val assetsLoader by lazy { SpriteUtil.Loader() }
     val assetsAll    by lazy { SpriteUtil.All() }
+    val assetsMsdf   by lazy { SpriteUtil.Msdf() }     // MSDF-фігури; ТІЛЬКИ після initAssets()
 
     //val particleEffectLoader by lazy { ParticleEffectUtil.Loader() }
     val particleEffectAll by lazy { ParticleEffectUtil.All() }
@@ -125,6 +128,12 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
 
         collectModelPlayer()
 
+        // MSDF-атлас потрібен усім екранам, включно з Brand, важить кілобайти й ні
+        // від чого не залежить — вантажимо синхронно тут. Далі assetsMsdf доступний
+        // із першого кадру. (loadAssets() лоадера підхопить його ще раз — дедуплікується.)
+        spriteManager.loadAtlasNow(SpriteManager.EnumAtlas.MSDF)
+        assetsMsdf
+
         val firstScreenName = if (BuildConfig.DEBUG) LoaderScreen::class.java.name else BrandScreen::class.java.name
         navigationManager.navigate(firstScreenName)
 
@@ -136,6 +145,10 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         ThemeManager.update()
 
         syncTheme()
+
+        // Спільні текстури — ДО сцени: жоден батч ще не відкритий, і всі Image,
+        // що їх тримають, у цьому ж кадрі побачать уже свіжий результат.
+        VfxTextures.update()
 
         ScreenUtils.clear(backgroundColor)
         super.render()
@@ -151,6 +164,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         super.resume()
         log("resume")
         Blit.dispose()
+        FboStack.onContextLost()    // VfxTexture, VfxGroup, ABlurBack, AScreenShot — самі, кожен у своєму update()/draw()
     }
 
     override fun dispose() {
@@ -160,7 +174,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         try {
             coroutine.cancel()
             disposableSet.disposeAll()
-            disposeAll(assetManager, musicUtil, soundUtil, VfxShaderCache, Blit, msdfManager)
+            disposeAll(assetManager, musicUtil, soundUtil, VfxTextures, VfxShaderCache, Blit, msdfManager)
             super.dispose()
             log("dispose $currentClassName")
         } catch (e: Exception) {

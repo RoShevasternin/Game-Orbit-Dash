@@ -7,9 +7,9 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Disposable
 import com.lewydo.orbitdash.game.GDXGame
+import com.lewydo.orbitdash.game.utils.vfx.VfxTextures
 
 typealias Block = () -> Unit
 
@@ -17,7 +17,7 @@ val gdxGame: GDXGame get() = Gdx.app.applicationListener as GDXGame
 
 val Texture.region: TextureRegion get() = TextureRegion(this)
 val Float.toMS: Long get() = (this * 1000).toLong()
-val TextureEmpty get() = Texture(1, 1, Pixmap.Format.Alpha)
+val TextureEmpty: Texture get() = VfxTextures.emptyTexture
 
 fun disposeAll(vararg disposable: Disposable?) {
     disposable.forEach { it?.dispose() }
@@ -40,4 +40,19 @@ fun runGDX(block: Block) {
 fun captureScreenShot(region: TextureRegion, x: Int, y: Int, w: Int, h: Int) {
     Gdx.gl.glBindTexture(GL20.GL_TEXTURE_2D, region.texture.textureObjectHandle)
     Gdx.gl20.glCopyTexSubImage2D(GL20.GL_TEXTURE_2D, 0, 0, 0, x, y, w, h)
+}
+
+
+/**
+ * Перестворити GL-only текстуру регіону — Texture(w, h, format), у яку
+ * копіюють знімок екрана. Така текстура не керована: після втрати контексту
+ * libGDX не має з чого її відновити, а glCopyTexSubImage2D у мертвий хендл дає
+ * GL_INVALID_OPERATION і чорний знімок.
+ *
+ * setTexture() не чіпає UV — flip лишається як був, і Image, що тримає цей
+ * регіон, працює далі без переприв'язки.
+ */
+fun TextureRegion.recreateGlOnlyTexture(w: Int, h: Int, format: Pixmap.Format) {
+    runCatching { texture?.dispose() }
+    setTexture(Texture(w.coerceAtLeast(1), h.coerceAtLeast(1), format))
 }

@@ -7,6 +7,7 @@ import com.lewydo.orbitdash.game.screens.GameScreen
 import com.lewydo.orbitdash.game.screens.LeaderboardScreen
 import com.lewydo.orbitdash.game.screens.LoaderScreen
 import com.lewydo.orbitdash.game.screens.MenuScreen
+import com.lewydo.orbitdash.game.screens.TestScreen
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.runGDX
 
@@ -87,6 +88,10 @@ class NavigationManager(val game: GDXGame) {
         MenuScreen       ::class.java.name -> MenuScreen()
         GameScreen       ::class.java.name -> GameScreen()
         LeaderboardScreen::class.java.name -> LeaderboardScreen()
+
+
+
+        TestScreen::class.java.name -> TestScreen()
 
         else -> MenuScreen()
     }

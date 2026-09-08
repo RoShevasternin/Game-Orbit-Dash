@@ -7,15 +7,19 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedGroup
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.captureScreenShot
+import com.lewydo.orbitdash.game.utils.recreateGlOnlyTexture
+import com.lewydo.orbitdash.game.utils.vfx.FboStack
 
 class AScreenShot(override val screen: AdvancedScreen) : AdvancedGroup() {
 
     private lateinit var regionScreenShot: TextureRegion
     private val boundsScreenShot = Rectangle()
+
+    /** Покоління контексту, під яке створена текстура знімка. */
+    private var contextGen = FboStack.contextGeneration
 
     private val vecTmp           = Vector2(0f, 0f)
     private val vecGroupPosition = Vector2()
@@ -40,6 +44,18 @@ class AScreenShot(override val screen: AdvancedScreen) : AdvancedGroup() {
 
         batch.flush()
         updateBoundsScreenShot()
+
+        // Контекст перестворено → текстура знімка GL-only, мертва. Робимо нову
+        // ДО копіювання: glCopyTexSubImage2D у мертвий хендл не спрацює.
+        if (contextGen != FboStack.contextGeneration) {
+            contextGen = FboStack.contextGeneration
+            regionScreenShot.recreateGlOnlyTexture(
+                boundsScreenShot.width.toInt(),
+                boundsScreenShot.height.toInt(),
+                Pixmap.Format.RGB888
+            )
+        }
+
         captureScreenShot(
             regionScreenShot,
             boundsScreenShot.x.toInt(),

@@ -21,7 +21,7 @@ class BrandScreen : AdvancedScreen() {
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun show() {
-        loadBandAssets()
+        gdxGame.spriteManager.loadAtlasNow(SpriteManager.EnumAtlas.BRAND)
         super.show()
 
         animShowScreen {
@@ -45,20 +45,6 @@ class BrandScreen : AdvancedScreen() {
 
     override fun animShowScreen(blockEnd: Block) {
         rootConstraintLayout.animShow { blockEnd() }
-    }
-
-    // ------------------------------------------------------------------------
-    // Logic
-    // ------------------------------------------------------------------------
-    private fun loadBandAssets() {
-        with(gdxGame.spriteManager) {
-            loadableAtlasList = mutableListOf(SpriteManager.EnumAtlas.BRAND.data)
-            loadAtlas()
-//            loadableTexturesList = mutableListOf(SpriteManager.EnumTexture.BRAND_BACKGROUND.data)
-//            loadTexture()
-        }
-        gdxGame.assetManager.finishLoading()
-        gdxGame.spriteManager.initAll()
     }
 
 

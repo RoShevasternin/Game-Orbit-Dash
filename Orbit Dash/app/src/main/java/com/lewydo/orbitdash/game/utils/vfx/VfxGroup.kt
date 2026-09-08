@@ -30,6 +30,14 @@ import com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect
  *
  * Для прогрес-бара: під час анімації fill → перемальовує; коли прогрес
  * стабільний → один quad. Це прибирає постійну FBO роботу для масок.
+ *
+ * ─── Втрата GL-контексту ───────────────────────────────────────────────────
+ *
+ * Після resume() FBO живий як об'єкт, але його colorBufferTexture — новий,
+ * а staticRegion тримає стару. Хеш контенту цього не бачить. Тому draw()
+ * порівнює FboStack.contextGeneration зі збереженим і при розбіжності скидає
+ * кеш; спадкоємці з власними GL-only ресурсами перестворюють їх у
+ * onContextLost() (ABlurBack — текстуру знімка).
  */
 open class VfxGroup(
     override val screen: AdvancedScreen
@@ -73,11 +81,32 @@ open class VfxGroup(
     open var autoCache = true
         set(value) { field = value; needsUpdate = true }
 
+    /**
+     * Поле під ефекти НАЗОВНІ від меж групи, на бік, у world-юнітах — модель
+     * Figma: межі шару = контент, блюр / тінь виходять за них. FBO більший на
+     * bleed з кожного боку, результат малюється зі зсувом; hit-box, layout і
+     * діти лишаються про контент. 0 — як було.
+     *
+     * Лишати 0 у ABlurBack і AMask: знімок екрана береться рівно з width×height,
+     * а маска лягає на весь буфер разом із полем. bleed — для блюру й світіння
+     * над власними дітьми.
+     */
+    var bleed = 0f
+        set(value) {
+            if (field == value) return
+            field = value
+            if (width > 0f && height > 0f) setupCamera()
+            needsUpdate = true
+        }
+
     private var lastCacheKey = Long.MIN_VALUE
 
     private var cachedFbo : FrameBuffer? = null
     private var pendingFbo: FrameBuffer? = null
     private var needsUpdate              = true
+
+    /** Покоління контексту, під яке зроблений кеш. Стартує з поточного, щоб не скидати даремно. */
+    private var contextGen = FboStack.contextGeneration
 
     private val staticRegion  = TextureRegion()
     private val dynamicRegion = TextureRegion()
@@ -105,6 +134,12 @@ open class VfxGroup(
         super.dispose()
     }
 
+    /**
+     * Контекст перестворено. Кеш групи вже скинуто; тут спадкоємець перестворює
+     * власні GL-only ресурси (текстури знімків тощо). За замовчуванням — нічого.
+     */
+    protected open fun onContextLost() {}
+
     // ─── Draw (INLINE) ───────────────────────────────────────────────────────
 
     override fun draw(batch: Batch?, parentAlpha: Float) {
@@ -114,6 +149,16 @@ open class VfxGroup(
         if (stage == null || !isVisible) return
 
         pendingFbo?.let { screen.renderPipeline.vfxPool.free(it); pendingFbo = null }
+
+        // Контекст перестворено → кешований FBO має нову colorBufferTexture, а
+        // staticRegion тримає стару. Хеш контенту цього не бачить — скидаємо руками.
+        if (contextGen != FboStack.contextGeneration) {
+            contextGen   = FboStack.contextGeneration
+            releaseCached()
+            lastCacheKey = Long.MIN_VALUE
+            needsUpdate  = true
+            onContextLost()
+        }
 
         // autoCache: перемальовуємо лише коли змінився контент дітей АБО параметри ефектів
         if (autoCache) {
@@ -132,9 +177,11 @@ open class VfxGroup(
         val vp     = stage!!.viewport
         val scaleX = vp.screenWidth.toFloat()  / vp.worldWidth.coerceAtLeast(1f)
         val scaleY = vp.screenHeight.toFloat() / vp.worldHeight.coerceAtLeast(1f)
-        val bufW   = (width  * scaleX).toInt().coerceAtLeast(1)
-        val bufH   = (height * scaleY).toInt().coerceAtLeast(1)
-        val ctx    = VfxContext(width, height, bufW, bufH)
+        val outerW = width  + bleed * 2f
+        val outerH = height + bleed * 2f
+        val bufW   = (outerW * scaleX).toInt().coerceAtLeast(1)
+        val bufH   = (outerH * scaleY).toInt().coerceAtLeast(1)
+        val ctx    = VfxContext(outerW, outerH, bufW, bufH)
 
         tmpProj.set(batch.projectionMatrix)
         tmpTrans.set(batch.transformMatrix)
@@ -209,7 +256,12 @@ open class VfxGroup(
 
         batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA)
         batch.setColor(color.r * a, color.g * a, color.b * a, a)
-        batch.draw(region, x, y, originX, originY, width, height, scaleX, scaleY, rotation)
+        // Результат ширший за групу на bleed з кожного боку — те саме, що OverflowImage
+        val b = bleed
+        batch.draw(region,
+            x - b, y - b, originX + b, originY + b,
+            width + b * 2f, height + b * 2f,
+            scaleX, scaleY, rotation)
         batch.setBlendFunction(prevSrc, prevDst)
         batch.setColor(Color.WHITE)
     }
@@ -217,7 +269,9 @@ open class VfxGroup(
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
     private fun setupCamera() {
-        camera.setToOrtho(false, width, height)
+        // Камера на (−bleed..width+bleed) × (−bleed..height+bleed): діти малюються
+        // у своїх координатах, а навколо лишається поле під ефект.
+        camera.setToOrtho(false, width + bleed * 2f, height + bleed * 2f)
         camera.position.set(width / 2f, height / 2f, 0f)
         camera.update()
     }
@@ -252,7 +306,10 @@ open class VfxGroup(
             h = h * 31 + (if (c.isVisible) 1L else 0L)
             // Стан ефектів дочірніх VfxImage/VfxGroup (напр. лава time всередині маски)
             if (c is VfxImage) c.effect?.let { h = h * 31 + it.stateKey() }
-            if (c is VfxGroup) for (e in c.effects) h = h * 31 + e.stateKey()
+            if (c is VfxGroup) {
+                for (e in c.effects) h = h * 31 + e.stateKey()
+                h = h * 31 + c.bleed.toRawBits().toLong()   // інакше кеш батька не оновиться
+            }
             if (c is Group) h = h * 31 + contentHash(c)
         }
         return h

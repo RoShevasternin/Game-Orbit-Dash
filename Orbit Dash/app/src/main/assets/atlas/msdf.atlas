@@ -1,0 +1,26 @@
+msdf.png
+size: 200, 68
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+circle
+  rotate: false
+  xy: 2, 2
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+star
+  rotate: false
+  xy: 68, 2
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+aaa
+  rotate: false
+  xy: 134, 2
+  size: 64, 39
+  orig: 64, 39
+  offset: 0, 0
+  index: -1

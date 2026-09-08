@@ -61,6 +61,15 @@ class BlurEffect(var radius: Float = 8f) : VfxEffect() {
         pingPong.swap()  // результат D2-pass тепер в src = фінальний blur
     }
 
+    /**
+     * Чотири проходи по ±4 семпли з кроком radius текселів. Уздовж осі
+     * складаються проєкції напрямків: 1 + 0 + 0.383 + 0.924 = 2.307,
+     * тобто далі 4·radius·2.307 текселів альфа рівно 0.
+     *
+     * Це й є bleed, який VfxTexture бере собі: reachTexels() / density юнітів.
+     */
+    override fun reachTexels(): Float = 4f * radius * 2.307f
+
     override fun stateKey(): Long = radius.toRawBits().toLong()
 
 }
