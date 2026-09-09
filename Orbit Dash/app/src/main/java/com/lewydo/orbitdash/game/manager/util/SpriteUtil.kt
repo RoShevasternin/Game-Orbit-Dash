@@ -27,14 +27,9 @@ class SpriteUtil {
         val effect = MsdfShapeEffect(texture, PX_RANGE)
 
         // ── ВЕКТОР: регіони, назва = ім'я SVG без розширення ────────────────
-        //    Малювати AMsdfImage(screen, msdf.star) — розмір = розмір фігури.
+        //    Малювати AMsdfImage(screen, msdf.star).
         //    Звичайний Image(msdf.star) дасть кашу: msdf-шейдера в нього немає.
-        val star   = getRegion("star")
         val circle = getRegion("circle")
-
-        val aaa = getRegion("aaa")
-        val aaaGlow = VfxTexture(186f, 101f, base = aaa, shape = effect,
-            post = listOf(BlurEffect(radius = 2f)), density = 1f)
 
         // ── РАСТР: запечені VfxTexture — ТІЛЬКИ заради ефектів ──────────────
         //    Це вже картинка фіксованої роздільності: малювати РІВНО в розмірі
@@ -58,9 +53,10 @@ class SpriteUtil {
     class Loader {
         private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.region(name)
 
-        val item_glow = region("item_glow")
-        val circle    = region("circle")
-        val gem       = region("gem")
+        val gem = region("gem")
+
+        val item_glow = region("gem")
+        val circle    = region("gem")
 
         val ORBIT_GLOW = SpriteManager.EnumTexture.ORBIT_GLOW.data.texture
     }

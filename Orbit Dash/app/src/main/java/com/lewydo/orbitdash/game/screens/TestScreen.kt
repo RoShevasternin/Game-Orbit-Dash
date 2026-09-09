@@ -65,21 +65,21 @@ class TestScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
 
     private fun AConstraintLayout.addMsdfSandbox() {
-        val sharp = AMsdfImage(this@TestScreen, gdxGame.assetsMsdf.aaa)
-        sharp.setSize(186f, 101f)
-        add(sharp) { center() }                            // різка поверх — накладаються край у край
-        sharp.debug()
-
-        // frame, що обіймає ефект — для вирівнювання відносно світіння
-        val frame = Image(gdxGame.assetsMsdf.aaaGlow.region)
-        frame.setSize(gdxGame.assetsMsdf.aaaGlow.outerWidth, gdxGame.assetsMsdf.aaaGlow.outerHeight)
-        add(frame) { centerX(); bottomToTop(sharp, 40f) }
-        frame.debug()                                      // рамка 234×149, світіння всередині
-
-        val glow = gdxGame.assetsMsdf.aaaGlow.image()      // шар: межі = фігура
-        glow.setSize(186f, 101f)
-        add(glow) { centerX(); topToBottom(sharp, 40f) }
-        glow.debug()                                       // рамка 186×101, світіння виходить за неї
+//        val sharp = AMsdfImage(this@TestScreen, gdxGame.assetsMsdf.aaa)
+//        sharp.setSize(186f, 101f)
+//        add(sharp) { center() }                            // різка поверх — накладаються край у край
+//        sharp.debug()
+//
+//        // frame, що обіймає ефект — для вирівнювання відносно світіння
+//        val frame = Image(gdxGame.assetsMsdf.aaaGlow.region)
+//        frame.setSize(gdxGame.assetsMsdf.aaaGlow.outerWidth, gdxGame.assetsMsdf.aaaGlow.outerHeight)
+//        add(frame) { centerX(); bottomToTop(sharp, 40f) }
+//        frame.debug()                                      // рамка 234×149, світіння всередині
+//
+//        val glow = gdxGame.assetsMsdf.aaaGlow.image()      // шар: межі = фігура
+//        glow.setSize(186f, 101f)
+//        add(glow) { centerX(); topToBottom(sharp, 40f) }
+//        glow.debug()                                       // рамка 186×101, світіння виходить за неї
     }
 
     /** Поставити актора в лівий-нижній кут root. Розмір актор задає сам. */
