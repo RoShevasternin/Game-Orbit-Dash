@@ -42,13 +42,15 @@ class ABlurBack(
     maskTexture: Texture? = null,
 ) : VfxGroup(screen) {
 
-    private val blurEffect = BlurEffect(radius = 0f)
+    private val blurEffect = BlurEffect(blur = 0f)
     private val maskEffect = MaskEffect(maskTexture)
 
-    var radiusBlur: Float = 0f
-        set(value) { blurEffect.radius = value; field = value }
+    /** Layer Blur як у Figma, юніти. 0 = вимкнено. Буфер тут повної роздільності — BlurEffect сам іде пірамідою. */
+    var blur: Float
+        get()      = blurEffect.blur
+        set(value) { blurEffect.blur = value }
 
-    val isBlurEnabled: Boolean get() = blurEffect.radius > 0f
+    val isBlurEnabled: Boolean get() = blurEffect.isEnabled
 
     /** Змінити маску після створення */
     var maskTexture: Texture?

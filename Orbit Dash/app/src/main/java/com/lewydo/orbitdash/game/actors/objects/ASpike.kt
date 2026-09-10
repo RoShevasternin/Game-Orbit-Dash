@@ -29,8 +29,8 @@ class ASpike(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow  = Image(gdxGame.assetsLoader.item_glow)
-    private val aShape = Image(gdxGame.assetsLoader.gem)   // TEMP-арт
+    private val aGlow  = Image(gdxGame.assetsMsdf.glow)
+    private val aShape = Image(gdxGame.assetsMsdf.gem)   // TEMP-арт
 
     // ------------------------------------------------------------------------
     // Lifecycle

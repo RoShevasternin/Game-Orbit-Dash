@@ -103,11 +103,18 @@ abstract class VfxEffect {
     open val isEnabled: Boolean get() = true
 
     /**
-     * Наскільки ефект розповзається ЗА межі свого джерела, у текселях буфера.
+     * Наскільки ефект розповзається ЗА межі свого джерела, у world-юнітах.
      * Потрібно, щоб VfxTexture сам порахував bleed — поле під ефект назовні.
      * 0 = ефект нічого не виносить (маска, тінт).
      */
-    open fun reachTexels(): Float = 0f
+    open fun reachUnits(): Float = 0f
+
+    /**
+     * Якої роздільності (текселів на юніт) ефекту ДОСИТЬ. VfxTexture без явної
+     * density бере мінімум по ланцюгу post — розмитій текстурі щільність
+     * фігури не потрібна. null = байдуже (маска, тінт).
+     */
+    open fun preferredDensity(): Float? = null
 
     // ─── Shader для VfxGroup (Blit — NDC quad) ────────────────────────────
     // Vertex = Blit.VERT: gl_Position = a_position (без матриці)

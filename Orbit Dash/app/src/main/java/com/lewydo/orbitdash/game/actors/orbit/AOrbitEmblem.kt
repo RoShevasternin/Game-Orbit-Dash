@@ -47,6 +47,10 @@ object OrbitEmblemClock {
 class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     companion object {
+        /** Розмір ігрових об'єктів у ДИЗАЙНІ ЕКРАНА (не поля). */
+        private const val BALL_SIZE   = 26f
+        private const val GEM_SIZE    = 21f
+
         private const val BALL_SPEED_DEG = -51f     // 360° за ≈7 c, годинникової
         private const val GEM_SPEED_DEG  = 36f    // 360° за ≈10 c, зустрічно
 
@@ -120,8 +124,8 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
         if (aRingInner.parent == null) return
         aOrbitGlowImg.setSizeScaled(660f, 660f)
         aRingInner.setSizeScaled(140f, 140f)
-        aBall.setSizeScaled(26f, 26f)
-        aGem.setSizeScaled(26f, 26f)
+        aBall.setSizeScaled(BALL_SIZE, BALL_SIZE)
+        aGem.setSizeScaled(GEM_SIZE, GEM_SIZE)
     }
 
     // ------------------------------------------------------------------------
@@ -150,12 +154,12 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
      * повертав би обʼєкти в центр саме на час морфу.
      */
     private fun addBall() {
-        aBall.setSizeScaled(26f, 26f)
+        aBall.setSizeScaled(BALL_SIZE, BALL_SIZE)
         addActor(aBall)
     }
 
     private fun addGem() {
-        aGem.setSizeScaled(26f, 26f)
+        aGem.setSizeScaled(GEM_SIZE, GEM_SIZE)
         addActor(aGem)
     }
 

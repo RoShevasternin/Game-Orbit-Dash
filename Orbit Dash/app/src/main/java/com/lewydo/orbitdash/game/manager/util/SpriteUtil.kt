@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.utils.TextureEmpty
 import com.lewydo.orbitdash.game.utils.vfx.VfxTexture
+import com.lewydo.orbitdash.game.utils.vfx.VfxTextures
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.MsdfShapeEffect
 import kotlin.math.roundToInt
@@ -29,15 +30,28 @@ class SpriteUtil {
         // ── ВЕКТОР: регіони, назва = ім'я SVG без розширення ────────────────
         //    Малювати AMsdfImage(screen, msdf.star).
         //    Звичайний Image(msdf.star) дасть кашу: msdf-шейдера в нього немає.
-        val circle = getRegion("circle")
+        val circle_msdf = getRegion("circle")
+        val gem_msdf    = getRegion("gem")
 
-        // ── РАСТР: запечені VfxTexture — ТІЛЬКИ заради ефектів ──────────────
-        //    Це вже картинка фіксованої роздільності: малювати РІВНО в розмірі
-        //    запікання, інший розмір → .resized(w, h). Деталі — docs/msdf-usage.md.
-        //    Регіон стабільний: змінив параметр ефекту — усі споживачі оновились.
 
-        //    val star_48   = VfxTexture(48f, 48f, base = star, shape = effect)
-        //    val star_glow = VfxTexture(128f, 128f, base = star, shape = effect, post = listOf(BlurEffect(radius = 2f)), density = 1f)
+        val circleTex = VfxTexture(40f, 40f, circle_msdf, effect)
+        val circle    = circleTex.region
+
+        val gemTex = VfxTexture(40f, 40f, gem_msdf, effect)
+        val gem    = gemTex.region
+
+        // Світіння під об'єкти — один в один шар із Figma: коло 100×100, Layer Blur 68
+        // (еталон textures/loader/TEST_CIRCLE.png). density і bleed рахуються самі:
+        // outer = 236 = фрейм «hug contents» у Figma. Два способи малювати:
+        //   Image(glow)         — уся пляма 236 в актора; коло — 100/236 = 42 % по центру
+        //   glowTex.image()     — межі актора = коло, світіння виходить назовні (модель Figma)
+        //   img.setSize(
+        //          gdxGame.assetsMsdf.glowTex.outerWidth,
+        //          gdxGame.assetsMsdf.glowTex.outerHeight
+        //   ) — уся пляма 236 в актора;
+
+        val glowTex = VfxTexture(40f, 40f, circle_msdf, effect, listOf(BlurEffect(blur = 22f)))
+        val glow    = glowTex.region
     }
 
     class Brand {
@@ -53,10 +67,7 @@ class SpriteUtil {
     class Loader {
         private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.region(name)
 
-        val gem = region("gem")
-
-        val item_glow = region("gem")
-        val circle    = region("gem")
+        //val gem = region("gem")
 
         val ORBIT_GLOW = SpriteManager.EnumTexture.ORBIT_GLOW.data.texture
     }
@@ -99,7 +110,7 @@ class SpriteUtil {
         val LIGHT    = TextureEmpty //SpriteManager.EnumTexture.LIGHT.data.texture
 
         // All | panel
-        val STAR = SpriteManager.EnumTexture.star.data.texture
+        //val STAR = SpriteManager.EnumTexture.star.data.texture
 
         // All | dialog
         val DIALOG_CLEAR_GRID = LIGHT

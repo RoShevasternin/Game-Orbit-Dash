@@ -18,13 +18,19 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer
  *
  * Обидва FBO беруться з VfxPool при створенні і повертаються туди через free().
  */
-class PingPong(
-    private val pool : VfxPool,
+class PingPong private constructor(
     val width  : Int,
     val height : Int,
+    src        : FrameBuffer,
+    dst        : FrameBuffer,
+    private val pool: VfxPool?,
 ) {
-    var src: FrameBuffer = pool.obtain(width, height) ; private set
-    var dst: FrameBuffer = pool.obtain(width, height) ; private set
+    /** Обидва буфери з пулу; free() поверне їх туди. */
+    constructor(pool: VfxPool, width: Int, height: Int) :
+            this(width, height, pool.obtain(width, height), pool.obtain(width, height), pool)
+
+    var src: FrameBuffer = src ; private set
+    var dst: FrameBuffer = dst ; private set
 
     /**
      * Міняє src і dst місцями.
@@ -33,9 +39,17 @@ class PingPong(
      */
     fun swap() { val t = src; src = dst; dst = t }
 
-    /** Повертає обидва FBO в пул. Викликати після draw(). */
+    /** Повертає обидва FBO в пул. Викликати після draw(). Не для of(): там буфери чужі. */
     fun free() {
-        pool.free(src)
-        pool.free(dst)
+        pool?.free(src)
+        pool?.free(dst)
+    }
+
+    companion object {
+        /**
+         * Ping-pong над ЧУЖИМИ буферами однакового розміру — дно піраміди блюру,
+         * де буфери вже орендовані й повертаються в пул тим, хто їх брав.
+         */
+        fun of(src: FrameBuffer, dst: FrameBuffer) = PingPong(src.width, src.height, src, dst, null)
     }
 }

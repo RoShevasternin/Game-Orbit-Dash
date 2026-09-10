@@ -16,7 +16,7 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow = Image(gdxGame.assetsLoader.item_glow)
+    private val aGlow = Image(gdxGame.assetsMsdf.glow).apply { color.a = 0.90f }
     private val aBall = AMsdfImage(screen, gdxGame.assetsMsdf.circle)
 
     // ------------------------------------------------------------------------
@@ -51,6 +51,7 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
     private fun addGlow() {
         aGlow.setSizeScaled(100f, 100f)
         add(aGlow) { center() }
+        aGlow.debug()
     }
 
     private fun addBall() {

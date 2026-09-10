@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
+import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
@@ -38,7 +39,7 @@ class ABadgeDot(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     // Actors
     // ------------------------------------------------------------------------
     private val aGlow = Image(gdxGame.assetsAll.badge_glow)
-    private val aDot  = Image(gdxGame.assetsLoader.circle)
+    private val aDot  = Image(gdxGame.assetsMsdf.circle)
 
     // ------------------------------------------------------------------------
     // Lifecycle
@@ -94,8 +95,8 @@ class ABadgeDot(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     // Logic
     // ------------------------------------------------------------------------
     private fun syncTheme() {
-        val g = ThemeManager.current.gem
-        aGlow.color.set(g.r, g.g, g.b, aGlow.color.a)
-        aDot.color.set(g.r, g.g, g.b, aDot.color.a)
+        val gemColor = ThemeManager.current.gem
+        aGlow.setColorRGB(gemColor)
+        aDot.setColorRGB(gemColor)
     }
 }

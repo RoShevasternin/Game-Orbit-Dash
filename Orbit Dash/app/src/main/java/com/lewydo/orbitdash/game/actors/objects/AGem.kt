@@ -25,9 +25,9 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow    = Image(gdxGame.assetsLoader.item_glow)
-    private val aGem     = Image(gdxGame.assetsLoader.gem)
-    private val aPoint   = Image(gdxGame.assetsLoader.circle).apply { color = GameColor.white_90 }
+    private val aGlow    = Image(gdxGame.assetsMsdf.glow).apply { color.a = 0.90f }
+    private val aGem     = Image(gdxGame.assetsMsdf.gem)
+    private val aPoint   = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }
 
     // ------------------------------------------------------------------------
     // Lifecycle

@@ -11,7 +11,7 @@ import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
  * Gaussian blur на VfxGroup + BlurEffect.
  *
  * Публічне API збережено:
- *   radiusBlur       — радіус розмиття (0 = вимкнено)
+ *   blur             — Layer Blur як у Figma, юніти (0 = вимкнено)
  *   isBlurEnabled    — чи активний blur
  *   isStaticEffect   — заморозити результат (від VfxGroup)
  *   rerenderOnce()   — примусово перерендерити (від VfxGroup)
@@ -22,16 +22,14 @@ class ABlur(
     var textureRegionBlur: TextureRegion? = null,
 ) : VfxGroup(screen) {
 
-    private val blurEffect = BlurEffect(radius = 0f)
+    private val blurEffect = BlurEffect(blur = 0f)
 
-    var radiusBlur: Float = 0f
-        set(value) {
-            blurEffect.radius = value
-            field = value
-        }
+    /** Layer Blur як у Figma, юніти. 0 = вимкнено. */
+    var blur: Float
+        get()      = blurEffect.blur
+        set(value) { blurEffect.blur = value }
 
-
-    val isBlurEnabled: Boolean get() = blurEffect.radius > 0f
+    val isBlurEnabled: Boolean get() = blurEffect.isEnabled
 
     /** Зворотна сумісність з ABlurBack.captureOnce() */
     fun rerenderStaticOnce() { rerenderOnce() }

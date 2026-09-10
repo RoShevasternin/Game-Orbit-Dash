@@ -12,14 +12,21 @@ import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 
 class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
+    companion object {
+        private const val GLOW_SIZE  = 100f
+        private const val POINT_SIZE = 10f
+
+        private const val POINT_PADDING = 10f
+    }
+
     override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 40f)
 
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow  = Image(gdxGame.assetsLoader.item_glow)
-    private val aBall  = Image(gdxGame.assetsLoader.circle)
-    private val aPoint = Image(gdxGame.assetsLoader.circle).apply { color = GameColor.white_90 }
+    private val aGlow  = Image(gdxGame.assetsMsdf.glow).apply { color.a = 0.90f }
+    private val aBall  = Image(gdxGame.assetsMsdf.circle)
+    private val aPoint = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }
 
     // ------------------------------------------------------------------------
     // Lifecycle
@@ -45,17 +52,15 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     override fun sizeChanged() {
         super.sizeChanged()
         setOrigin(Align.center)
-        if (aGlow.parent == null) return
-        aGlow.setSizeScaled(100f, 100f)
-        aPoint.setSizeScaled(10f, 10f)
+        // Розміри й відступи дітей — у дизайн-одиницях (scaled()), лейаут
+        // перераховує їх сам при кожному resolve. Тут повторювати нічого.
     }
 
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        aGlow.setSizeScaled(100f, 100f)
-        add(aGlow) { center() }
+        add(aGlow) { scaled(); size(GLOW_SIZE, GLOW_SIZE); center() }
     }
 
     private fun addBall() {
@@ -63,9 +68,11 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     }
 
     private fun addPoint() {
-        val padding = 10f.toActual
-        aPoint.setSizeScaled(10f, 10f)
-        add(aPoint) { startToStart(margin = padding); topToTop(margin = padding) }
+        add(aPoint) {
+            scaled()
+            size(POINT_SIZE, POINT_SIZE)
+            startToStart(margin = POINT_PADDING); topToTop(margin = POINT_PADDING)
+        }
     }
 
     // ------------------------------------------------------------------------

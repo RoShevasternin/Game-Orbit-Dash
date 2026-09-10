@@ -1,6 +1,7 @@
 package com.lewydo.orbitdash.game.utils.vfx
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -39,13 +40,35 @@ object VfxTextures : Disposable {
         if (px > 0f) (px / WIDTH_UI).coerceIn(2f, 4f) else 3f
     }
 
+    /**
+     * GL_MAX_TEXTURE_SIZE цього GPU — стеля для буфера VfxTexture. Гарантований
+     * мінімум GLES2 — 2048; більший буфер на слабкому пристрої — чорна текстура.
+     * by lazy: читати можна лише з GL-потоку, а перший VfxTexture і так там.
+     */
+    val maxTextureSize: Int by lazy {
+        val buf = com.badlogic.gdx.utils.BufferUtils.newIntBuffer(16)
+        Gdx.gl.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, buf)
+        buf.get(0).takeIf { it > 0 } ?: 2048
+    }
+
+
     // ─── Спільні ресурси рендеру ─────────────────────────────────────────────
 
     /** Пул під ping-pong post-ефектів. Власний, бо пул екрана помирає з екраном. */
     internal val pool = VfxPool()
 
-    /** Один SpriteBatch на всі бази — малюємо рівно один квад за раз. */
-    internal val batch: SpriteBatch by lazy { SpriteBatch(1) }
+    /**
+     * Один SpriteBatch на всі бази — малюємо рівно один квад за раз.
+     *
+     * НЕ by lazy. VfxTextures — object і переживає GDXGame: коли Android знищує
+     * Activity, лишаючи процес, GDXGame.dispose() диспозить батч, а наступний
+     * create() узяв би той самий мертвий об'єкт — «No buffer allocated!» на
+     * першому VfxTexture.update(). Тому створюємо на вимогу, а dispose() обнуляє —
+     * так само, як whiteTex / emptyTex нижче.
+     */
+    private var batchOrNull: SpriteBatch? = null
+    internal val batch: SpriteBatch
+        get() = batchOrNull ?: SpriteBatch(1).also { batchOrNull = it }
 
     /** Повернення прямої альфи після ланцюга post-ефектів. */
     internal val unpremulShader: ShaderProgram
@@ -108,7 +131,7 @@ object VfxTextures : Disposable {
         for (t in all.toList()) runCatching { t.dispose() }   // dispose() робить unregister
         all.clear()
         pool.dispose()
-        runCatching { batch.dispose() }
+        batchOrNull?.let { runCatching { it.dispose() } }; batchOrNull = null
         whiteTex?.let { runCatching { it.dispose() } }; whiteTex = null
         whitePm ?.let { runCatching { it.dispose() } }; whitePm  = null
         emptyTex?.let { runCatching { it.dispose() } }; emptyTex = null

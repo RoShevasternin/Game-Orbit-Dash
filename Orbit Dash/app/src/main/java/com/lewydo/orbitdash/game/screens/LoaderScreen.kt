@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class LoaderScreen : AdvancedScreen() {
 
     companion object {
-        private val NEXT_SCREEN_NAME = TestScreen::class.java.name
+        private val NEXT_SCREEN_NAME = MenuScreen::class.java.name
     }
 
     private val progressFlow     = MutableStateFlow(0f)

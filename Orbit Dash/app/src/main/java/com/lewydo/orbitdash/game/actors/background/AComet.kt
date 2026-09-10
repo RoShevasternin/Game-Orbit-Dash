@@ -60,7 +60,7 @@ class AComet(override val screen: AdvancedScreen) : AdvancedGroup() {
     /** Кожна 5-та комета — «яскрава»: більша і кольорова. */
     var brightChance = 0.2f
 
-    private val glow: TextureRegion by lazy { TextureRegion(gdxGame.assetsLoader.item_glow) }
+    private val glow: TextureRegion by lazy { TextureRegion(gdxGame.assetsMsdf.glow) }
     private val tint = Color(1f, 1f, 1f, 1f)
 
     private var timer = 0f

@@ -20,4 +20,9 @@ data class VfxContext(
     val height : Float,
     val bufferW: Int,
     val bufferH: Int,
-)
+    /** Пул для ефектів, яким потрібні тимчасові буфери ІНШОГО розміру (піраміда блюру). null → без піраміди. */
+    val pool   : VfxPool? = null,
+) {
+    /** Текселів буфера на один world-юніт. */
+    val density: Float get() = if (width > 0f) bufferW / width else 1f
+}

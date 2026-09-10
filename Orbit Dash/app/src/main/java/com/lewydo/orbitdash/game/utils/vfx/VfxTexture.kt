@@ -39,8 +39,10 @@ import kotlin.math.ceil
 //   лише під ефект, чий параметр міняється на льоту (тоді — під максимум).
 //   Msdf-поле бази при bleed = 0 вилітає за FBO; при bleed > 0 лягає в поле
 //   і лишається прозорим завдяки discard у msdf-шейдері.
-//   Скільки треба: ≈ 9 × radius / density юнітів (чотири проходи по 4 кроки
-//   по radius текселів); краще з запасом.
+//   Скільки треба — каже сам ефект: VfxEffect.reachUnits(), юніти на бік
+//   (BlurEffect: = blur, як bounds шару у Figma).
+//   density теж рахується сама: мінімум із VfxEffect.preferredDensity() по
+//   ланцюгу post (BlurEffect: σ ≈ 12 текселів), стеля — DENSITY екрана.
 //
 //   Малювати:
 //     image()                       — шар: межі = фігура, ефект назовні
@@ -62,9 +64,19 @@ class VfxTexture(
     base       : TextureRegion?   = null,        // null → білий квад
     val shape  : VfxEffect?       = null,        // малює базу
     val post   : List<VfxEffect>  = emptyList(), // обробляє результат
-    val density: Float            = VfxTextures.DENSITY,
+    density    : Float?           = null,        // текселів на юніт; null → скільки просить ланцюг post, стеля DENSITY
     bleed      : Float?           = null,        // поле під post назовні; null → з ланцюга post
 ) : Disposable {
+
+    /**
+     * Текселів на юніт. Явне число — як задано. null — мінімум із того, що
+     * просять post-ефекти (BlurEffect: σ ≈ 12 теселів), не вище екранної
+     * DENSITY: розмитій текстурі роздільність фігури не потрібна, а буфер
+     * від density квадратично.
+     */
+    val density: Float = density
+        ?: post.mapNotNull { it.preferredDensity() }.minOrNull()?.coerceAtMost(VfxTextures.DENSITY)
+        ?: VfxTextures.DENSITY
 
     /**
      * Поле під post-ефекти НАЗОВНІ від фігури, на бік, у юнітах.
@@ -73,7 +85,7 @@ class VfxTexture(
      * Явне число потрібне лише коли параметр ефекту МІНЯЄТЬСЯ на льоту: FBO
      * має фіксований розмір, тож став bleed під максимальний радіус.
      */
-    val bleed: Float = bleed ?: ceil(post.fold(0f) { acc, e -> acc + e.reachTexels() } / density)
+    val bleed: Float = bleed ?: ceil(post.fold(0f) { acc, e -> acc + e.reachUnits() })
 
     /** Стабільний регіон: той самий об'єкт назавжди, вміст під ним оновлюється. */
     val region = TextureRegion(VfxTextures.emptyTexture)
@@ -95,11 +107,25 @@ class VfxTexture(
     val padX get() = if (width  > 0f) this.bleed / width  else 0f
     val padY get() = if (height > 0f) this.bleed / height else 0f
 
-    private val bufW = ceil(outerWidth  * density).toInt().coerceAtLeast(1)
-    private val bufH = ceil(outerHeight * density).toInt().coerceAtLeast(1)
+    /**
+     * Розмір буфера. Запит понад GL_MAX_TEXTURE_SIZE зменшується ПРОПОРЦІЙНО по
+     * обох сторонах (обрізати одну — регіон розтягнувся б криво): щільність
+     * стане нижчою за density, зате не чорна текстура на 1440p-планшеті.
+     */
+    private val bufW: Int
+    private val bufH: Int
+    init {
+        val w   = ceil(outerWidth  * this.density).toInt().coerceAtLeast(1)
+        val h   = ceil(outerHeight * this.density).toInt().coerceAtLeast(1)
+        val max = VfxTextures.maxTextureSize
+        val k   = if (maxOf(w, h) > max) max.toFloat() / maxOf(w, h) else 1f
+        if (k < 1f) Gdx.app.error("VfxTexture", "буфер ${w}×${h} > GL_MAX_TEXTURE_SIZE $max — зменшено в ${1f / k} раза")
+        bufW = (w * k).toInt().coerceAtLeast(1)
+        bufH = (h * k).toInt().coerceAtLeast(1)
+    }
 
     /** Контекст post-ефектів — увесь буфер, разом із bleed. */
-    private val ctx      = VfxContext(outerWidth, outerHeight, bufW, bufH)
+    private val ctx      = VfxContext(outerWidth, outerHeight, bufW, bufH, VfxTextures.pool)
     /** Контекст shape-ефекту — сама фігура: u_size у RoundRectEffect має бути її розміром. */
     private val shapeCtx = VfxContext(width, height, bufW, bufH)
 

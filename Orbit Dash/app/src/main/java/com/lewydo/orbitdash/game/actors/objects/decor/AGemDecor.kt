@@ -16,8 +16,8 @@ class AGemDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow    = Image(gdxGame.assetsLoader.item_glow)
-    private val aDiamond = Image(gdxGame.assetsLoader.gem)
+    private val aGlow    = Image(gdxGame.assetsMsdf.glow).apply { color.a = 0.90f }
+    private val aDiamond = Image(gdxGame.assetsMsdf.gem)
 
     // ------------------------------------------------------------------------
     // Field

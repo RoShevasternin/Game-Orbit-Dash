@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
 
+private var onCreateCounter = 0
+
 class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
 
     companion object {
@@ -61,6 +63,9 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
     // ------------------------------------------------------------------------
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        onCreateCounter++
+        log("MainActivity: $onCreateCounter")
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 

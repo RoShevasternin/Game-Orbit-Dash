@@ -65,6 +65,12 @@
 `SizeScaler`). Пастка: там, де розмір задано через `setSizeScaled(...)`, сирі числа опиняються
 в actual-одиницях. Або пиши `3f.toActual`, або задавай частку від `width`.
 
+Для дітей `AConstraintLayout` є третій шлях, і він головний: `add(a) { scaled(); size(w, h);
+startToStart(margin = m) }` — усі числа в дизайн-одиницях, лейаут множить їх на
+`sizeScaler.factor` при кожному resolve (патч 19). Тоді в `sizeChanged()` **нічого не
+повторюється**: ні `setSizeScaled`, ні margin. Повтор `setSizeScaled` у `sizeChanged()`
+доречний лише для акторів поза лейаутом (`addActor`, позицією керує код — як м'яч в емблемі).
+
 `setOrigin(Align.center)` для дітей з `fillParent()` виставляй **у `act()` після `super.act()`**,
 а не в `sizeChanged()`: layout вирішує розмір дитини пізніше, і в `sizeChanged()` він ще нульовий.
 Так зроблено в `ASpike` і `AGem` — не «виправляй» це на «оптимальніше».
@@ -93,9 +99,9 @@
 
 ```kotlin
 val glow = VfxTexture(48f, 48f, base = msdf.star, shape = msdf.effect,
-    post = listOf(BlurEffect(radius = 2f)), density = 1f, bleed = 24f)
+    post = listOf(BlurEffect(blur = 24f)))          // Layer Blur 24 як у Figma; density, bleed — самі
 glow.image()                                // ×N — один draw call; межі = зірка 48, світіння назовні
-glow.effect<BlurEffect>()?.radius = 1.5f    // усі N оновляться наступним кадром
+glow.effect<BlurEffect>()?.blur = 30f       // усі N оновляться наступним кадром (bleed фіксований — під максимум)
 ```
 
 **Модель Figma: межі актора = фігура, усе зайве — назовні.** Це один механізм на три випадки:
@@ -109,9 +115,10 @@ glow.effect<BlurEffect>()?.radius = 1.5f    // усі N оновляться н�
 Деталь на всіх одна — `OverflowImage`: регіон ширший за актора на частки `padX/padY`.
 `bleed` — поле під post-ефект, на бік, у юнітах; **рахується сам** із ланцюга `post`
 (`VfxEffect.reachTexels()`), задавати вручну треба лише під ефект, чий параметр
-міняється на льоту. Ширину світіння крутиш через `density`, не через `radius`:
-`radius` лишається 2 (крок понад 2 текселі дає смуги), `density 1` → ~19 юнітів
-назовні, `0.5` → ~37, `2` → ~10. Звичайний `Image(msdf.x)` — не використовуй: без
+міняється на льоту. `BlurEffect(blur = B)` — **`B` = Layer Blur із Figma, у юнітах**, і
+більше нічого: `bleed = B` (як bounds шару у Figma → `outer` = фрейм «hug contents» 1:1),
+`density` рахується сама (`VfxEffect.preferredDensity()`: блюру досить σ ≈ 12 текселів,
+стеля — `DENSITY` екрана). Звичайний `Image(msdf.x)` — не використовуй: без
 msdf-шейдера це каша, а розмір — 87.5 %. Клітинка рахується з `viewBox`, несиметричні
 SVG (20×64, 200×100) — нормальні. **MSDF 9-patch не робимо**: розтяжні панелі — растрові
 `.9.png` в атласі `_9_PATCH`. `ABlurBack` / `AMask` — завжди `bleed = 0`.
@@ -146,6 +153,12 @@ blending у порожній FBO записалось би `rgb = α`, і аль
 **Будь-який новий кеш на базі FBO або GL-only текстури зобов'язаний під'єднатись до
 `contextGeneration`.**
 
+Окремий випадок — **`object` з GL-ресурсом**. `VfxTextures`, `VfxShaderCache`, `Blit` живуть
+довше за `GDXGame`: Android може знищити Activity, лишивши процес, і `create()` прийде вдруге
+після `dispose()`. Тому GL-ресурс у singleton'і — **ніколи `by lazy`**: nullable поле,
+створення на вимогу, `dispose()` обнуляє (як `whiteTex` / `batch` у `VfxTextures`). Інакше
+перший кадр після повернення — `No buffer allocated!` (патч 20).
+
 `Texture(pixmap)` у libGDX **не керована**. Якщо текстуру захоплюють назавжди (як
 `TextureEmpty`), роби `Texture(PixmapTextureData(pm, null, false, false, true))` і тримай
 `Pixmap` живим — `disposePixmap` мусить бути `false`.
@@ -158,8 +171,13 @@ PNG (`item_glow`) або `VfxTexture(base = msdf, post = [BlurEffect])`. Кое�
 і формула збережені в `docs/decisions.md` §6а — якщо колись знадобиться шейдерне світіння
 «як у Figma», не калібруй заново.
 
-`BlurEffect.radius` — крок семплів у текселях буфера, **не** σ і **не** Layer Blur із Figma.
-Крок > 2 текселі дає смуги; ширше світіння — нижча `density`, не більший radius.
+`BlurEffect(blur)` — **Layer Blur із Figma один в один**, у юнітах (патч 18, 10 вересня
+2026). Усередині: σ = 0.426·blur (фіт по експорту, RMS 0.006); крок семплів ≤ 2 текселі
+(більше — смуги), σ добирається повторами пари H+V; якщо буфер повної роздільності
+(`VfxGroup`, `ABlurBack`) — піраміда ½ до σ ≈ 12 текселів і назад. Перевірено на пристрої:
+RMS 0.007 (авто-density) і 0.009 (піраміда) проти еталона `TEST_CIRCLE.png`. **Лише H+V**:
+діагональні паси в одному квадранті роблять еліпс, не додавай. `VfxTexture` клемпить
+буфер під `GL_MAX_TEXTURE_SIZE` пропорційно. `ABlur.blur` / `ABlurBack.blur` — ті самі юніти.
 
 ## Комбо: чому воно таке вузьке
 

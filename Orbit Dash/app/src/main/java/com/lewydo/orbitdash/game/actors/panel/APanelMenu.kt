@@ -109,6 +109,9 @@ class APanelMenu(override val screen: AdvancedScreen) : AAutoLayout(
         // adsAvailable = false, а refresh(false) вилетів би на ранньому виході —
         // тому стартовий стан виставляємо напряму.
         setAdButtonsEnabled(adsAvailable)
+
+        // test
+        setDailyBadge(true)
     }
 
     // ------------------------------------------------------------------------

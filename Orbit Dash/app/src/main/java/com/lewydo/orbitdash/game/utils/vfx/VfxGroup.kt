@@ -181,7 +181,7 @@ open class VfxGroup(
         val outerH = height + bleed * 2f
         val bufW   = (outerW * scaleX).toInt().coerceAtLeast(1)
         val bufH   = (outerH * scaleY).toInt().coerceAtLeast(1)
-        val ctx    = VfxContext(outerW, outerH, bufW, bufH)
+        val ctx    = VfxContext(outerW, outerH, bufW, bufH, pool)
 
         tmpProj.set(batch.projectionMatrix)
         tmpTrans.set(batch.transformMatrix)

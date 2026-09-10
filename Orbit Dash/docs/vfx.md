@@ -47,9 +47,9 @@
 
 ```kotlin
 val glow = VfxTexture(48f, 48f, base = msdf.star, shape = msdf.effect,
-    post = listOf(BlurEffect(radius = 2f)), density = 1f, bleed = 24f)
+    post = listOf(BlurEffect(blur = 24f)))            // density і bleed — самі
 glow.image()                                    // ×N — один draw call; межі = зірка 48
-glow.effect<BlurEffect>()?.radius = 1.5f        // усі N оновляться
+glow.effect<BlurEffect>()?.blur = 30f           // усі N оновляться (bleed фіксований — під максимум)
 ```
 
 ### Ефекти назовні — `bleed` (модель Figma)
@@ -67,20 +67,28 @@ glow.effect<BlurEffect>()?.radius = 1.5f        // усі N оновляться
 розпливтись — зріже по краю текстури.
 
 **Рахується сам.** `VfxEffect.reachTexels()` каже, на скільки текселів ефект
-розповзається (`BlurEffect`: 4 проходи по ±4 семпли з кроком `radius`, проєкції
-напрямків `1 + 0 + 0.383 + 0.924 = 2.307` → `4·radius·2.307`), `VfxTexture` підсумовує
+розповзається, у юнітах (`VfxEffect.reachUnits()`; `BlurEffect` → `blur`, як bounds шару у
+Figma: гаус там уже ≈ 0.01), `VfxTexture` підсумовує
 ланцюг `post` і ділить на `density`. У конструкторі `bleed` не вказуєш; подивитись —
 `tex.bleed`. Явне число — лише коли параметр ефекту міняється на льоту: FBO фіксований,
 тож став під максимум.
 
-**Ширину світіння задає `density`, не `radius`.** `radius` лишається 2 — крок понад
-2 текселі дає смуги. А `density` — це водночас роздільність, якої світінню не треба:
+**Один параметр — `blur`, як Layer Blur у Figma.** `BlurEffect(blur = 68f)` на колі 100 —
+той самий шар, що у Figma, `outer` = 236 = фрейм «hug contents». Роздільність теж
+рахується сама: `VfxEffect.preferredDensity()` — блюру досить σ ≈ 12 текселів (менше —
+після апскейлу видно злами нахилу між текселями; перевірено на 6 і 12), стеля —
+`DENSITY` екрана. Явна `density` лишається як override.
 
-| `density` | назовні | `bleed` | буфер для 186×101 |
+| Layer Blur | σ, юн. | авто-density | буфер для кола 100 |
 |---|---|---|---|
-| `3f` | ~6 юнітів | 7 | 600×345 px |
-| `1f` | ~18 | 19 | 224×139 |
-| `0.5f` | ~37 | 37 | 130×88 |
+| 10 | 4.3 | 2.8 | 336×336 px |
+| 30 | 12.8 | 0.94 | 151×151 |
+| 68 | 29 | 0.41 | 98×98 |
+
+Усередині: σ = 0.426·blur; крок семплів ≤ 2, паси H+V повторюються, поки σ не набереться;
+буфер повної роздільності (`VfxGroup`, `ABlurBack`) — піраміда ½ до σ ≈ 12 текселів,
+блюр там, один білінійний апскейл назад. Обидва шляхи заміряні на пристрої проти
+експорту з Figma: RMS 0.007 і 0.009 (`decisions.md` → патч 18).
 
 `ABlurBack` / `AMask` — завжди `bleed = 0`: знімок екрана береться рівно з `width×height`,
 а маска лягає на весь буфер разом із полем.
@@ -204,5 +212,6 @@ Ping-pong пайплайн inline у `draw()`. `autoCache` рахує хеш с�
 різкий. Світіння: PNG із Figma (`item_glow`) або `VfxTexture(base = msdf, post =
 [BlurEffect])`. Числа калібрування збережено в `decisions.md` §6а.
 
-`BlurEffect.radius` — крок семплів у текселях буфера, не σ. Крок > 2 дає смуги;
-ширше світіння — нижча `density`.
+`BlurEffect(blur)` — Layer Blur із Figma у юнітах; це гаус із `σ = 0.426·blur`, і
+`BlurEffect` відтворює його з RMS < 0.01 на обох шляхах — авто-density і піраміда
+(патч 18, `decisions.md` → «Світіння: чому radius ≠ Layer Blur»).

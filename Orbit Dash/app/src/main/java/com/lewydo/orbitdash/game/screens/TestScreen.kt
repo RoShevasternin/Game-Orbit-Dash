@@ -15,6 +15,7 @@ import com.lewydo.orbitdash.game.utils.TIME_ANIM_SCREEN
 import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.actor.animDelay
 import com.lewydo.orbitdash.game.utils.actor.disable
+import com.lewydo.orbitdash.game.utils.actor.setSize
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 
@@ -65,21 +66,10 @@ class TestScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
 
     private fun AConstraintLayout.addMsdfSandbox() {
-//        val sharp = AMsdfImage(this@TestScreen, gdxGame.assetsMsdf.aaa)
-//        sharp.setSize(186f, 101f)
-//        add(sharp) { center() }                            // різка поверх — накладаються край у край
-//        sharp.debug()
-//
-//        // frame, що обіймає ефект — для вирівнювання відносно світіння
-//        val frame = Image(gdxGame.assetsMsdf.aaaGlow.region)
-//        frame.setSize(gdxGame.assetsMsdf.aaaGlow.outerWidth, gdxGame.assetsMsdf.aaaGlow.outerHeight)
-//        add(frame) { centerX(); bottomToTop(sharp, 40f) }
-//        frame.debug()                                      // рамка 234×149, світіння всередині
-//
-//        val glow = gdxGame.assetsMsdf.aaaGlow.image()      // шар: межі = фігура
-//        glow.setSize(186f, 101f)
-//        add(glow) { centerX(); topToBottom(sharp, 40f) }
-//        glow.debug()                                       // рамка 186×101, світіння виходить за неї
+        val img = /*gdxGame.assetsMsdf.glowTex.image() */Image(gdxGame.assetsMsdf.glow)
+        img.setSize(gdxGame.assetsMsdf.glowTex.outerWidth, gdxGame.assetsMsdf.glowTex.outerHeight)
+        add(img) { center(); verticalBias = 0.7f }
+        img.debug()
     }
 
     /** Поставити актора в лівий-нижній кут root. Розмір актор задає сам. */
