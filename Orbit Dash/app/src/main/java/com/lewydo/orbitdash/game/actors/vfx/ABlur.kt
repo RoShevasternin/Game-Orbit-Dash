@@ -16,6 +16,8 @@ import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
  *   isStaticEffect   — заморозити результат (від VfxGroup)
  *   rerenderOnce()   — примусово перерендерити (від VfxGroup)
  *   textureRegionBlur — зовнішня текстура замість дітей (наприклад скріншот)
+ *   density          — від VfxGroup: null = авто (блюр просить мало → буфер /2, /4 … від
+ *                      екранного); анімуєш blur від малого — задай явно під найменше значення
  */
 class ABlur(
     override val screen: AdvancedScreen,

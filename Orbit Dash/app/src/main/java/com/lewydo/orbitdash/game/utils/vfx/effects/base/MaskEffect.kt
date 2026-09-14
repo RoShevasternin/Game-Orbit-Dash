@@ -29,6 +29,9 @@ class MaskEffect() : VfxEffect() {
 
     override val fragmentShader = "shader/base/mask/maskFS.glsl"
 
+    /** Край маски має бути різким → потрібна вся густина, яку дає екран (стеля). */
+    override fun preferredDensity(): Float = Float.POSITIVE_INFINITY
+
     /** Маска як регіон (атлас або full-текстура). Головне сховище. */
     var maskRegion: TextureRegion? = null
 

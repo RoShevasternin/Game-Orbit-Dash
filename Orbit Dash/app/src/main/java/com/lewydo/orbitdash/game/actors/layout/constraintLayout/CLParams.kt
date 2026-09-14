@@ -9,18 +9,15 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 //    FIXED         — розмір береться з actor.width/height (default)
 //    MATCH_PARENT  — розмір = розміру layout (з урахуванням margin)
 //    PERCENT       — розмір = відсоток від розміру layout
-//    SCALED        — розмір = дизайн-число × sizeScaler.factor лейауту
 //
-//  ДИЗАЙН-ОДИНИЦІ (scaled):
-//    scaled()               — усі числа в цьому блоці — з макета (Figma), як у
-//                             setSizeScaled / toActual; лейаут множить їх на
-//                             sizeScaler.factor при КОЖНОМУ resolve. Тому після
-//                             зміни розміру групи нічого не треба повторювати
-//                             в sizeChanged() — ні розмір, ні margin.
-//    size(w, h)             — розмір у дизайн-одиницях (режим SCALED)
+//  ДИЗАЙН-ОДИНИЦІ — властивість ГРУПИ, не вузла:
+//    лейаут, що оголосив sizeScaler, читає всі margin як числа з макета і множить
+//    їх на factor при кожному resolve; лейаут без скейлера має factor = 1 — числа
+//    йдуть як є. Нічого не повторюється в sizeChanged().
+//    size(w, h)             — розмір у дизайн-одиницях; пише в реєстр групи —
+//                             той самий, що setSizeScaled (патч 22)
 //
 //    add(aPoint) {
-//        scaled()
 //        size(10f, 10f)
 //        startToStart(margin = 10f); topToTop(margin = 10f)
 //    }
@@ -69,13 +66,12 @@ enum class Dimension {
     FIXED,            // розмір не змінюється (default)
     MATCH_PARENT,     // розмір = layout size
     PERCENT,          // розмір = percent * layout size
-    SCALED,           // розмір = designWidth/Height × sizeScaler.factor лейауту
     MATCH_CONSTRAINT  // розмір = відстань між двома anchor-ами (як 0dp в Android)
     // висота: потрібні topTo* + bottomTo* одночасно
     // ширина: потрібні startTo* + endTo* одночасно
 }
 
-class CLParams(internal val layout: AConstraintLayout) {
+class CLParams(internal val layout: AConstraintLayout, private val actor: Actor) {
 
     // ── Dimension ─────────────────────────────────────────────────────────────
 
@@ -83,20 +79,11 @@ class CLParams(internal val layout: AConstraintLayout) {
     var heightMode   = Dimension.FIXED
     var widthPercent  = 1f   // використовується тільки якщо widthMode == PERCENT
     var heightPercent = 1f   // використовується тільки якщо heightMode == PERCENT
-    var designWidth   = 0f   // використовується тільки якщо widthMode == SCALED
-    var designHeight  = 0f   // використовується тільки якщо heightMode == SCALED
 
     // ── Дизайн-одиниці ────────────────────────────────────────────────────────
 
-    /**
-     * true → усі числа вузла (size, margin) — у дизайн-одиницях макета; лейаут
-     * множить їх на sizeScaler.factor при кожному resolve. Те саме, що
-     * setSizeScaled / toActual, тільки без повтору в sizeChanged().
-     */
-    var scaled = false
-
-    /** Дизайн → актуальне через sizeScaler лейауту, якщо вузол у дизайн-одиницях; інакше як є. */
-    internal fun toActual(value: Float): Float = if (scaled) layout.sizeScaler.toActual(value) else value
+    /** Дизайн → актуальне через sizeScaler ЛЕЙАУТУ. Без скейлера factor = 1 — число як є. */
+    internal fun toActual(value: Float): Float = layout.sizeScaler.toActual(value)
 
     // ── Horizontal anchors ────────────────────────────────────────────────────
 
@@ -108,8 +95,8 @@ class CLParams(internal val layout: AConstraintLayout) {
     var horizontalBias: Float = 0.5f
         set(value) { field = value.coerceIn(0f, 1f) }
 
-    // Пишеш сире число (дизайн- або актуальне — за scaled), лейаут читає вже
-    // помножене: так усі resolve* лишаються без змін.
+    // Пишеш число з макета, лейаут читає вже помножене на factor групи:
+    // так усі resolve* лишаються без змін.
     var marginStart : Float = 0f
         get() = toActual(field)
     var marginEnd   : Float = 0f
@@ -132,14 +119,14 @@ class CLParams(internal val layout: AConstraintLayout) {
 
     // ── Dimension shortcuts ───────────────────────────────────────────────────
 
-    /** Усі числа цього вузла — в дизайн-одиницях макета (див. scaled). Викликати ПЕРШИМ у блоці. */
-    fun scaled() { scaled = true }
-
-    /** Розмір у дизайн-одиницях: актуальний = design × sizeScaler.factor, перераховується при кожному resolve. */
+    /**
+     * Розмір у дизайн-одиницях. Цукор над реєстром групи: те саме, що
+     * actor.setSizeScaled(w, h) перед add(). Актор отримує розмір ще в блоці,
+     * тому require(width > 0) в add() проходить.
+     */
     fun size(width: Float, height: Float) {
-        designWidth = width;  widthMode  = Dimension.SCALED
-        designHeight = height; heightMode = Dimension.SCALED
-        scaled = true
+        with(layout) { actor.setSizeScaled(width, height) }
+        widthMode = Dimension.FIXED; heightMode = Dimension.FIXED
     }
 
     /** Ширина і висота = розмір layout */

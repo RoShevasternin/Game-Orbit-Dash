@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class LoaderScreen : AdvancedScreen() {
 
     companion object {
-        private val NEXT_SCREEN_NAME = MenuScreen::class.java.name
+        private val NEXT_SCREEN_NAME = TestScreen::class.java.name
     }
 
     private val progressFlow     = MutableStateFlow(0f)
@@ -98,11 +98,27 @@ class LoaderScreen : AdvancedScreen() {
     // Logic
     // ------------------------------------------------------------------------
     private fun loadSplashAssets() {
+        // MSDF-атлас — синхронно і ПЕРШИМ: усі актори лоадера (емблема, комета)
+        // беруть із нього фігури, а створюються вони нижче, у super.show().
+        // loadAtlasNow перезаписує loadableAtlasList, тому кличемо його до
+        // loadAssets(), поки в черзі нічого не чекає.
+        gdxGame.spriteManager.loadAtlasNow(SpriteManager.EnumAtlas.MSDF)
+        gdxGame.assetsMsdf
+
+        // Шрифти, які бере сам лоадер (AMainLoader: титули + прогрес). Форсимо тут,
+        // щоб пауза була в одному видимому місці, а не «де перший AMsdfLabel».
+        // Заміряно: ExtraBold 300 мс, Medium 126 мс. Inter-Bold НЕ чіпаємо —
+        // він потрібен лише APanelGameHud, тобто вже в грі.
+        with(gdxGame.msdfManager) {
+            fontInter_ExtraBold
+            fontInter_Medium
+        }
+
         with(gdxGame.spriteManager) {
             loadableAtlasList = mutableListOf(SpriteManager.EnumAtlas.LOADER.data)
             loadAtlas()
             loadableTexturesList = mutableListOf(
-                SpriteManager.EnumTexture.ORBIT_GLOW.data,
+                //SpriteManager.EnumTexture.ORBIT_GLOW.data,
             )
             loadTexture()
             //loadableGroupList = mutableListOf(SpriteManager.EnumTextureGroup.LIGHT_C.data)

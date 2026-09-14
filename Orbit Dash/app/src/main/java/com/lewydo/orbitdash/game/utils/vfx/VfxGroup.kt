@@ -99,6 +99,26 @@ open class VfxGroup(
             needsUpdate = true
         }
 
+    /**
+     * Текселів буфера на world-юніт.
+     *
+     * null (за замовчуванням) — АВТО: максимум із того, що просять ефекти
+     * (VfxEffect.preferredDensity()), стеля — екранна густина, і тільки кроком ½
+     * від неї (screen, /2, /4, /8 …). Квантування навмисне: VfxPool ніколи не
+     * звільняє буфери, тож анімація blur без нього наплодила б bucket на кожен
+     * проміжний розмір. Група з одним блюром 40 на 1080p отримує /4 замість
+     * повної — у 16 разів менше пам'яті й філу; група з маскою — повну, як було.
+     *
+     * Явне число — як задано (не вище екранної). Потрібне, коли ефект міняється
+     * на льоту і хочеш зафіксувати роздільність під найменше значення.
+     */
+    var density: Float? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            needsUpdate = true
+        }
+
     private var lastCacheKey = Long.MIN_VALUE
 
     private var cachedFbo : FrameBuffer? = null
@@ -174,13 +194,15 @@ open class VfxGroup(
 
         val pool = screen.renderPipeline.vfxPool
 
+        // Одна густина на обидві осі: viewport ізотропний, а буфер із різним
+        // кроком по X і Y зламав би блюр (u_groupSize рахує крок із bufferW).
         val vp     = stage!!.viewport
-        val scaleX = vp.screenWidth.toFloat()  / vp.worldWidth.coerceAtLeast(1f)
-        val scaleY = vp.screenHeight.toFloat() / vp.worldHeight.coerceAtLeast(1f)
+        val screenDensity = vp.screenWidth.toFloat() / vp.worldWidth.coerceAtLeast(1f)
+        val d      = resolveDensity(screenDensity)
         val outerW = width  + bleed * 2f
         val outerH = height + bleed * 2f
-        val bufW   = (outerW * scaleX).toInt().coerceAtLeast(1)
-        val bufH   = (outerH * scaleY).toInt().coerceAtLeast(1)
+        val bufW   = (outerW * d).toInt().coerceAtLeast(1)
+        val bufH   = (outerH * d).toInt().coerceAtLeast(1)
         val ctx    = VfxContext(outerW, outerH, bufW, bufH, pool)
 
         tmpProj.set(batch.projectionMatrix)
@@ -267,6 +289,27 @@ open class VfxGroup(
     }
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * Густина буфера: явна — як є; авто — найбільша вимога ефектів, округлена
+     * ВГОРУ до кроку ½ від екранної. Ефекти без думки (null) не голосують;
+     * якщо не голосує ніхто — екранна, як було до патча.
+     */
+    private fun resolveDensity(screenDensity: Float): Float {
+        density?.let { return it.coerceIn(0.01f, screenDensity) }
+
+        var need = 0f
+        for (i in _effects.indices) {
+            val p = _effects[i].preferredDensity() ?: continue
+            if (p > need) need = p
+        }
+        if (need <= 0f) return screenDensity
+
+        // Ділимо навпіл, поки наступний крок усе ще покриває вимогу
+        var d = screenDensity
+        while (d * 0.5f >= need) d *= 0.5f
+        return d
+    }
 
     private fun setupCamera() {
         // Камера на (−bleed..width+bleed) × (−bleed..height+bleed): діти малюються

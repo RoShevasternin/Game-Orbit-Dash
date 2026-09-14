@@ -91,7 +91,7 @@ class SpriteManager(var assetManager: AssetManager) {
         //BRAND_BACKGROUND(TextureData("textures/brand/background.png")),
 
         // Loader
-        ORBIT_GLOW(TextureData("textures/loader/orbit_glow.png")),
+        //ORBIT_GLOW(TextureData("textures/loader/orbit_glow.png")),
 
 //        // All
 //        LIGHT    (TextureData("textures/all/LIGHT.png")),

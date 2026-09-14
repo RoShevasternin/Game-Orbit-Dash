@@ -128,12 +128,6 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
 
         collectModelPlayer()
 
-        // MSDF-атлас потрібен усім екранам, включно з Brand, важить кілобайти й ні
-        // від чого не залежить — вантажимо синхронно тут. Далі assetsMsdf доступний
-        // із першого кадру. (loadAssets() лоадера підхопить його ще раз — дедуплікується.)
-        spriteManager.loadAtlasNow(SpriteManager.EnumAtlas.MSDF)
-        assetsMsdf
-
         val firstScreenName = if (BuildConfig.DEBUG) LoaderScreen::class.java.name else BrandScreen::class.java.name
         navigationManager.navigate(firstScreenName)
 

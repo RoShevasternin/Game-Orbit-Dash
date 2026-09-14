@@ -4,11 +4,14 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
+import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.debug.ADebugHud
 import com.lewydo.orbitdash.game.actors.debug.addDebugHud
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
+import com.lewydo.orbitdash.game.actors.ui.ARoundRect
+import com.lewydo.orbitdash.game.actors.vfx.ABlur
 import com.lewydo.orbitdash.game.actors.vfx.msdf.AMsdfImage
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.TIME_ANIM_SCREEN
@@ -18,6 +21,9 @@ import com.lewydo.orbitdash.game.utils.actor.disable
 import com.lewydo.orbitdash.game.utils.actor.setSize
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
+import com.lewydo.orbitdash.game.utils.vfx.VfxTexture
+import com.lewydo.orbitdash.game.utils.vfx.effects.RoundRectEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
 
 class TestScreen : AdvancedScreen() {
 
@@ -66,16 +72,29 @@ class TestScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
 
     private fun AConstraintLayout.addMsdfSandbox() {
-        val img = /*gdxGame.assetsMsdf.glowTex.image() */Image(gdxGame.assetsMsdf.glow)
-        img.setSize(gdxGame.assetsMsdf.glowTex.outerWidth, gdxGame.assetsMsdf.glowTex.outerHeight)
-        add(img) { center(); verticalBias = 0.7f }
-        img.debug()
+        addBlurStand()
     }
 
-    /** Поставити актора в лівий-нижній кут root. Розмір актор задає сам. */
-    private fun AConstraintLayout.at(x: Float, y: Float, actor: Actor) {
-        actor.debug()
-        add(actor) { startToStart(margin = x); bottomToBottom(margin = y) }
+    // ── ABlur: авто-густина (ліворуч) проти повної (праворуч). ТИМЧАСОВЕ ──────
+    // Дитина рухається, тож autoCache перемальовує щокадру — саме той випадок,
+    // де density має значення. Візуально дві плями мають бути однакові.
+    private fun AConstraintLayout.addBlurStand() {
+        fun stand(explicit: Float?) = ABlur(this@TestScreen).apply {
+            setSize(140f, 140f)
+            blur    = 30f
+            density = explicit
+            addActor(Image(drawerUtil.getTexture(Color.ORANGE)).apply {
+                setBounds(30f, 30f, 80f, 80f)
+                addAction(Actions.forever(Actions.sequence(
+                    Actions.moveBy( 20f, 0f, 1f),
+                    Actions.moveBy(-20f, 0f, 1f),
+                )))
+            })
+        }
+        val auto = stand(null)   // очікувано screen/4 ≈ 0.75 → буфер 105×105
+        val full = stand(3f)     // як було до патча → 420×420
+        add(auto) { startToStart(margin = 20f); bottomToBottom(margin = 120f) }
+        add(full) { endToEnd(margin = 20f);     bottomToBottom(margin = 120f) }
     }
 
 }

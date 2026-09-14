@@ -97,7 +97,7 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
     // ── Public API ────────────────────────────────────────────────────────────
 
     fun add(actor: Actor, block: CLParams.() -> Unit): Actor {
-        val params = CLParams(this).apply(block)
+        val params = CLParams(this, actor).apply(block)
 
         if (params.widthMode == Dimension.FIXED && params.heightMode == Dimension.FIXED) {
             require(actor.width > 0f && actor.height > 0f) {
@@ -312,14 +312,12 @@ open class AConstraintLayout(override val screen: AdvancedScreen) : AdvancedGrou
             Dimension.FIXED -> actor.width
             Dimension.MATCH_PARENT -> width
             Dimension.PERCENT -> width * p.widthPercent
-            Dimension.SCALED -> p.toActual(p.designWidth)
             Dimension.MATCH_CONSTRAINT -> resolveMatchWidth(p)
         }
         val newH = when (p.heightMode) {
             Dimension.FIXED -> actor.height
             Dimension.MATCH_PARENT -> height
             Dimension.PERCENT -> height * p.heightPercent
-            Dimension.SCALED -> p.toActual(p.designHeight)
             Dimension.MATCH_CONSTRAINT -> resolveMatchHeight(p)
         }
         if (newW != actor.width || newH != actor.height) {

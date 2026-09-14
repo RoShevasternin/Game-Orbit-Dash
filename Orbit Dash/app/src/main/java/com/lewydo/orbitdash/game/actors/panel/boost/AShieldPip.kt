@@ -55,12 +55,6 @@ class AShieldPip(override val screen: AdvancedScreen) : AConstraintLayout(screen
         applyState()
     }
 
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (aGlowImg.parent == null) return
-        aGlowImg.setSizeScaled(GLOW_W, GLOW_H)
-    }
-
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------

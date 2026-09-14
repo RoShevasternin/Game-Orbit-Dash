@@ -69,13 +69,13 @@ class VfxTexture(
 ) : Disposable {
 
     /**
-     * Текселів на юніт. Явне число — як задано. null — мінімум із того, що
-     * просять post-ефекти (BlurEffect: σ ≈ 12 теселів), не вище екранної
-     * DENSITY: розмитій текстурі роздільність фігури не потрібна, а буфер
-     * від density квадратично.
+     * Текселів на юніт. Явне число — як задано. null — максимум із того, що
+     * вимагають post-ефекти (BlurEffect: σ ≈ 12 текселів; MaskEffect: екранна),
+     * не вище екранної DENSITY: розмитій текстурі роздільність фігури не
+     * потрібна, а буфер від density квадратично.
      */
     val density: Float = density
-        ?: post.mapNotNull { it.preferredDensity() }.minOrNull()?.coerceAtMost(VfxTextures.DENSITY)
+        ?: post.mapNotNull { it.preferredDensity() }.maxOrNull()?.coerceAtMost(VfxTextures.DENSITY)
         ?: VfxTextures.DENSITY
 
     /**

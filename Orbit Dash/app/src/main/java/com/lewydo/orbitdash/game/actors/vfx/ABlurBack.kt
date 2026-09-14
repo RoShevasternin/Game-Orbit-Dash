@@ -1,5 +1,7 @@
 package com.lewydo.orbitdash.game.actors.vfx
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -8,8 +10,6 @@ import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
-import com.lewydo.orbitdash.game.utils.captureScreenShot
-import com.lewydo.orbitdash.game.utils.recreateGlOnlyTexture
 import com.lewydo.orbitdash.game.utils.vfx.VfxGroup
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.MaskEffect
@@ -162,4 +162,34 @@ class ABlurBack(
     override fun rotateBy(amountInDegrees: Float) { throw Exception("$currentClassName: NOT rotateBy") }
     override fun getScaleX(): Float = 1f
     override fun getScaleY(): Float = 1f
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GL-only знімок екрана — приватна кухня ABlurBack. Тут, а не в Util: обидві
+// функції — половини одного механізму, і сенс мають лише поруч з onContextLost().
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Скопіювати прямокутник поточного framebuffer у текстуру регіону — на GPU,
+ * без повернення на CPU (glCopyTexSubImage2D, не glReadPixels). На тайловому
+ * GPU це все одно примусовий resolve поточного render-pass — тому знімок
+ * робимо раз (isStaticEffect + captureOnce), а не щокадру.
+ */
+private fun captureScreenShot(region: TextureRegion, x: Int, y: Int, w: Int, h: Int) {
+    Gdx.gl.glBindTexture(GL20.GL_TEXTURE_2D, region.texture.textureObjectHandle)
+    Gdx.gl20.glCopyTexSubImage2D(GL20.GL_TEXTURE_2D, 0, 0, 0, x, y, w, h)
+}
+
+/**
+ * Перестворити GL-only текстуру регіону — Texture(w, h, format), у яку
+ * копіюють знімок екрана. Така текстура не керована: після втрати контексту
+ * libGDX не має з чого її відновити, а glCopyTexSubImage2D у мертвий хендл дає
+ * GL_INVALID_OPERATION і чорний знімок.
+ *
+ * setTexture() не чіпає UV — flip лишається як був, і Image, що тримає цей
+ * регіон, працює далі без переприв'язки.
+ */
+private fun TextureRegion.recreateGlOnlyTexture(w: Int, h: Int, format: Pixmap.Format) {
+    runCatching { texture?.dispose() }
+    setTexture(Texture(w.coerceAtLeast(1), h.coerceAtLeast(1), format))
 }

@@ -48,7 +48,7 @@ class ALevelPopup(override val screen: AdvancedScreen) : AdvancedGroup() {
 
     private fun addXPLbl() {
         addActor(aXPLbl)
-        aXPLbl.setBounds(82f, 127f, 533f, 98f)
+        aXPLbl.setBoundsScaled(82f, 127f, 533f, 98f)   // група тримає і розмір, і позицію
     }
 
     private fun addProgress() {

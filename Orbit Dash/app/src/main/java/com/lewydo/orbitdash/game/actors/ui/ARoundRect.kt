@@ -1,5 +1,6 @@
 package com.lewydo.orbitdash.game.actors.ui
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.vfx.VfxImage
@@ -39,4 +40,23 @@ class ARoundRect(override val screen: AdvancedScreen) : VfxImage(screen) {
     var strokeAlpha: Float
         get() = fx.strokeAlpha
         set(value) { fx.strokeAlpha = value }
+
+    /**
+     * Колір заливки окремо від обводки. Білий (за замовчуванням) = колір бере
+     * загальний тінт `color`, як було. Задаєш свій — тримай `color` білим,
+     * інакше вони перемножаться.
+     */
+    var fillColor: Color
+        get()      = fx.fillColor
+        set(value) { fx.fillColor.set(value) }
+
+    /** Колір обводки. Білий = з тінту актора. */
+    var strokeColor: Color
+        get()      = fx.strokeColor
+        set(value) { fx.strokeColor.set(value) }
+
+    /** Ширина зони згладжування в юнітах. Чіпати лише якщо край жорсткий/мильний. */
+    var aaWidth: Float
+        get()      = fx.aaWidth
+        set(value) { fx.aaWidth = value }
 }

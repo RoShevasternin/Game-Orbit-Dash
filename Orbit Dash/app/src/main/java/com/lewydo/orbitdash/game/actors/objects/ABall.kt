@@ -52,15 +52,15 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     override fun sizeChanged() {
         super.sizeChanged()
         setOrigin(Align.center)
-        // Розміри й відступи дітей — у дизайн-одиницях (scaled()), лейаут
-        // перераховує їх сам при кожному resolve. Тут повторювати нічого.
+        // Розміри дітей тримає реєстр групи, margin'и лейаут множить сам —
+        // тут повторювати нічого.
     }
 
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        add(aGlow) { scaled(); size(GLOW_SIZE, GLOW_SIZE); center() }
+        add(aGlow) { size(GLOW_SIZE, GLOW_SIZE); center() }
     }
 
     private fun addBall() {
@@ -69,7 +69,6 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     private fun addPoint() {
         add(aPoint) {
-            scaled()
             size(POINT_SIZE, POINT_SIZE)
             startToStart(margin = POINT_PADDING); topToTop(margin = POINT_PADDING)
         }

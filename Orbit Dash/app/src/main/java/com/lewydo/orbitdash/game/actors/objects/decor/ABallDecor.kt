@@ -39,19 +39,12 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
         }
     }
 
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (aGlow.parent == null) return
-        aGlow.setSizeScaled(100f, 100f)
-    }
-
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
         aGlow.setSizeScaled(100f, 100f)
         add(aGlow) { center() }
-        aGlow.debug()
     }
 
     private fun addBall() {

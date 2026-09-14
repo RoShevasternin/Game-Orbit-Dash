@@ -83,11 +83,6 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
         aShape.color.set(c).apply { a = aShape.color.a }
     }
 
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (aGlow.parent != null) aGlow.setSizeScaled(110f, 110f)
-    }
-
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------

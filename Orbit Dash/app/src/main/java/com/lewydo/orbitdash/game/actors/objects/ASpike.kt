@@ -55,11 +55,6 @@ class ASpike(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         aShape.color.set(ThemeManager.current.spike).apply { a = aShape.color.a }
     }
 
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (aGlow.parent != null) aGlow.setSizeScaled(100f, 100f)
-    }
-
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------

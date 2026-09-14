@@ -60,12 +60,6 @@ class APanelShield(override val screen: AdvancedScreen) : AAutoLayout(
         applySlots(0)
     }
 
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (listShieldPip.first().parent == null) return
-        listShieldPip.forEach { it.setSizeScaled(PIP_W, PIP_H) }
-    }
-
     // ------------------------------------------------------------------------
     // API
     // ------------------------------------------------------------------------

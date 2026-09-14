@@ -17,7 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class AdvancedGroup : WidgetGroup(), Disposable {
     abstract val screen: AdvancedScreen
 
-    open val sizeScaler: SizeScaler = SizeScaler(SizeScaler.Axis.X, 1f)
+    /** Дизайн-фрейм групи (Figma). 0 = фрейму нема: factor = 1, числа дітей — юніти сцени як є. */
+    open val sizeScaler: SizeScaler = SizeScaler(SizeScaler.Axis.X, 0f)
 
     /** Лінивий скоуп: створюється лише коли група реально ним користується. */
     private var _coroutine: CoroutineScope? = null
@@ -48,6 +49,26 @@ abstract class AdvancedGroup : WidgetGroup(), Disposable {
     // Список акторів які мають заповнювати всю групу
     private val fillActors = mutableListOf<Actor>()
 
+    // ------------------------------------------------------------------------
+    // Дизайн-геометрія дітей. Той самий механізм, що fillActors, тільки замість
+    // «100 % батька» — число з макета. Записали один раз через setSizeScaled /
+    // setPositionScaled — група сама переприкладає при кожній зміні свого розміру.
+    // Розмір і позиція — окремі слоти: позицію реєструють лише дітям поза
+    // лейаутом; кому позицію веде код щокадру (орбіта) — тримає тільки розмір.
+    // ------------------------------------------------------------------------
+    private class DesignSpec {
+        var w = -1f;        var h = -1f          // < 0  — розмір не тримаємо
+        var x = Float.NaN;  var y = Float.NaN    // NaN — позицію не тримаємо
+    }
+
+    private val designSpecs = LinkedHashMap<Actor, DesignSpec>()
+
+    // Похідні дизайн-величини, що не є геометрією актора: радіус кутів, товщина
+    // обводки, blur, bleed. Слот під кожну заводити нема сенсу — список відкритий.
+    // Тому блок: ставить їх через toActual, група кличе його одразу і після
+    // applyDesignSpecs() при кожному sizeChanged(). Не hot path — лише на resize.
+    private val designBlocks = ArrayList<() -> Unit>()
+
     /** Створення й додавання дітей. Викликається РІВНО ОДИН РАЗ. */
     abstract fun addActorsOnGroup()
 
@@ -70,8 +91,11 @@ abstract class AdvancedGroup : WidgetGroup(), Disposable {
 
     override fun sizeChanged() {
         super.sizeChanged()
-        tryInitGroup()
+        tryInitGroup()   // свіжий factor і (один раз) addActorsOnGroup() — реєстр наповнюється тут
         for (i in fillActors.indices) fillActors[i].setSize(width, height)
+        applyDesignSpecs()
+        // Похідні — ПІСЛЯ геометрії: радіус може залежати від уже виставленого розміру
+        for (i in designBlocks.indices) designBlocks[i]()
     }
 
     private fun tryInitGroup() {
@@ -90,6 +114,8 @@ abstract class AdvancedGroup : WidgetGroup(), Disposable {
             postDrawArray.clear()
 
             fillActors.clear()
+            designSpecs.clear()
+            designBlocks.clear()
 
             disposableSet.disposeAll()
             disposableSet.clear()
@@ -177,16 +203,62 @@ abstract class AdvancedGroup : WidgetGroup(), Disposable {
         restoreTransforms(mapIsTransform)
     }
 
-    protected fun Actor.setBoundsScaled(x: Float, y: Float, width: Float, height: Float) {
-        setBounds(x.toActual, y.toActual, width.toActual, height.toActual)
+    // ------------------------------------------------------------------------
+    // Дизайн-одиниці: поставити І ТРИМАТИ. internal, а не protected — CLParams.size()
+    // пише в цей самий реєстр.
+    // ------------------------------------------------------------------------
+
+    /** Розмір у дизайн-одиницях. Група переприкладе його при кожному своєму sizeChanged(). */
+    internal fun Actor.setSizeScaled(width: Float, height: Float) {
+        designSpecs.getOrPut(this) { DesignSpec() }.also { it.w = width; it.h = height }
+        setSize(width.toActual, height.toActual)
     }
 
-    protected fun Actor.setBoundsScaled(position: Vector2, size: Vector2) {
+    /** Позиція у дизайн-одиницях. Лише дітям поза лейаутом — констрейнти ставлять позицію самі. */
+    internal fun Actor.setPositionScaled(x: Float, y: Float) {
+        designSpecs.getOrPut(this) { DesignSpec() }.also { it.x = x; it.y = y }
+        setPosition(x.toActual, y.toActual)
+    }
+
+    internal fun Actor.setBoundsScaled(x: Float, y: Float, width: Float, height: Float) {
+        setSizeScaled(width, height)
+        setPositionScaled(x, y)
+    }
+
+    internal fun Actor.setBoundsScaled(position: Vector2, size: Vector2) {
         setBoundsScaled(position.x, position.y, size.x, size.y)
     }
 
-    protected fun Actor.setSizeScaled(width: Float, height: Float) {
-        setSize(width.toActual, height.toActual)
+    /** Зняти з реєстру: далі геометрією керує код (анімація розміру, ручний layout). */
+    internal fun Actor.freeScaled() { designSpecs.remove(this) }
+
+    /**
+     * Тримати похідні величини в дизайн-одиницях — те саме, що setSizeScaled, але
+     * для того, чого в DesignSpec нема:
+     *
+     *     keepScaled { aBg.radius = 16f.toActual; aBg.strokeWidth = 2f.toActual }
+     *
+     * Блок виконується одразу і при кожному sizeChanged() після геометрії. Лише
+     * присвоєння — без алокацій і важкої роботи. Повертає блок, щоб можна було
+     * зняти через freeScaled(block), коли величину забирає анімація.
+     */
+    fun keepScaled(block: () -> Unit): () -> Unit {
+        designBlocks.add(block)
+        block()
+        return block
+    }
+
+    /** Зняти блок з реєстру: далі величиною керує код. */
+    fun freeScaled(block: () -> Unit) { designBlocks.remove(block) }
+
+    private fun applyDesignSpecs() {
+        if (designSpecs.isEmpty()) return
+        for ((actor, s) in designSpecs) {
+            // parent == null — актор у пулі (піпи щита): пам'ятаємо, застосуємо, як повернеться
+            if (actor.parent !== this) continue
+            if (s.w >= 0f)    actor.setSize(s.w.toActual, s.h.toActual)
+            if (!s.x.isNaN()) actor.setPosition(s.x.toActual, s.y.toActual)
+        }
     }
 
     fun interface Drawer {

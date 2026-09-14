@@ -15,23 +15,30 @@ import com.lewydo.orbitdash.game.utils.font.msdf.effects.InnerShadowEffect
 
 class MsdfManager : Disposable {
 
-    val fillShader   = MsdfEffectShader("shader/base/msdf/font/msdf_fill.glsl")
-    val strokeShader = MsdfEffectShader("shader/base/msdf/font/msdf_stroke.glsl")
-    val shadowShader = MsdfEffectShader("shader/base/msdf/font/msdf_shadow.glsl")
-    val innerShader  = MsdfEffectShader("shader/base/msdf/font/msdf_inner_shadow.glsl")
+    // Створене — і ТІЛЬКИ воно — лягає сюди. Інакше dispose() звертається до
+    // lazy-полів і створює те, чим жодного разу не користувались: читання шрифта
+    // з диска й компіляція шейдера на виході, коли GL-контексту вже може не бути.
+    private val created = mutableListOf<Disposable>()
 
-    val fontInter_Medium = MsdfFont(
+    private fun <T : Disposable> onDemand(block: () -> T) = lazy { block().also { created.add(it) } }
+
+    val fillShader   by onDemand { MsdfEffectShader("shader/base/msdf/font/msdf_fill.glsl") }
+    val strokeShader by onDemand { MsdfEffectShader("shader/base/msdf/font/msdf_stroke.glsl") }
+    val shadowShader by onDemand { MsdfEffectShader("shader/base/msdf/font/msdf_shadow.glsl") }
+    val innerShader  by onDemand { MsdfEffectShader("shader/base/msdf/font/msdf_inner_shadow.glsl") }
+
+    val fontInter_Medium by onDemand { MsdfFont(
         "font/msdf/Inter-Medium.json",
         "font/msdf/Inter-Medium.png",
-    )
-    val fontInter_Bold = MsdfFont(
+    ) }
+    val fontInter_Bold by onDemand { MsdfFont(
         "font/msdf/Inter-Bold.json",
         "font/msdf/Inter-Bold.png",
-    )
-    val fontInter_ExtraBold = MsdfFont(
+    ) }
+    val fontInter_ExtraBold by onDemand { MsdfFont(
         "font/msdf/Inter-ExtraBold.json",
         "font/msdf/Inter-ExtraBold.png",
-    )
+    ) }
 
     /** Обведення OUTSIDE. weight у дизайн-px. */
     fun stroke(weight: Float, color: Color) = StrokeEffect(weight, color, strokeShader)
@@ -43,16 +50,8 @@ class MsdfManager : Disposable {
     fun innerShadow(x: Float, y: Float, blur: Float, color: Color) = InnerShadowEffect(x, y, blur, color, innerShader)
 
     override fun dispose() {
-        disposeAll(
-            fillShader,
-            strokeShader,
-            shadowShader,
-            innerShader,
-
-            fontInter_Medium,
-            fontInter_Bold,
-            fontInter_ExtraBold,
-        )
+        created.disposeAll()   // Iterable<Disposable>.disposeAll() з utils/Util.kt
+        created.clear()
     }
 
     // ------------------------------------------------------------------------

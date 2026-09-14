@@ -56,13 +56,6 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         aGem.rotation += SPIN_SPEED * delta
     }
 
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (aGlow.parent == null) return
-        aGlow.setSizeScaled(GLOW_SIZE, GLOW_SIZE)
-        aPoint.setSizeScaled(POINT_SIZE, POINT_SIZE)
-    }
-
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------

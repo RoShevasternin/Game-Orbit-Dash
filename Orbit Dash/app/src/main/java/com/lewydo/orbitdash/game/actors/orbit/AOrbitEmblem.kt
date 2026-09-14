@@ -66,7 +66,7 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aOrbitGlowImg = Image(gdxGame.assetsLoader.ORBIT_GLOW)
+    private val aOrbitGlowImg = Image(gdxGame.assetsMsdf.glowOrbit).apply { color.a = 0.07f }
     private val aRingOuter    = AOrbitRing(screen)
     private val aRingInner    = AOrbitRing(screen)
     private val aBall         = ABallDecor(screen)
@@ -116,16 +116,6 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
         // прокрутився по колу — прокрутився і сам. Кульку не крутимо,
         // вона симетрична й обертання на ній не читалося б.
         aGem.spin = gemAngleDeg * GEM_SPIN_RATIO
-    }
-
-    /** При анімації розміру перерозкладаємо все, що задано у дизайн-одиницях. */
-    override fun sizeChanged() {
-        super.sizeChanged()
-        if (aRingInner.parent == null) return
-        aOrbitGlowImg.setSizeScaled(660f, 660f)
-        aRingInner.setSizeScaled(140f, 140f)
-        aBall.setSizeScaled(BALL_SIZE, BALL_SIZE)
-        aGem.setSizeScaled(GEM_SIZE, GEM_SIZE)
     }
 
     // ------------------------------------------------------------------------

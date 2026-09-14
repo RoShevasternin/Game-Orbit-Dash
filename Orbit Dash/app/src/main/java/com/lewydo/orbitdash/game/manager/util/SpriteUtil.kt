@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.NinePatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.utils.TextureEmpty
+import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.vfx.VfxTexture
 import com.lewydo.orbitdash.game.utils.vfx.VfxTextures
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
@@ -33,7 +34,6 @@ class SpriteUtil {
         val circle_msdf = getRegion("circle")
         val gem_msdf    = getRegion("gem")
 
-
         val circleTex = VfxTexture(40f, 40f, circle_msdf, effect)
         val circle    = circleTex.region
 
@@ -52,6 +52,9 @@ class SpriteUtil {
 
         val glowTex = VfxTexture(40f, 40f, circle_msdf, effect, listOf(BlurEffect(blur = 22f)))
         val glow    = glowTex.region
+
+        val glowOrbitTex = VfxTexture(420f, 420f, circle_msdf, effect, listOf(BlurEffect(blur = 120f)))
+        val glowOrbit    = glowOrbitTex.region
     }
 
     class Brand {
@@ -65,11 +68,8 @@ class SpriteUtil {
     }
 
     class Loader {
-        private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.region(name)
-
-        //val gem = region("gem")
-
-        val ORBIT_GLOW = SpriteManager.EnumTexture.ORBIT_GLOW.data.texture
+        //private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.LOADER.region(name)
+        //private val assetsMsdf = gdxGame.assetsMsdf
     }
 
     class All {
