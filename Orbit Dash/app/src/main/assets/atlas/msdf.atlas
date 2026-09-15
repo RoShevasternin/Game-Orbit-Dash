@@ -1,18 +1,32 @@
 msdf.png
-size: 134, 68
+size: 259, 68
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
-circle
+boost_hex
   rotate: false
   xy: 2, 2
+  size: 57, 64
+  orig: 57, 64
+  offset: 0, 0
+  index: -1
+circle
+  rotate: false
+  xy: 61, 2
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 gem
   rotate: false
-  xy: 68, 2
+  xy: 127, 2
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+spike
+  rotate: false
+  xy: 193, 2
   size: 64, 64
   orig: 64, 64
   offset: 0, 0

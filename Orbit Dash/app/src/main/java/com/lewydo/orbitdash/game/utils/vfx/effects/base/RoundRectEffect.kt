@@ -1,9 +1,8 @@
-package com.lewydo.orbitdash.game.utils.vfx.effects
+package com.lewydo.orbitdash.game.utils.vfx.effects.base
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.lewydo.orbitdash.game.utils.vfx.VfxContext
-import com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RoundRectEffect — заокруглений прямокутник (single-pass).

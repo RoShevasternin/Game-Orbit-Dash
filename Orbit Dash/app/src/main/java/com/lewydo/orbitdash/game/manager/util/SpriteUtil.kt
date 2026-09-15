@@ -5,17 +5,15 @@ import com.badlogic.gdx.graphics.g2d.NinePatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.utils.TextureEmpty
-import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.vfx.VfxTexture
-import com.lewydo.orbitdash.game.utils.vfx.VfxTextures
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.RoundRectEffect
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.MsdfShapeEffect
-import kotlin.math.roundToInt
 
 class SpriteUtil {
 
     class Msdf {
-        private fun getRegion(name: String): TextureRegion = SpriteManager.EnumAtlas.MSDF.region(name)
+        private fun region(name: String): TextureRegion = SpriteManager.EnumAtlas.MSDF.region(name)
 
         /** Те саме число, що PXRANGE у assets/msdf/gen-msdf.command. Один на атлас. */
         val PX_RANGE = 8f
@@ -31,30 +29,28 @@ class SpriteUtil {
         // ── ВЕКТОР: регіони, назва = ім'я SVG без розширення ────────────────
         //    Малювати AMsdfImage(screen, msdf.star).
         //    Звичайний Image(msdf.star) дасть кашу: msdf-шейдера в нього немає.
-        val circle_msdf = getRegion("circle")
-        val gem_msdf    = getRegion("gem")
+        val circle_msdf        = region("circle")
+        val gem_msdf           = region("gem")
+        val spike_msdf         = region("spike")
+        val boost_hex_msdf     = region("boost_hex")
 
-        val circleTex = VfxTexture(40f, 40f, circle_msdf, effect)
-        val circle    = circleTex.region
+        val circle_tex = VfxTexture(40f, 40f, circle_msdf, effect)
+        val circle     = circle_tex.region
 
-        val gemTex = VfxTexture(40f, 40f, gem_msdf, effect)
-        val gem    = gemTex.region
+        val gem_tex = VfxTexture(40f, 40f, gem_msdf, effect)
+        val gem     = gem_tex.region
 
-        // Світіння під об'єкти — один в один шар із Figma: коло 100×100, Layer Blur 68
-        // (еталон textures/loader/TEST_CIRCLE.png). density і bleed рахуються самі:
-        // outer = 236 = фрейм «hug contents» у Figma. Два способи малювати:
-        //   Image(glow)         — уся пляма 236 в актора; коло — 100/236 = 42 % по центру
-        //   glowTex.image()     — межі актора = коло, світіння виходить назовні (модель Figma)
-        //   img.setSize(
-        //          gdxGame.assetsMsdf.glowTex.outerWidth,
-        //          gdxGame.assetsMsdf.glowTex.outerHeight
-        //   ) — уся пляма 236 в актора;
+        val glow_tex = VfxTexture(40f, 40f, circle_msdf, effect, listOf(BlurEffect(blur = 22f)))
+        val glow     = glow_tex.region
 
-        val glowTex = VfxTexture(40f, 40f, circle_msdf, effect, listOf(BlurEffect(blur = 22f)))
-        val glow    = glowTex.region
+        val glow_orbit_tex = VfxTexture(420f, 420f, circle_msdf, effect, listOf(BlurEffect(blur = 120f)))
+        val glow_orbit     = glow_orbit_tex.region
 
-        val glowOrbitTex = VfxTexture(420f, 420f, circle_msdf, effect, listOf(BlurEffect(blur = 120f)))
-        val glowOrbit    = glowOrbitTex.region
+        val spike_tex = VfxTexture(40f, 40f, spike_msdf, effect)
+        val spike     = spike_tex.region
+
+        val boost_hex_tex = VfxTexture(35f, 40f, boost_hex_msdf, effect)
+        val boost_hex     = boost_hex_tex.region
     }
 
     class Brand {
@@ -80,16 +76,22 @@ class SpriteUtil {
         // ATLAS ALL
         // ------------------------------------------------------------------------------
 
-        val badge_glow = region("badge_glow")
-        val shield_pip = region("shield_pip")
-        val boost_hex  = region("boost_hex")
-        val spike      = region("spike")
+        val badge_glow_tex = VfxTexture(14f, 14f, shape = RoundRectEffect().apply {
+            radius      = 14f / 2f
+            fillAlpha   = 0.50f
+            strokeAlpha = 0.85f
+            strokeWidth = 1f
+        })
+        val badge_glow = badge_glow_tex.region
 
-        val icon_gem_x2   = region("icon_gem_x2")
-        val icon_magnet   = region("icon_magnet")
-        val icon_pulse    = region("icon_pulse")
-        val icon_shield   = region("icon_shield")
-        val icon_slow_mo  = region("icon_slow_mo")
+        val shield_pip_tex = VfxTexture(40f, 25f, shape = RoundRectEffect().apply { radius = 8f })
+        val shield_pip     = shield_pip_tex.region
+
+        val boost_icon_gem_x2   = region("boost_icon_gem_x2")
+        val boost_icon_magnet   = region("boost_icon_magnet")
+        val boost_icon_pulse    = region("boost_icon_pulse")
+        val boost_icon_shield   = region("boost_icon_shield")
+        val boost_icon_slow_mo  = region("boost_icon_slow_mo")
 
         //val listGlarePanelGame = List(4) { getAllRegion("glare_panel_game_${it.inc()}") }
 
@@ -97,7 +99,7 @@ class SpriteUtil {
         // ATLAS 9_PATCH
         // ------------------------------------------------------------------------------
 
-        val panel_coin = patch("panel_coin")
+        //val panel_coin = patch("panel_coin")
 
         // ------------------------------------------------------------------------------
         // TEXTURES

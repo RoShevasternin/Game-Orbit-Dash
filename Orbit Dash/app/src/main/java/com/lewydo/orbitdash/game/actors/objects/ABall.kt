@@ -65,6 +65,11 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     private fun addBall() {
         add(aBall) { fillParent() }
+
+        // keepScaled {
+        //     aBg.radius      = RADIUS.toActual
+        //     aBg.strokeWidth = STROKE.toActual
+        // }
     }
 
     private fun addPoint() {

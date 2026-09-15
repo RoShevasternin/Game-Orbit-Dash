@@ -11,6 +11,10 @@ import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 
 class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
+    companion object {
+        private const val GLOW_SIZE = 100f
+    }
+
     override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 40f)
 
     // ------------------------------------------------------------------------
@@ -43,8 +47,7 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        aGlow.setSizeScaled(100f, 100f)
-        add(aGlow) { center() }
+        add(aGlow) { size(GLOW_SIZE, GLOW_SIZE); center() }
     }
 
     private fun addBall() {

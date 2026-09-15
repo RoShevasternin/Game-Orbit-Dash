@@ -1,68 +1,40 @@
 all.png
-size: 932, 124
+size: 537, 124
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
-badge_glow
+boost_icon_gem_x2
   rotate: false
   xy: 2, 2
-  size: 42, 42
-  orig: 42, 42
-  offset: 0, 0
-  index: -1
-boost_hex
-  rotate: false
-  xy: 46, 2
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
-icon_gem_x2
+boost_icon_magnet
   rotate: false
-  xy: 153, 2
+  xy: 109, 2
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
-icon_magnet
+boost_icon_pulse
   rotate: false
-  xy: 260, 2
+  xy: 216, 2
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
-icon_pulse
+boost_icon_shield
   rotate: false
-  xy: 367, 2
+  xy: 323, 2
   size: 105, 120
   orig: 105, 120
   offset: 0, 0
   index: -1
-icon_shield
+boost_icon_slow_mo
   rotate: false
-  xy: 474, 2
+  xy: 430, 2
   size: 105, 120
   orig: 105, 120
-  offset: 0, 0
-  index: -1
-icon_slow_mo
-  rotate: false
-  xy: 581, 2
-  size: 105, 120
-  orig: 105, 120
-  offset: 0, 0
-  index: -1
-shield_pip
-  rotate: false
-  xy: 688, 2
-  size: 120, 75
-  orig: 120, 75
-  offset: 0, 0
-  index: -1
-spike
-  rotate: false
-  xy: 810, 2
-  size: 120, 120
-  orig: 120, 120
   offset: 0, 0
   index: -1

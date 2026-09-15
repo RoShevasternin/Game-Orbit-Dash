@@ -1,5 +1,6 @@
 package com.lewydo.orbitdash.game.utils.vfx.effects.base
 
+import com.badlogic.gdx.graphics.glutils.FrameBuffer
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.lewydo.orbitdash.game.utils.vfx.Blit
 import com.lewydo.orbitdash.game.utils.vfx.PingPong
@@ -110,15 +111,38 @@ abstract class VfxEffect {
     open fun reachUnits(): Float = 0f
 
     /**
-     * МІНІМАЛЬНО потрібна ефекту роздільність буфера, текселів на юніт.
-     * null = байдуже (тінт, HSL) — ефект не голосує.
+     * МІНІМАЛЬНО потрібна ефекту роздільність РОБОЧОГО буфера, текселів на юніт.
+     * null = байдуже (тінт, HSL, маска) — ефект не голосує.
      *
      * Ланцюг бере МАКСИМУМ із вимог (найвибагливіший вирішує), стеля — екранна
      * густина. Блюр просить мало (σ ≈ 12 текселів — розмитій картинці більше не
-     * треба), маска — усе (+∞ → стеля), бо її край має бути різким.
+     * треба). Маска не голосує тут узагалі: різкість потрібна її ВИХОДУ, не
+     * входу, — див. outputDensity().
      * Так VfxTexture рахує density у конструкторі, а VfxGroup — щокадру.
      */
     open fun preferredDensity(): Float? = null
+
+    /**
+     * Густина ВЛАСНОГО ВИХОДУ, текселів на юніт. null (типово) — ефект пише в
+     * робочий буфер разом з усіма.
+     *
+     * Не-null робить ефект ТЕРМІНАЛЬНИМ: VfxGroup дає йому окремий буфер
+     * вихідної роздільності (стеля — екранна) і кличе renderToOutput() замість
+     * render(). Такий ефект МУСИТЬ БУТИ ОСТАННІМ у ланцюгу — інакше VfxGroup
+     * кине виняток.
+     *
+     * Сенс: решта ланцюга працює в дешевому робочому буфері, а різкий буфер
+     * платиться рівно один раз, на тому проході, якому він справді потрібен.
+     */
+    open fun outputDensity(): Float? = null
+
+    /**
+     * Малює робочий буфер src у вихідний dst. Кличеться замість render() і лише
+     * для термінального ефекту. Перевизначити ОБОВ'ЯЗКОВО, якщо outputDensity()
+     * не null: розміри можуть не збігатись (читай їх із src/dst), і підняти
+     * джерело — обов'язок ефекту.
+     */
+    open fun renderToOutput(src: FrameBuffer, dst: FrameBuffer, ctx: VfxContext) {}
 
     // ─── Shader для VfxGroup (Blit — NDC quad) ────────────────────────────
     // Vertex = Blit.VERT: gl_Position = a_position (без матриці)

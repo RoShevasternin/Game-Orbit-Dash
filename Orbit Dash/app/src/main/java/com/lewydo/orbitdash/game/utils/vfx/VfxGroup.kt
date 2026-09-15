@@ -43,6 +43,11 @@ open class VfxGroup(
     override val screen: AdvancedScreen
 ) : AdvancedGroup() {
 
+    companion object {
+        /** Дно авто-густини як частка екранної. Нижче гине деталь ДІТЕЙ, не блюру. */
+        const val DENSITY_FLOOR = 0.5f
+    }
+
     // ─── Ефекти ───────────────────────────────────────────────────────────────
 
     private val _effects         = mutableListOf<VfxEffect>()
@@ -196,13 +201,31 @@ open class VfxGroup(
 
         // Одна густина на обидві осі: viewport ізотропний, а буфер із різним
         // кроком по X і Y зламав би блюр (u_groupSize рахує крок із bufferW).
-        val vp     = stage!!.viewport
+        val vp            = stage!!.viewport
         val screenDensity = vp.screenWidth.toFloat() / vp.worldWidth.coerceAtLeast(1f)
-        val d      = resolveDensity(screenDensity)
+
+        // Термінальний ефект (маска) сам малює у буфер ВИХІДНОЇ роздільності:
+        // різкість потрібна його виходу, а не входу. Решта ланцюга працює в
+        // дешевому робочому буфері. Такий ефект мусить бути останнім — тиха
+        // помилка тут дала б м'який край маски й жодного сліду.
+        var terminal: VfxEffect? = null
+        for (i in _effects.indices) {
+            if (_effects[i].outputDensity() == null) continue
+            if (i != _effects.lastIndex) throw IllegalStateException(
+                "${this::class.simpleName}: ${_effects[i]::class.simpleName} — " +
+                        "термінальний ефект, мусить бути останнім у ланцюгу"
+            )
+            terminal = _effects[i]
+        }
+
+        val workD  = resolveDensity(screenDensity)
+        val outD   = terminal?.outputDensity()?.coerceAtMost(screenDensity) ?: workD
         val outerW = width  + bleed * 2f
         val outerH = height + bleed * 2f
-        val bufW   = (outerW * d).toInt().coerceAtLeast(1)
-        val bufH   = (outerH * d).toInt().coerceAtLeast(1)
+        val bufW   = (outerW * workD).toInt().coerceAtLeast(1)
+        val bufH   = (outerH * workD).toInt().coerceAtLeast(1)
+        val outW   = if (terminal == null) bufW else (outerW * outD).toInt().coerceAtLeast(1)
+        val outH   = if (terminal == null) bufH else (outerH * outD).toInt().coerceAtLeast(1)
         val ctx    = VfxContext(outerW, outerH, bufW, bufH, pool)
 
         tmpProj.set(batch.projectionMatrix)
@@ -233,10 +256,24 @@ open class VfxGroup(
         FboStack.pop()
         pingPong.swap()
 
-        for (effect in _effects) effect.render(pingPong, ctx)
+        val t        = terminal
+        val chainEnd = if (t == null) _effects.size else _effects.lastIndex
+        for (i in 0 until chainEnd) _effects[i].render(pingPong, ctx)
 
-        pool.free(pingPong.dst)
-        val resultFbo = pingPong.src
+        // Термінальний: робочий буфер → вихідний (сам піднімає B-сплайном, якщо
+        // розміри різні). Розміри збіглися (AMask) — беремо вже орендований dst,
+        // зайвого бакета в пулі не з'являється.
+        val resultFbo: FrameBuffer
+        if (t == null) {
+            pool.free(pingPong.dst)
+            resultFbo = pingPong.src
+        } else {
+            val out = if (outW == bufW && outH == bufH) pingPong.dst else pool.obtain(outW, outH)
+            t.renderToOutput(pingPong.src, out, ctx)
+            pool.free(pingPong.src)
+            if (out !== pingPong.dst) pool.free(pingPong.dst)
+            resultFbo = out
+        }
 
         // ─── КРИТИЧНО: повернути прив'язку батч-шейдера ─────────────────────────
         // Blit.clearAndRender() викликав shader.bind() (ефект-шейдер, raw GL).
@@ -305,9 +342,15 @@ open class VfxGroup(
         }
         if (need <= 0f) return screenDensity
 
-        // Ділимо навпіл, поки наступний крок усе ще покриває вимогу
+        // Ділимо навпіл, поки наступний крок покриває вимогу ефектів І не падає
+        // нижче половини екранної. Дно не про блюр, а про ДІТЕЙ: вони
+        // растеризуються в цей буфер, і деталь, дрібніша за тексель, гине ще до
+        // першого проходу. Заміряно 14.09.2026 на смугах 2 юніти: при ½ екранної
+        // RMS проти повної 0.0019, при ¼ — 0.111 (видно оком).
+        // Треба нижче — задай density явно: там ти знаєш свій контент.
+        val floor = screenDensity * DENSITY_FLOOR
         var d = screenDensity
-        while (d * 0.5f >= need) d *= 0.5f
+        while (d * 0.5f >= need && d * 0.5f >= floor) d *= 0.5f
         return d
     }
 

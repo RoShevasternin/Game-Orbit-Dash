@@ -1,29 +1,20 @@
 package com.lewydo.orbitdash.game.screens
 
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
-import com.badlogic.gdx.scenes.scene2d.actions.Actions
-import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.debug.ADebugHud
 import com.lewydo.orbitdash.game.actors.debug.addDebugHud
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.actors.ui.ARoundRect
-import com.lewydo.orbitdash.game.actors.vfx.ABlur
-import com.lewydo.orbitdash.game.actors.vfx.msdf.AMsdfImage
+import com.lewydo.orbitdash.game.actors.vfx.ABlurBack
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.TIME_ANIM_SCREEN
 import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.actor.animDelay
 import com.lewydo.orbitdash.game.utils.actor.disable
-import com.lewydo.orbitdash.game.utils.actor.setSize
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
-import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.vfx.VfxTexture
-import com.lewydo.orbitdash.game.utils.vfx.effects.RoundRectEffect
-import com.lewydo.orbitdash.game.utils.vfx.effects.base.BlurEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.RoundRectEffect
 
 class TestScreen : AdvancedScreen() {
 
@@ -32,12 +23,18 @@ class TestScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
     private val aStarField by lazy { AStarField(this) }
 
+    // Маска стенда: заокруглений прямокутник, запечений у текстуру. Її край
+    // різкий, і саме по ньому видно, чи лишився вихідний прохід повнорозмірним.
+    private val maskTex = VfxTexture(200f, 300f, shape = RoundRectEffect().apply { radius = 24f })
+
     // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun show() {
         super.show()
         animShowScreen()
+
+        disposableSet.add(maskTex)
     }
 
     override fun Group.addActorsOnStageUI() {
@@ -72,29 +69,22 @@ class TestScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
 
     private fun AConstraintLayout.addMsdfSandbox() {
-        addBlurStand()
+        addBlurBackStand()
     }
 
-    // ── ABlur: авто-густина (ліворуч) проти повної (праворуч). ТИМЧАСОВЕ ──────
-    // Дитина рухається, тож autoCache перемальовує щокадру — саме той випадок,
-    // де density має значення. Візуально дві плями мають бути однакові.
-    private fun AConstraintLayout.addBlurStand() {
-        fun stand(explicit: Float?) = ABlur(this@TestScreen).apply {
-            setSize(140f, 140f)
-            blur    = 30f
-            density = explicit
-            addActor(Image(drawerUtil.getTexture(Color.ORANGE)).apply {
-                setBounds(30f, 30f, 80f, 80f)
-                addAction(Actions.forever(Actions.sequence(
-                    Actions.moveBy( 20f, 0f, 1f),
-                    Actions.moveBy(-20f, 0f, 1f),
-                )))
-            })
+    // ── ABlurBack: робоча густина окремо від вихідної. ТИМЧАСОВЕ ─────────────
+    // Тло — AStarField (дрібні точки, найгірший випадок для мінификації знімка).
+    // isStaticEffect = true: знімок і весь ланцюг раз, далі один квад — саме
+    // так це працюватиме в попапі.
+    private fun AConstraintLayout.addBlurBackStand() {
+        val back = ABlurBack(this@TestScreen).apply {
+            setSize(200f, 300f)
+            blur           = 4f
+            maskRegion     = maskTex.region
+            //isStaticEffect = true
         }
-        val auto = stand(null)   // очікувано screen/4 ≈ 0.75 → буфер 105×105
-        val full = stand(3f)     // як було до патча → 420×420
-        add(auto) { startToStart(margin = 20f); bottomToBottom(margin = 120f) }
-        add(full) { endToEnd(margin = 20f);     bottomToBottom(margin = 120f) }
+        add(back) { size(300f, 300f); center() }
+        back.debug()
     }
 
 }

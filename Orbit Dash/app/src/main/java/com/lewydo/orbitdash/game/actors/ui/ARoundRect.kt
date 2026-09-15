@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.vfx.VfxImage
-import com.lewydo.orbitdash.game.utils.vfx.effects.RoundRectEffect
+import com.lewydo.orbitdash.game.utils.vfx.effects.base.RoundRectEffect
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ARoundRect — заокруглений прямокутник як актор.

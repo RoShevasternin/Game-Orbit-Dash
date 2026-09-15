@@ -66,7 +66,7 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aOrbitGlowImg = Image(gdxGame.assetsMsdf.glowOrbit).apply { color.a = 0.07f }
+    private val aOrbitGlowImg = Image(gdxGame.assetsMsdf.glow_orbit).apply { color.a = 0.07f }
     private val aRingOuter    = AOrbitRing(screen)
     private val aRingInner    = AOrbitRing(screen)
     private val aBall         = ABallDecor(screen)

@@ -45,7 +45,12 @@ class ABlurBack(
     private val blurEffect = BlurEffect(blur = 0f)
     private val maskEffect = MaskEffect(maskTexture)
 
-    /** Layer Blur як у Figma, юніти. 0 = вимкнено. Буфер тут повної роздільності — BlurEffect сам іде пірамідою. */
+    /**
+     * Layer Blur як у Figma, юніти. 0 = вимкнено.
+     *
+     * Робочий буфер — густини блюру (σ ≈ 12 текселів), повнорозмірний лише
+     * вихідний прохід маски: маска тут термінальний ефект (патч 24).
+     */
     var blur: Float
         get()      = blurEffect.blur
         set(value) { blurEffect.blur = value }
@@ -97,6 +102,14 @@ class ABlurBack(
             )
         ).apply { flip(false, true) }
 
+        // Знімок береться в екранній роздільності, а лягає в РОБОЧИЙ буфер —
+        // тобто зі зменшенням (при blur 40 це 4×). Білінійний фільтр на такій
+        // мінификації бере 2×2 текселі з 4×4: аліасинг іде ДО блюру, і гаус
+        // його вже не прибере. Знімок статичний, тож мерехтіння не буде — буде
+        // трохи «не той» блюр на дрібному тлі (зорі — точки 1–2 px).
+        // Мипи не рятують: 1080×2400 — NPOT, glGenerateMipmap на GLES2 для NPOT
+        // не гарантований. Якщо на пристрої видно — density = 1.5f явно
+        // (один крок ½: 2× білінійно — це чесний box).
         addAndFillActor(Image(regionScreenShot))
     }
 
