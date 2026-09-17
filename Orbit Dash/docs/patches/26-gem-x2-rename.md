@@ -88,7 +88,7 @@ sed -i '' -e 's/Boost\.FRENZY/Boost.GEM_X2/g' -e 's/\bFRENZY\b/GEM_X2/g' \
 ДОДАТИ до імпортів:
 
 ```kotlin
-import com.lewydo.orbitdash.game.engine.RunEngine
+import com.lewydo.orbitdash.engine.RunEngine
 ```
 
 ДОДАТИ у `class All`, одразу після п'яти `boost_icon_*`:

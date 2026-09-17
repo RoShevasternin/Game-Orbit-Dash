@@ -1,0 +1,108 @@
+# ═════════════════════════════════════════════════════════════════════════════
+#  ВЕРСІЇ ВСЬОГО ПРОЄКТУ — ТУТ І НІДЕ БІЛЬШЕ.
+#
+#  Gradle сам знаходить цей файл (gradle/libs.versions.toml) і дає в кожному
+#  build.gradle.kts об'єкт `libs`. Імена перетворюються на доступ через крапку:
+#      junit                 →  libs.junit
+#      gdx-backend-android   →  libs.gdx.backend.android
+#      kotlin-jvm (плагін)   →  libs.plugins.kotlin.jvm
+#      jvm (версія)          →  libs.versions.jvm
+#
+#  Оновлюєш бібліотеку — міняєш ОДИН рядок у [versions]. Якщо версію ділять
+#  кілька записів (kotlin → два плагіни, gdx → чотири бібліотеки), вони всі
+#  посилаються на неї через version.ref і розійтись не можуть.
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ------------------------------------------------------------------------
+# versions
+# ------------------------------------------------------------------------
+[versions]
+# ── Мова і збірка ──
+# jvm — байткод УСІХ модулів. :engine не може бути вищим за :app: D8 у складі
+# app мусить його прожувати. Тому одне число на обидва.
+jvm               = "11"
+agp               = "9.4.0"
+kotlin            = "2.4.20"   # плагіни kotlin-jvm і serialization — завжди одна версія
+
+# ── Тести ──
+junit             = "4.13.2"
+androidxJunit     = "1.3.0"
+espresso          = "3.7.0"
+
+# ── AndroidX ──
+coreKtx           = "1.19.0"
+appcompat         = "1.8.0"
+activityKtx       = "1.13.0"
+constraintlayout  = "2.2.2"
+navigation        = "2.10.1"
+datastore         = "1.2.1"
+
+# ── Гра ──
+gdx               = "1.14.2"
+shapedrawer       = "2.6.0"
+serializationJson = "1.11.0"
+gson              = "2.14.0"
+
+# ── Сервіси Google і монетизація ──
+googleServices    = "4.5.0"
+crashlytics       = "3.0.8"
+firebaseBom       = "34.19.0"
+playServicesAds   = "25.4.0"
+playGames         = "22.0.0"
+billing           = "9.1.0"
+installReferrer   = "2.2"
+tiktok            = "1.6.1"
+
+# ------------------------------------------------------------------------
+# libraries
+# ------------------------------------------------------------------------
+[libraries]
+# ── Тести ──
+junit                    = { module = "junit:junit",                            version.ref = "junit" }
+androidx-test-ext-junit  = { module = "androidx.test.ext:junit",                version.ref = "androidxJunit" }
+androidx-espresso-core   = { module = "androidx.test.espresso:espresso-core",   version.ref = "espresso" }
+
+# ── AndroidX ──
+androidx-core-ktx         = { module = "androidx.core:core-ktx",                         version.ref = "coreKtx" }
+androidx-appcompat        = { module = "androidx.appcompat:appcompat",                   version.ref = "appcompat" }
+androidx-activity-ktx     = { module = "androidx.activity:activity-ktx",                 version.ref = "activityKtx" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout",     version.ref = "constraintlayout" }
+androidx-navigation-ktx   = { module = "androidx.navigation:navigation-fragment-ktx",    version.ref = "navigation" }
+androidx-datastore        = { module = "androidx.datastore:datastore-preferences",       version.ref = "datastore" }
+
+# ── libGDX: чотири бібліотеки, одна версія ──
+# *-platform — натівні .so; ABI додається класифікатором у app/build.gradle.kts
+gdx-backend-android   = { module = "com.badlogicgames.gdx:gdx-backend-android",   version.ref = "gdx" }
+gdx-platform          = { module = "com.badlogicgames.gdx:gdx-platform",          version.ref = "gdx" }
+gdx-freetype          = { module = "com.badlogicgames.gdx:gdx-freetype",          version.ref = "gdx" }
+gdx-freetype-platform = { module = "com.badlogicgames.gdx:gdx-freetype-platform", version.ref = "gdx" }
+
+# ── Гра, інше ──
+shapedrawer                = { module = "space.earlygrey:shapedrawer",                      version.ref = "shapedrawer" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationJson" }
+gson                       = { module = "com.google.code.gson:gson",                        version.ref = "gson" }
+
+# ── Firebase: версію задає BOM, окремі бібліотеки — без версії ──
+firebase-bom          = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics    = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics  = { module = "com.google.firebase:firebase-crashlytics" }
+firebase-config       = { module = "com.google.firebase:firebase-config" }
+firebase-messaging    = { module = "com.google.firebase:firebase-messaging" }
+
+# ── Монетизація і Play ──
+play-services-ads      = { module = "com.google.android.gms:play-services-ads",      version.ref = "playServicesAds" }
+play-services-games-v2 = { module = "com.google.android.gms:play-services-games-v2", version.ref = "playGames" }
+billing-ktx            = { module = "com.android.billingclient:billing-ktx",         version.ref = "billing" }
+installreferrer        = { module = "com.android.installreferrer:installreferrer",   version.ref = "installReferrer" }
+tiktok-business-sdk    = { module = "com.github.tiktok:tiktok-business-android-sdk", version.ref = "tiktok" }
+
+
+# ------------------------------------------------------------------------
+# plugins
+# ------------------------------------------------------------------------
+[plugins]
+android-application  = { id = "com.android.application",                   version.ref = "agp" }
+kotlin-jvm           = { id = "org.jetbrains.kotlin.jvm",                  version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+google-services      = { id = "com.google.gms.google-services",            version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics",           version.ref = "crashlytics" }

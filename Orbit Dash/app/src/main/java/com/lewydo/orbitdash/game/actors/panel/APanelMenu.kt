@@ -2,6 +2,8 @@ package com.lewydo.orbitdash.game.actors.panel
 
 import com.lewydo.orbitdash.game.actors.button.ADefButton
 import com.lewydo.orbitdash.game.actors.layout.autoLayout.AAutoLayout
+import com.lewydo.orbitdash.engine.RunEngine
+import com.lewydo.orbitdash.game.content.info
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.gdxGame
@@ -32,19 +34,6 @@ class APanelMenu(override val screen: AdvancedScreen) : AAutoLayout(
     alignCross = AlignCross.STRETCH,
     sizingH    = Sizing.HUG,
 ) {
-
-    // ------------------------------------------------------------------------
-    // Static
-    // ------------------------------------------------------------------------
-    /** Стартові бусти, які може запропонувати рекламна кнопка. */
-    enum class StartBoost(val label: String) {
-        MAGNET("MAGNET"),
-        SHIELD("SHIELD"),
-        FRENZY("GEM x2"),
-        SLOW  ("SLOW-MO");
-
-        companion object { fun random() = entries.random() }
-    }
 
     companion object {
         private const val GEMS_MIN_STEP = 5   // 25..100 з кроком 5:
@@ -84,18 +73,18 @@ class APanelMenu(override val screen: AdvancedScreen) : AAutoLayout(
     // ------------------------------------------------------------------------
     /** Поточний стан оферів. Читати можна будь-коли, міняти — лише через API. */
     var adsAvailable = false              ; private set
-    var rolledBoost  = StartBoost.random(); private set
+    var rolledBoost  = RunEngine.Boost.START_OFFERS.random(); private set
     var rolledGems   = rollGems()         ; private set
 
     // ------------------------------------------------------------------------
     // Callbacks — навігація і реклама належать екрану, панель лише повідомляє
     // ------------------------------------------------------------------------
-    var onPlay      : () -> Unit           = {}
-    var onPlayBoost : (StartBoost) -> Unit = {}
-    var onGems      : (Int) -> Unit        = {}
-    var onShop      : () -> Unit           = {}
-    var onDaily     : () -> Unit           = {}
-    var onRanks     : () -> Unit           = {}
+    var onPlay      : () -> Unit                = {}
+    var onPlayBoost : (RunEngine.Boost) -> Unit = {}
+    var onGems      : (Int) -> Unit             = {}
+    var onShop      : () -> Unit                = {}
+    var onDaily     : () -> Unit                = {}
+    var onRanks     : () -> Unit                = {}
 
     // ------------------------------------------------------------------------
     // Lifecycle
@@ -153,7 +142,7 @@ class APanelMenu(override val screen: AdvancedScreen) : AAutoLayout(
 
     /** Свіжий офер бусту після спожитого показу — старий уже «проданий». */
     fun rerollBoost() {
-        rolledBoost = StartBoost.random()
+        rolledBoost = RunEngine.Boost.START_OFFERS.random()
         applyOfferTexts()
     }
 
@@ -211,7 +200,7 @@ class APanelMenu(override val screen: AdvancedScreen) : AAutoLayout(
     }
 
     private fun applyOfferTexts() {
-        aBoostBtn.label.setText("PLAY + ${rolledBoost.label} · AD")
+        aBoostBtn.label.setText("PLAY + ${rolledBoost.info.label} · AD")
         aGemsBtn.label.setText("+$rolledGems GEMS · AD")
     }
 

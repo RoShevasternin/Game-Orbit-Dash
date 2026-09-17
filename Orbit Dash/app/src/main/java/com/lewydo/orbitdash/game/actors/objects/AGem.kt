@@ -53,7 +53,7 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         // лишатись нерухомою. Origin — тут, а не в sizeChanged(): aGem має
         // fillParent(), його розмір відомий лише ПІСЛЯ layout у super.act().
         aGem.setOrigin(Align.center)
-        aGem.rotation += SPIN_SPEED * delta
+        aGem.rotation = (aGem.rotation + SPIN_SPEED * delta) % 360f   // актор із пулу живе всю сесію — кут не росте без меж
     }
 
     // ------------------------------------------------------------------------

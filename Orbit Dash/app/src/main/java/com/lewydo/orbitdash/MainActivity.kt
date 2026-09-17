@@ -28,11 +28,7 @@ import com.lewydo.orbitdash.services.tiktok.TikTokManager
 import com.lewydo.orbitdash.util.log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.milliseconds
 
 private var onCreateCounter = 0
 

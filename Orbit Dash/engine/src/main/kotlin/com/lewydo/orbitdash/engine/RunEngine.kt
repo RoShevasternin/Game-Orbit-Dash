@@ -1,7 +1,6 @@
-package com.lewydo.orbitdash.game.engine
+package com.lewydo.orbitdash.engine
 
-import com.lewydo.orbitdash.game.utils.RAD_TO_DEG
-import com.lewydo.orbitdash.game.utils.TWO_PI
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.floor
@@ -44,6 +43,41 @@ class RunEngine(
     val seed: Long = System.nanoTime(),
 ) {
 
+    companion object {
+        /** engine units → design-юнітів AOrbitField (радіус поля 160 = 320 тут). */
+        const val TO_FIELD = 0.5f
+
+        /** Радіуси кілець (units прототипу = діаметри поля в новому дизайні). */
+        val LAYOUT_2 = floatArrayOf(190f, 320f, 320f)
+        val LAYOUT_3 = floatArrayOf(130f, 225f, 320f)
+
+        const val MAX_COMBO = 8
+
+        // ── debug-розстановка ──
+        /**
+         * Мінімальна дуга між debug-сутностями, engine units. 80 = 40 design поля
+         * ≈ діаметр glow бустера: сусіди не накладаються навіть світінням.
+         * Дуга, а не кут: на внутрішньому кільці той самий кут — коротший відрізок.
+         */
+        internal const val DEBUG_GAP = 80f
+
+        /** Вікно розстановки попереду м'яча, градуси. Ближче за 30° — не встигнеш
+         *  побачити; далі за 170° сутність стає «позаду» й її прибирає rel < −60. */
+        private const val DEBUG_ARC_START = 90f
+        private const val DEBUG_ARC_MIN   = 30f
+        private const val DEBUG_ARC_MAX   = 170f
+
+        // ── кути ──
+        // Тут, а не в game/utils: рушій не імпортує з проєкту нічого (CLAUDE.md,
+        // «Розміщення файлів»). Користувач у констант один — цей клас.
+        private const val RAD_TO_DEG = (180.0 / PI).toFloat()
+        private const val TWO_PI     = (PI * 2).toFloat()
+
+        private fun norm(a: Float): Float { var x = a % 360f; if (x < 0f) x += 360f; return x }
+        /** Різниця кутів у (-180, 180] — знак каже «попереду/позаду». */
+        private fun angDiff(a: Float, b: Float): Float = ((a - b) % 360f + 540f) % 360f - 180f
+    }
+
     // ------------------------------------------------------------------------
     // Types
     // ------------------------------------------------------------------------
@@ -67,7 +101,39 @@ class RunEngine(
 
     enum class Phase { RUN, DEAD }
     enum class Kind  { GEM, SPIKE, BOOST }
-    enum class Boost { SHIELD, MAGNET, FRENZY, SLOW, PULSE }
+
+    /**
+     * Буст і його правила. Тут лише чисті числа: рушій не знає ні кольорів, ні
+     * іконок — вигляд і назва для гравця живуть у BoostCatalog.
+     *
+     *   dur        — скільки триває, секунди; 0 = миттєвий (SHIELD, PULSE)
+     *   weight     — скільки разів буст стоїть у пулі спавну
+     *   startOffer — чи може випасти в рекламному офері меню
+     */
+    enum class Boost(
+        val dur       : Float,
+        val weight    : Int,
+        val startOffer: Boolean,
+    ) {
+        SHIELD( 0f, 1, true),
+        MAGNET( 8f, 2, true),
+        FRENZY(10f, 2, true),
+        SLOW  ( 4f, 1, true),
+        PULSE ( 0f, 2, false);
+
+        companion object {
+            /**
+             * Пул спавну: кожен буст повторено weight разів, у порядку enum.
+             * Виходить рівно той масив, що стояв руками в spawnBoost(), — тож
+             * той самий seed дає ту саму послідовність. Рахується один раз,
+             * а не на кожен спавн.
+             */
+            val SPAWN_POOL: List<Boost> = entries.flatMap { b -> List(b.weight) { b } }
+
+            /** Що може запропонувати рекламна кнопка меню. */
+            val START_OFFERS: List<Boost> = entries.filter { it.startOffer }
+        }
+    }
 
     /**
      * Сутність на орбіті. МУТАБЕЛЬНА і перевикористовується логікою щокадру —
@@ -108,22 +174,6 @@ class RunEngine(
         fun onOrbit3Online() {}
         fun onDied(result: RunResult) {}
         fun onRevived() {}
-    }
-
-    companion object {
-        /** engine units → design-юнітів AOrbitField (радіус поля 160 = 320 тут). */
-        const val TO_FIELD = 0.5f
-
-        /** Радіуси кілець (units прототипу = діаметри поля в новому дизайні). */
-        val LAYOUT_2 = floatArrayOf(190f, 320f, 320f)
-        val LAYOUT_3 = floatArrayOf(130f, 225f, 320f)
-
-        const val MAX_COMBO = 8
-
-        // ── кути ──
-        private fun norm(a: Float): Float { var x = a % 360f; if (x < 0f) x += 360f; return x }
-        /** Різниця кутів у (-180, 180] — знак каже «попереду/позаду». */
-        private fun angDiff(a: Float, b: Float): Float = ((a - b) % 360f + 540f) % 360f - 180f
     }
 
     // ------------------------------------------------------------------------
@@ -188,10 +238,10 @@ class RunEngine(
     var comboT   = 0f;      private set
     val comboWin = 4f + 0.5f * config.upKeeper
 
-    var magnetT = 0f;       private set
-    var frenzyT = 0f;       private set
-    var slowT   = 0f;       private set
-    var boostTot = 1f;      private set   // тривалість останнього буста — для прогрес-дуги HUD
+    var magnetT   = 0f;       private set
+    var frenzyT   = 0f;       private set
+    var slowT     = 0f;       private set
+    var boostTot  = 1f;      private set   // тривалість останнього буста — для прогрес-дуги HUD
     var waveT     = 0f;     private set   // PULSE-хвиля, виду
     var announceT = 0f;     private set   // «ORBIT III ONLINE», виду
     var shake     = 0f;     private set   // сила трясіння камери, виду
@@ -271,6 +321,7 @@ class RunEngine(
     // ------------------------------------------------------------------------
     fun update(dt: Float) {
         if (phase != Phase.RUN) return
+        if (debugFrozen) { updateFrozen(dt); return }
 
         // SLOW-MO уповільнює СВІТ (wdt), але не таймери ефектів (dt) —
         // інакше буст тривав би довше просто тому, що він активний.
@@ -299,15 +350,10 @@ class RunEngine(
         announceT = max(0f, announceT - dt)
         shake     = max(0f, shake - dt * 1.6f)
 
-        // ORBIT III вмикається з 30-ї секунди — посеред рану, звідси й лерп
-        if (config.orbit3 && ringCount == 2 && time >= 30f) {
-            ringCount = 3
-            target    = LAYOUT_3
-            announceT = 1.8f
-            listener?.onOrbit3Online()
-        }
-        for (i in 0 until 3) ringR[i] += (target[i] - ringR[i]) * min(1f, 2.5f * wdt)
-        if (ringCount == 3) ring3Alpha = min(1f, ring3Alpha + 1.5f * dt)
+        // ORBIT III вмикається з 30-ї секунди — посеред рану, звідси й лерп.
+        // Debug-перемикач забирає це рішення собі до кінця рану
+        if (!debugOrbit3Set && config.orbit3 && ringCount == 2 && time >= 30f) orbit3Online()
+        stepRings(dt, wdt)
 
         // Mercy: доріжка гемів на старті після двох швидких смертей —
         // гарантований ранній успіх, щоб не зневіритись
@@ -318,9 +364,11 @@ class RunEngine(
 
         // Спавн: інтервал стискається з часом (складність), frenzy пришвидшує
         spawnT -= wdt * (if (frenzyT > 0f) 1.5f else 1f)
-        if (spawnT <= 0f) { spawn(); spawnT = max(0.5f, 1.05f - time * 0.011f) }
+        if (spawnT <= 0f) { spawn(); spawnT = max(0.5f, 1.05f - time * 0.011f)
+        }
         boostT -= wdt
-        if (boostT <= 0f) { spawnBoost(); boostT = max(7f, rnd(12f, 18f) - config.upBfreq) }
+        if (boostT <= 0f) { spawnBoost(); boostT = max(7f, rnd(12f, 18f) - config.upBfreq)
+        }
 
         updateEntities(dt, wdt)
 
@@ -353,14 +401,8 @@ class RunEngine(
     }
 
     private fun spawnBoost() {
-        // Зважений пул: магніт і frenzy частіші, щит рідший
-        val pool = arrayOf(
-            Boost.SHIELD,
-            Boost.MAGNET, Boost.MAGNET,
-            Boost.FRENZY, Boost.FRENZY,
-            Boost.SLOW,
-            Boost.PULSE,  Boost.PULSE,
-        )
+        // Зважений пул — ваги стоять у самому enum (Boost.weight)
+        val pool = Boost.SPAWN_POOL
         val ring = rng.nextInt(ringCount)
         _entities.add(Entity(
             id    = nextId++,
@@ -377,20 +419,109 @@ class RunEngine(
     // ------------------------------------------------------------------------
 
     /**
-     * DEBUG: підкинути бустер попереду гравця, на ЙОГО кільці — щоб він
-     * гарантовано долетів до нього, а не проїхав повз по сусідньому.
-     * Кут 90° уперед: досить часу побачити, замало щоб забути про нього.
+     * DEBUG-пауза м'яча. Кут не росте, час, спавн, таймери й колізії стоять —
+     * можна підкидати шипи просто перед м'ячем. Але те, що вже є на полі,
+     * дограє появу (e.s) і посадку на кільце, а тап переводить м'яч на інше
+     * кільце: так видно щойно підкинуте й можна відійти від шипа.
      */
-    fun debugSpawnBoost(bt: Boost) {
-        _entities.add(Entity(
-            id    = nextId++,
-            kind  = Kind.BOOST,
-            boost = bt,
-            ring  = ringIndex,
-            a     = norm(angle + 90f),
-            rr    = ringR[ringIndex],
-        ))
+    var debugFrozen = false
+
+    /** true — третю орбіту вже перемкнув debug, правило «з 30-ї секунди» мовчить. */
+    private var debugOrbit3Set = false
+
+    /**
+     * DEBUG: третя орбіта зараз, без 30-ї секунди. Увімкнення — той самий
+     * роз'їзд і анонс, що й у грі. Вимкнення — кільця сходяться назад, третє
+     * гасне, його сутності зникають, м'яч із нього переходить на друге.
+     */
+    fun debugSetOrbit3(on: Boolean) {
+        debugOrbit3Set = true
+        if (on == (ringCount == 3)) return
+
+        if (on) { orbit3Online(); return }
+
+        ringCount = 2
+        target    = LAYOUT_2
+        _entities.removeAll { it.ring == 2 }
+        if (ringIndex == 2) ringIndex = 1   // напрям виправить tap(): на краю він розвертається
     }
+
+    /** DEBUG: бустер попереду гравця. false — вільного місця у вікні не лишилось. */
+    fun debugSpawnBoost(bt: Boost): Boolean = debugPlace(Kind.BOOST, bt)
+
+    /** DEBUG: шип попереду гравця. false — вільного місця у вікні не лишилось. */
+    fun debugSpawnSpike(): Boolean = debugPlace(Kind.SPIKE, null)
+
+    /**
+     * Спершу кільце гравця — щоб підкинуте гарантовано долетіло до м'яча, —
+     * потім решта по колу. Жодного rng: debug-кнопка не зсуває послідовність
+     * рану, яку далі генерує seed.
+     */
+    private fun debugPlace(kind: Kind, boost: Boost?): Boolean {
+        for (k in 0 until ringCount) {
+            val ring = (ringIndex + k) % ringCount
+            val a    = debugFreeAngle(ring) ?: continue
+            _entities.add(Entity(
+                id    = nextId++,
+                kind  = kind,
+                boost = boost,
+                ring  = ring,
+                a     = a,
+                rr    = ringR[ring],
+            ))
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Перший вільний кут на кільці віялом від +90°: 90, 90+s, 90−s, 90+2s …
+     * Крок s — DEBUG_GAP у градусах саме цього кільця. Зайнято, якщо будь-яка
+     * сутність кільця (своя чи з натурального спавну) ближча за 0.9·s:
+     * запас від float-похибки norm(), щоб сусідня клітинка сітки не «злипалась».
+     */
+    private fun debugFreeAngle(ring: Int): Float? {
+        val step = DEBUG_GAP / ringR[ring] * RAD_TO_DEG
+        val maxK = ((DEBUG_ARC_MAX - DEBUG_ARC_START) / step).toInt() + 1
+
+        for (i in 0..maxK * 2) {
+            val k   = (i + 1) / 2
+            val off = DEBUG_ARC_START + if (i % 2 == 1) k * step else -k * step
+            if (off < DEBUG_ARC_MIN || off > DEBUG_ARC_MAX) continue
+
+            val a = norm(angle + off)
+            if (_entities.none { it.ring == ring && abs(angDiff(it.a, a)) < step * 0.9f }) return a
+        }
+        return null
+    }
+
+    private fun updateFrozen(dt: Float) {
+        radius += (ringR[ringIndex] - radius) * min(1f, 14f * dt)
+        stepRings(dt, dt)
+
+        for (e in _entities) {
+            e.s = min(1f, e.s + 4f * dt)
+            if (!e.pulled) e.rr += (ringR[e.ring] - e.rr) * min(1f, 6f * dt)
+        }
+    }
+
+    private fun orbit3Online() {
+        ringCount = 3
+        target    = LAYOUT_3
+        announceT = 1.8f
+        listener?.onOrbit3Online()
+    }
+
+    /**
+     * Роз'їзд кілець (час світу) і проявлення третього (реальний час). Третє
+     * гасне назад лише після debug-вимкнення — у грі орбіта не зникає.
+     */
+    private fun stepRings(dt: Float, wdt: Float) {
+        for (i in 0 until 3) ringR[i] += (target[i] - ringR[i]) * min(1f, 2.5f * wdt)
+        ring3Alpha = if (ringCount == 3) min(1f, ring3Alpha + 1.5f * dt)
+        else max(0f, ring3Alpha - 1.5f * dt)
+    }
+
 
     private fun applyBoost(bt: Boost, e: Entity?) {
         boostUsed++
@@ -423,12 +554,7 @@ class RunEngine(
 
             else -> {
                 // Таймерні бусти взаємовиключні: новий скидає всі
-                val dur = when (bt) {
-                    Boost.MAGNET -> 8f
-                    Boost.FRENZY -> 10f
-                    Boost.SLOW   -> 4f
-                    else -> 0f
-                } * durMul
+                val dur = bt.dur * durMul
 
                 magnetT = 0f; frenzyT = 0f; slowT = 0f
                 when (bt) {

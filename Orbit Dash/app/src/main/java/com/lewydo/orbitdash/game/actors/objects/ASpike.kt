@@ -4,6 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
 import com.lewydo.orbitdash.game.utils.SizeScaler
+import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
@@ -47,12 +48,12 @@ class ASpike(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         syncTheme()
 
         aShape.setOrigin(Align.center)
-        aShape.rotation += SPIN_SPEED * delta
+        aShape.rotation = (aShape.rotation + SPIN_SPEED * delta) % 360f   // актор із пулу живе всю сесію — кут не росте без меж
     }
 
     private fun syncTheme() {
-        aGlow.color.set(ThemeManager.current.spike).apply { a = aGlow.color.a }
-        aShape.color.set(ThemeManager.current.spike).apply { a = aShape.color.a }
+        aGlow.setColorRGB(ThemeManager.current.spike)
+        aShape.setColorRGB(ThemeManager.current.spike)
     }
 
     // ------------------------------------------------------------------------

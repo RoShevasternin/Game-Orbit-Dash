@@ -4,7 +4,8 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.utils.GameColor
+import com.lewydo.orbitdash.engine.RunEngine
+import com.lewydo.orbitdash.game.content.info
 import com.lewydo.orbitdash.game.utils.SizeScaler
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
@@ -105,9 +106,11 @@ class AShieldPip(override val screen: AdvancedScreen) : AConstraintLayout(screen
     private fun applyState() {
         when (state) {
             State.FULL -> {
-                aPipImg.setColorRGB(GameColor.Boost.shield)
+                val c = RunEngine.Boost.SHIELD.info.color
+
+                aPipImg.setColorRGB(c)
                 aPipImg.color.a = 1f
-                aGlowImg.setColorRGB(GameColor.Boost.shield)
+                aGlowImg.setColorRGB(c)
                 aGlowImg.color.a = GLOW_ALPHA
             }
             State.EMPTY -> {

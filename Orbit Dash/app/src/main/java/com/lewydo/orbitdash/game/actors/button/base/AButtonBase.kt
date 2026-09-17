@@ -47,10 +47,14 @@ abstract class AButtonBase(
         override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
             onTouchUp(x, y)
             unpress()
-            if (!isDragged) {
-                clickSound?.let { gdxGame.soundUtil.play(it) }
-                onClickBlock()
-            }
+
+            // Тач у нас забрали (хтось почав перетяг і викликав cancelTouchFocus) —
+            // це не клік. Власного порогу тут замало: коли їде вся панель, палець
+            // стоїть НЕРУХОМО відносно кнопки й isDragged лишається false.
+            if (isDragged || event?.isTouchFocusCancel == true) return
+
+            clickSound?.let { gdxGame.soundUtil.play(it) }
+            onClickBlock()
         }
     }
 

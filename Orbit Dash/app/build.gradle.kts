@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application")
-    id("kotlinx-serialization")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -13,8 +13,8 @@ android {
         applicationId = "com.lewydo.orbitdash"
         minSdk      = 24
         targetSdk   = 37
-        versionCode = 5
-        versionName = "1.0.0-test" // test
+        versionCode = 6
+        versionName = "1.0.1" // test
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -45,7 +45,7 @@ android {
             )
         }
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled   = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -67,8 +67,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.toVersion(libs.versions.jvm.get())
+        targetCompatibility = JavaVersion.toVersion(libs.versions.jvm.get())
     }
     sourceSets {
         getByName("main") {
@@ -85,7 +85,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jvm.get()))
     }
 }
 
@@ -95,62 +95,64 @@ val natives: Configuration = configurations.create("natives") {
 }
 
 dependencies {
+    // Усі версії — у gradle/libs.versions.toml. Тут лише ЩО підключаємо.
+
+    // Modules --------------------------------------------------------------------------
+    implementation(project(":engine"))
+
     // Test Core ------------------------------------------------------------------------
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 
     // AndroidX Core ------------------------------------------------------------------------
-    implementation("androidx.core:core-ktx:1.19.0")
-    implementation("androidx.appcompat:appcompat:1.8.0")
-    implementation("androidx.activity:activity-ktx:1.13.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.2")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.10.1")
-    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.navigation.ktx)
+    implementation(libs.androidx.datastore)
 
     // LibGDX Core ------------------------------------------------------------------------
-    val gdxVersion = "1.14.2"
-    implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
-    natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
-    natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
-    natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
-    natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
-    implementation("com.badlogicgames.gdx:gdx-freetype:$gdxVersion")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64")
+    implementation(libs.gdx.backend.android)
+    implementation(libs.gdx.freetype)
+
+    // Натівні .so на кожен ABI. Класифікатор не вміщається в каталог — додаємо тут
+    listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64").forEach { abi ->
+        natives(variantOf(libs.gdx.platform)          { classifier("natives-$abi") })
+        natives(variantOf(libs.gdx.freetype.platform) { classifier("natives-$abi") })
+    }
 
     // Other Core ------------------------------------------------------------------------
-    implementation("space.earlygrey:shapedrawer:2.6.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation(libs.shapedrawer)
+    implementation(libs.kotlinx.serialization.json)
 
     // Other ------------------------------------------------------------------------
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-config")
-    implementation("com.google.firebase:firebase-messaging")
+    // Firebase — версію кожної бібліотеки задає BOM
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.config)
+    implementation(libs.firebase.messaging)
 
     // TikTok
-    implementation("com.github.tiktok:tiktok-business-android-sdk:1.6.1")
+    implementation(libs.tiktok.business.sdk)
 
     // Billing
-    implementation("com.android.billingclient:billing-ktx:9.1.0")
+    implementation(libs.billing.ktx)
 
     // Install Referrer
-    implementation("com.android.installreferrer:installreferrer:2.2")
+    implementation(libs.installreferrer)
 
     // AdMob
-    implementation("com.google.android.gms:play-services-ads:25.4.0")
+    implementation(libs.play.services.ads)
 
     // Gson (парсинг JSON з Gist)
-    implementation("com.google.code.gson:gson:2.14.0")
+    implementation(libs.gson)
 
     // Google Play Services v2
-    implementation("com.google.android.gms:play-services-games-v2:22.0.0")
+    implementation(libs.play.services.games.v2)
 }
 
 tasks.register("copyAndroidNatives") {

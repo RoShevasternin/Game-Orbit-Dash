@@ -119,6 +119,10 @@ export default function OrbitDash() {
   // Реф, а не стейт у рушії: переживає рестарти ранів, рушій читає напряму.
   const ezRef = useRef(false);
   const [ezDev, setEzDev] = useState(false);
+  // DEV: примусова третя орбіта. null = як у грі, true = увімкнена з першої
+  // секунди, false = вимкнена й НЕ вмикається на 30-й секунді.
+  const o3Ref = useRef(null);
+  const [o3Dev, setO3Dev] = useState(null);
   const [lb, setLb] = useState({ loading: false, rows: null, err: null });
   const [lbBump, setLbBump] = useState(0);
   const [nameDraft, setNameDraft] = useState("");
@@ -654,7 +658,7 @@ export default function OrbitDash() {
       st.announceT = Math.max(0, st.announceT - dt);
       if (st.tut) tutTick(dt); // [TUTORIAL]
 
-      if (!st.tut && saveRef.current.orbit3 && st.ringCount === 2 && st.time >= 30) {
+      if (!st.tut && saveRef.current.orbit3 && o3Ref.current !== false && st.ringCount === 2 && st.time >= 30) {
         st.ringCount = 3; st.target = LAYOUT3; st.announceT = 1.8; st.flashT = 0.3;
         wave(CX, CY, 60, 520, 0.7, P().gem, 9);
         beep(500, 0.4, "sine", 0.12, 500); beep(90, 0.5, "sine", 0.2, -30); buzz(30);
@@ -926,7 +930,7 @@ export default function OrbitDash() {
         ctx.fill();
       }
 
-      if (!st.tut && saveRef.current.orbit3 && st.ringCount === 2 && st.time >= 28 && st.time < 30) {
+      if (!st.tut && saveRef.current.orbit3 && o3Ref.current !== false && st.ringCount === 2 && st.time >= 28 && st.time < 30) {
         const gf = (st.time - 28) / 2;
         ctx.strokeStyle = rgba(p.gem, 0.35 * gf * (0.6 + 0.4 * Math.sin(st.time * 10)));
         ctx.lineWidth = 2.5;
@@ -1266,6 +1270,15 @@ export default function OrbitDash() {
     raf = requestAnimationFrame(frame);
     beep(440, 0.1, "sine", 0.08, 220);
 
+    // DEV: третя орбіта з першої секунди, без магазину й без 30-секундного чекання
+    if (o3Ref.current === true && !st.tut) {
+      st.ringCount = 3;
+      st.target = LAYOUT3;
+      st.ringR = [...LAYOUT3];
+      st.r3a = 1;
+      st.radius = LAYOUT3[st.ringIndex];
+    }
+
     if (pendingBoostRef.current) {
       applyBoost(pendingBoostRef.current, CX, CY);
       pendingBoostRef.current = null;
@@ -1278,6 +1291,25 @@ export default function OrbitDash() {
       },
       tutResume: () => { // [TUTORIAL] після діалогу м'ячик сам ловить іскру
         if (st.state === "tutpause") { st.state = "run"; st.invuln = Math.max(st.invuln, 0.9); st.tutAuto = true; }
+      },
+      // DEV: перемкнути третю орбіту прямо в рані
+      setOrbit3: (on) => {
+        if (on) {
+          if (st.ringCount === 3) return;
+          st.ringCount = 3; st.target = LAYOUT3; st.announceT = 1.8; st.flashT = 0.3;
+          wave(CX, CY, 60, 520, 0.7, P().gem, 9);
+          beep(500, 0.4, "sine", 0.12, 500); buzz(30);
+        } else {
+          if (st.ringCount === 2) return;
+          st.ringCount = 2; st.target = LAYOUT2;
+          // Гравець міг стояти на третьому кільці — знімаємо на друге, інакше
+          // radius тягнувся б до кільця, якого вже немає.
+          if (st.ringIndex > 1) { st.ringIndex = 1; st.dir = -1; }
+          // Сутності з третього кільця висіли б у порожнечі
+          for (let i = st.ents.length - 1; i >= 0; i--) if (st.ents[i].ring > 1) st.ents.splice(i, 1);
+          st.r3a = 0;
+          beep(300, 0.25, "sine", 0.1, -180);
+        }
       },
       bank: (m) => {
         if (!st.banked) {
@@ -1936,6 +1968,15 @@ export default function OrbitDash() {
               <Btn kind="primary" small onClick={startTutorial}>▶ TUTORIAL</Btn>
               <Btn small onClick={() => { ezRef.current = !ezRef.current; setEzDev(ezRef.current); beep(ezRef.current ? 760 : 420, 0.1, "sine", 0.09, 200); }}>
                 EZ COMBO: {ezDev ? "ON" : "OFF"} · ухилився = комбо
+              </Btn>
+              <Btn small onClick={() => {
+                const on = o3Ref.current !== true;   // перший тап вмикає, далі перемикає
+                o3Ref.current = on;
+                setO3Dev(on);
+                engineRef.current && engineRef.current.setOrbit3 && engineRef.current.setOrbit3(on);
+                beep(on ? 760 : 420, 0.1, "sine", 0.09, 200);
+              }}>
+                ORBIT III: {o3Dev === null ? "AUTO" : o3Dev ? "ON" : "OFF"} · третє кільце
               </Btn>
               <Btn kind="gem" small onClick={() => { setSave((s) => ({ ...s, gems: s.gems + 10000 })); flash("+10000"); beep(760, 0.15, "sine", 0.1, 300); }}>
                 +10 000 ◆

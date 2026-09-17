@@ -15,13 +15,17 @@ import com.lewydo.orbitdash.game.actors.objects.AGem
 import com.lewydo.orbitdash.game.actors.objects.ASpike
 import com.lewydo.orbitdash.game.actors.orbit.AOrbitField
 import com.lewydo.orbitdash.game.actors.panel.APanelGameHud
-import com.lewydo.orbitdash.game.engine.RunEngine
+import com.lewydo.orbitdash.engine.RunEngine
+import com.lewydo.orbitdash.game.actors.debug.ADebugIconBar
+import com.lewydo.orbitdash.game.actors.debug.addDebugIconBar
+import com.lewydo.orbitdash.game.content.info
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.actor.animHide
 import com.lewydo.orbitdash.game.utils.actor.animShow
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
+import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.util.log
 
 // ----------------------------------------------------------------------------
@@ -47,10 +51,11 @@ class GameScreen : AdvancedScreen() {
         private const val FIELD_SIZE = 320f
 
         /** Розмір ігрових об'єктів у ДИЗАЙНІ ЕКРАНА (не поля). */
-        private const val BALL_SIZE   = 22f
-        private const val GEM_SIZE    = 18f
-        private const val SPIKE_SIZE  = 25f
-        private const val BOOST_SIZE  = 13f
+        private const val BALL_SIZE     = 22f
+        private const val GEM_SIZE      = 18f
+        private const val SPIKE_SIZE    = 25f
+        private const val BOOST_SIZE_W  = 22f
+        private const val BOOST_SIZE_H  = 25f
 
         /** Скільки акторів кожного типу тримати напоготові. */
         private const val POOL_GEMS   = 14
@@ -79,9 +84,14 @@ class GameScreen : AdvancedScreen() {
      * Дві швидкі смерті (<15с) вмикають mercy наступного рану.
      */
     private var quickDeaths    = 0
+
     private var debugOrbit3    = false
     /** DEBUG: множник часу для рушія. x0.25 — розглядати near-miss «під лупою». */
     private var debugTimeScale = 1f
+    /** DEBUG: широке вікно near-miss (22..145) — комбо з сусіднього кільця. */
+    private var debugComboWide = false
+    /** DEBUG: м'яч стоїть, решта живе — див. RunEngine.debugFrozen. */
+    private var debugPaused    = false
 
     // ------------------------------------------------------------------------
     // Pools
@@ -104,20 +114,20 @@ class GameScreen : AdvancedScreen() {
     // ------------------------------------------------------------------------
     private val aDebugPanel by lazy {
         ADebugPanel(this, listOf(
-            ADebugPanel.Item("RESTART") { startRun() },
-            ADebugPanel.Item("+SHIELD") { engine.debugSpawnBoost(RunEngine.Boost.SHIELD) },
             ADebugPanel.Item("ORBIT III") { btn ->
+                // Третя орбіта в ЦЬОМУ рані, одразу — з тим самим роз'їздом, що й у грі.
+                // Тримається й у наступних ранах, поки не вимкнеш
                 debugOrbit3 = !debugOrbit3
+                engine.debugSetOrbit3(debugOrbit3)
                 btn.label.setText(if (debugOrbit3) "O3: ON" else "ORBIT III")
-                startRun()
             },
-            ADebugPanel.Item("WIDE 22..145") { btn ->
+            ADebugPanel.Item("COMBO 100%") { btn ->
                 // Пресет «зараховувати сусіднє кільце»: різниця кілець 130,
                 // тож 145 накриває спайк на сусідній орбіті.
-                val wide = engine.nearMax < 100f
-                engine.nearMin = if (wide) 22f else 26f
-                engine.nearMax = if (wide) 145f else 90f
-                btn.label.setText(if (wide) "WIDE: ON" else "WIDE 22..145")
+                debugComboWide = !debugComboWide
+                engine.nearMin = if (debugComboWide) 22f else 26f
+                engine.nearMax = if (debugComboWide) 145f else 90f
+                btn.label.setText(if (debugComboWide) "COMBO: ON" else "COMBO 100%")
             },
             ADebugPanel.Item("TIME x0.25") { btn ->
                 // Слоу-мо ВСЬОГО рушія (dt на вході). Кутова геометрія вікна
@@ -125,7 +135,31 @@ class GameScreen : AdvancedScreen() {
                 debugTimeScale = if (debugTimeScale < 1f) 1f else 0.25f
                 btn.label.setText(if (debugTimeScale < 1f) "TIME: ON" else "TIME x0.25")
             },
+            ADebugPanel.Item("PAUSE") { btn ->
+                // Стоїть лише м'яч: актори грають свої анімації, підкинуте дограє
+                // появу, а колізій немає — шип перед м'ячем не вб'є.
+                debugPaused = !debugPaused
+                engine.debugFrozen = debugPaused
+                btn.label.setText(if (debugPaused) "PAUSE: ON" else "PAUSE")
+            },
         ))
+    }
+
+    /**
+     * Ромби «підкинути»: кожен буст у своєму кольорі й зі своєю іконкою + шип.
+     * Розстановку без накладань робить рушій (debugSpawnBoost / debugSpawnSpike).
+     */
+    private val aDebugIconBar by lazy {
+        val boosts = RunEngine.Boost.entries.map { boost ->
+            // PNG бустів 105×120 з полями: гліф — приблизно третина висоти
+            ADebugIconBar.Item(boost.info.icon, boost.info.color, iconW = 28f, iconH = 32f) {
+                engine.debugSpawnBoost(boost)
+            }
+        }
+        val spike = ADebugIconBar.Item(gdxGame.assetsMsdf.spike, ThemeManager.current.spike, iconW = 20f, iconH = 20f) {
+            engine.debugSpawnSpike()
+        }
+        ADebugIconBar(this, boosts + spike)
     }
 
     // ------------------------------------------------------------------------
@@ -159,6 +193,7 @@ class GameScreen : AdvancedScreen() {
 
         addDebugHud(ADebugHud(this@GameScreen))
         addDebugPanel(aDebugPanel)
+        addDebugIconBar(aDebugIconBar, aDebugPanel)   // ПІСЛЯ панелі: вона — якір
     }
 
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
@@ -234,12 +269,23 @@ class GameScreen : AdvancedScreen() {
         if (quickDeaths >= 2) quickDeaths = 0
 
         engine.listener = runListener
+        applyDebugFlags()
         aPanelGameHud.reset()     // ← НОВЕ
 
         // Кільця стартують у позиції рушія без лерпу — інакше перший кадр
         // показав би стару розкладку і смикнув би її на місце.
         syncField()
         gdxGame.analytics.runStart()
+    }
+
+    /**
+     * Перемикачі дебаг-панелі живуть в екрані, а не в рушії: новий ран — новий
+     * RunEngine, і без цього кнопка лишалась би «ON», а рушій — у дефолтах.
+     */
+    private fun applyDebugFlags() {
+        engine.debugFrozen = debugPaused
+        if (debugOrbit3) engine.debugSetOrbit3(true)
+        if (debugComboWide) { engine.nearMin = 22f; engine.nearMax = 145f }
     }
 
     private val runListener = object : RunEngine.Listener {
@@ -272,10 +318,12 @@ class GameScreen : AdvancedScreen() {
     /** Кільця беруть геометрію з рушія: малюємо рівно те, по чому колізії. */
     private fun syncField() {
         aOrbitField.syncFrom(
-            ringR   = engine.ringR,
-            count   = engine.ringCount,
-            active  = engine.ringIndex,
-            r3Alpha = engine.ring3Alpha,
+            ringR     = engine.ringR,
+            count     = engine.ringCount,
+            active    = engine.ringIndex,
+            r3Alpha   = engine.ring3Alpha,
+            ballAngle = -engine.angle,   // той самий переклад Y-вниз → Y-вгору, що й у syncPlayer
+            ballD     = engine.radius,   // радіус рушія = діаметр поля (TO_FIELD = 0.5)
         )
     }
 
@@ -329,12 +377,12 @@ class GameScreen : AdvancedScreen() {
     private fun acquire(e: RunEngine.Entity): Actor = when (e.kind) {
         RunEngine.Kind.GEM   -> freeGems.removeLastOrNull()    ?: AGem(this).also { prepare(it, GEM_SIZE) }
         RunEngine.Kind.SPIKE -> freeSpikes.removeLastOrNull()  ?: ASpike(this).also { prepare(it, SPIKE_SIZE) }
-        RunEngine.Kind.BOOST -> (freeBoosts.removeLastOrNull() ?: ABooster(this).also { prepare(it, BOOST_SIZE) })
+        RunEngine.Kind.BOOST -> (freeBoosts.removeLastOrNull() ?: ABooster(this).also { prepare(it, BOOST_SIZE_W, BOOST_SIZE_H) })
             .also { it.boost = e.boost ?: RunEngine.Boost.MAGNET }
     }.also { it.isVisible = true }
 
-    private fun prepare(actor: Actor, size: Float) {
-        actor.setSize(size, size)
+    private fun prepare(actor: Actor, width: Float, height: Float = width) {
+        actor.setSize(width, height)
         aOrbitField.addActor(actor)
     }
 

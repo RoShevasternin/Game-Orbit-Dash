@@ -4,8 +4,8 @@ import com.badlogic.gdx.graphics.Color
 import com.lewydo.orbitdash.game.actors.button.ADefButton
 import com.lewydo.orbitdash.game.actors.layout.autoLayout.AAutoLayout
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.utils.actor.setOnClickListener
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
+import com.lewydo.orbitdash.game.utils.debug.dragToMove
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.global.IS_DEBUG
@@ -77,9 +77,14 @@ class ADebugPanel(
 // ----------------------------------------------------------------------------
 // Helper
 // ----------------------------------------------------------------------------
-/** Додає панель у правий низ екрана. У релізі — нуль вартості. */
+/**
+ * Додає панель у правий низ екрана. У релізі — нуль вартості.
+ * Панель тягається пальцем: позиція лежить у Preferences, окремо на кожен екран.
+ */
 fun AConstraintLayout.addDebugPanel(panel: ADebugPanel) {
     if (!IS_DEBUG) return
     panel.setSize(ADebugPanel.DEFAULT_WIDTH, 1f)   // ширина фіксована, висота HUG
     add(panel) { endToEnd(margin = 10f); bottomToBottom(margin = 10f) }
+
+    panel.dragToMove("${panel.screen::class.simpleName}.panel")
 }

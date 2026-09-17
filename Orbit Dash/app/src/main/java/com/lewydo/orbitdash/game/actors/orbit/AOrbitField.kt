@@ -1,11 +1,16 @@
 package com.lewydo.orbitdash.game.actors.orbit
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
+import com.lewydo.orbitdash.game.actors.vfx.msdf.AMsdfImage
 import com.lewydo.orbitdash.game.utils.SizeScaler
+import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
+import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -35,6 +40,15 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
         /** Дизайн-розмір поля = діаметр зовнішньої орбіти. */
         const val DESIGN_W = 320f
 
+        /**
+         * Ореол під кільцями: диск кольору м'яча на HALO_GAP всередині орбіти
+         * м'яча (по радіусу): 190 → 170, 320 → 300, у трьох кільцях 130 → 110.
+         */
+        private const val HALO_GAP   = 10f
+        private const val HALO_ALPHA = 0.05f
+        /** Без м'яча (автономний режим) ореол лерпає до активного кільця — як радіус м'яча в рушії. */
+        private const val HALO_LERP  = 14f
+
         const val MAX_RINGS = 3
 
         /** Діаметр зовнішньої орбіти. Він же — парковка для неактивного кільця. */
@@ -50,8 +64,31 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
         private val LAYOUT_2 = floatArrayOf(190f, D_OUTER, D_OUTER)
         private val LAYOUT_3 = floatArrayOf(130f, 225f,    D_OUTER)
 
+        // Figma: ring-inner 3, ring-outer-active 4.5
         private const val RING_THICKNESS     = 3f
-        private const val RING_THICKNESS_ACT = 4f
+        private const val RING_THICKNESS_ACT = 4.5f
+
+        /**
+         * Активна орбіта = кільце теми, яскравіше. ×1.9 — саме так у Figma NEON:
+         * 2B3060 → 525AB6 покомпонентно. Для решти тем виводиться тим самим
+         * множником, окремого кольору в палітрі не треба.
+         */
+        private const val ACTIVE_BRIGHTEN = 1.9f
+
+        /**
+         * Запас квада кільця назовні від осі орбіти — під glow і пунктир
+         * активної (≥ AOrbitRing.ACTIVE_REACH). Тому поле 320 малює до
+         * 320 + 2·9 = 338 — рівно як фрейм OrbitField у Figma.
+         */
+        private const val RING_PAD = 14f
+
+        /**
+         * Пунктир активної орбіти їде за м'ячем: 0.9 px прототипу на градус
+         * (st.dashOff -= v·wdt·0.9), px прототипу = 2 design поля → 0.45.
+         */
+        private const val DASH_FOLLOW = 0.45f
+        /** Без м'яча (меню, превʼю) — повільно сам, design-юнітів дуги за секунду. */
+        private const val DASH_IDLE_SPEED = -25f
 
         /** Лерп автономного режиму. У driven швидкість задає рушій. */
         private const val LAYOUT_LERP = 2.5f
@@ -60,7 +97,8 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val rings = Array(MAX_RINGS) { AOrbitRing(screen) }
+    private val aHaloImg = AMsdfImage(screen, gdxGame.assetsMsdf.circle_msdf).apply { color.a = HALO_ALPHA }
+    private val rings    = Array(MAX_RINGS) { AOrbitRing(screen) }
 
     // ------------------------------------------------------------------------
     // State
@@ -80,10 +118,26 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
     /** Проявлення третього кільця 0→1. У driven приходить з рушія. */
     var ring3Alpha = 0f
 
+    /**
+     * Зсув пунктиру за ЦЕЙ кадр, design. syncRings() віддає його кільцю й
+     * обнуляє — сума за ран ніде не накопичується, фазу тримає кільце в 0..1.
+     */
+    private var dashStep = 0f
+    /** Кут м'яча з минулого syncFrom — щоб пунктир їхав за ним, а не за часом. */
+    private var lastBallAngle: Float? = null
+
+    /** Діаметр ореолу, design. У driven — від орбіти м'яча, інакше лерп до активного кільця. */
+    private var haloD = LAYOUT_2[0] - 2f * HALO_GAP
+
+    /** Колір активної орбіти: кільце теми × ACTIVE_BRIGHTEN. Один об'єкт, без алокацій у кадрі. */
+    private val activeRingColor = Color()
+
     // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
+        addHaloImg()
+
         for (i in 0 until MAX_RINGS) {
             addActor(rings[i])
             applyRingSize(i)
@@ -105,6 +159,11 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
                 }
             }
             ring3Alpha = if (ringCount == 3) MathUtils.clamp(ring3Alpha + 1.5f * delta, 0f, 1f) else 0f
+            dashStep += DASH_IDLE_SPEED * delta
+
+            val haloTarget = diameters[activeRing] - 2f * HALO_GAP
+            haloD += (haloTarget - haloD) * MathUtils.clamp(HALO_LERP * delta, 0f, 1f)
+            applyHaloSize()
         }
 
         syncRings()
@@ -112,7 +171,18 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
 
     override fun sizeChanged() {
         super.sizeChanged()
-        if (rings[0].parent != null) for (i in 0 until MAX_RINGS) applyRingSize(i)
+        if (rings[0].parent != null) {
+            applyHaloSize()
+            for (i in 0 until MAX_RINGS) applyRingSize(i)
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Add Actors
+    // ------------------------------------------------------------------------
+    private fun addHaloImg() {
+        addActor(aHaloImg)
+        applyHaloSize()
     }
 
     // ------------------------------------------------------------------------
@@ -122,8 +192,10 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
     /**
      * Прийняти геометрію від рушія. [ringR] — діаметри в одиницях, які
      * збігаються з design поля (див. RunEngine: одиниці прототипу = діаметри).
+     * [ballD] — діаметр орбіти м'яча в тих самих одиницях (engine.radius):
+     * ореол іде за м'ячем, а не за кільцем — разом зі слоу-мо й паузою.
      */
-    fun syncFrom(ringR: FloatArray, count: Int, active: Int, r3Alpha: Float) {
+    fun syncFrom(ringR: FloatArray, count: Int, active: Int, r3Alpha: Float, ballAngle: Float, ballD: Float) {
         driven = true
 
         for (i in 0 until MAX_RINGS) diameters[i] = ringR[i]
@@ -131,11 +203,24 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
         activeRing = active
         ring3Alpha = r3Alpha
 
-        if (rings[0].parent != null) for (i in 0 until MAX_RINGS) applyRingSize(i)
+        // Пунктир їде за м'ячем: приріст кута → зсув дуги. Через різницю, бо
+        // кут нормалізований 0..360 і на стику стрибає
+        lastBallAngle?.let { prev ->
+            val delta = ((ballAngle - prev) % 360f + 540f) % 360f - 180f
+            dashStep += DASH_FOLLOW * delta
+        }
+        lastBallAngle = ballAngle
+
+        haloD = ballD - 2f * HALO_GAP
+
+        if (rings[0].parent != null) {
+            applyHaloSize()
+            for (i in 0 until MAX_RINGS) applyRingSize(i)
+        }
     }
 
     /** Повернути полю самостійність (превʼю, меню). */
-    fun releaseDriven() { driven = false }
+    fun releaseDriven() { driven = false; lastBallAngle = null }
 
     // ------------------------------------------------------------------------
     // Public API · геометрія
@@ -190,28 +275,45 @@ class AOrbitField(override val screen: AdvancedScreen) : AConstraintLayout(scree
     // ------------------------------------------------------------------------
 
     /**
-     * Радіус AOrbitRing виводиться з розміру, тому «поставити діаметр» =
-     * «задати сторону квадрата»: діаметр + обводка (вона малюється всередину).
+     * Радіус AOrbitRing виводиться з розміру: «поставити діаметр» = «задати
+     * сторону квадрата» = діаметр + 2·RING_PAD, а вісь орбіти — рівно на
+     * RING_PAD від краю (outerPad). Так glow і пунктир мають куди лягти.
      */
     private fun applyRingSize(index: Int) {
         val ring = rings[index]
-        val side = diameters[index] + RING_THICKNESS_ACT
+        val side = diameters[index] + 2f * RING_PAD
         ring.setSizeScaled(side, side)
+        ring.outerPad = RING_PAD.toActual
         ring.setPosition(width / 2f, height / 2f, Align.center)
+    }
+
+    /** Ореол — той самий підхід, що й кільця: розмір живий, тому не через констрейнт. */
+    private fun applyHaloSize() {
+        aHaloImg.setSizeScaled(haloD, haloD)
+        aHaloImg.setPosition(width / 2f, height / 2f, Align.center)
     }
 
     private fun syncRings() {
         val theme = ThemeManager.current
+        aHaloImg.setColorRGB(theme.player)
+        activeRingColor.set(theme.ring).mul(ACTIVE_BRIGHTEN).clamp()
+
         for (i in 0 until MAX_RINGS) {
             val ring   = rings[i]
             val active = i == activeRing
 
-            ring.ringColor = if (active) theme.player else theme.ring
+            ring.ringColor = if (active) activeRingColor else theme.ring
             ring.thickness = (if (active) RING_THICKNESS_ACT else RING_THICKNESS).toActual
+
+            if (active) {
+                ring.setActive(theme.player, sizeScaler.factor)
+                ring.advanceDash(dashStep.toActual)
+            } else ring.setInactive()
 
             // Третє кільце проявляється, решта завжди видимі
             ring.color.a = if (i < 2) 1f else ring3Alpha
         }
+        dashStep = 0f
     }
 
 }

@@ -87,7 +87,7 @@ class SpriteUtil {
         val shield_pip_tex = VfxTexture(40f, 25f, shape = RoundRectEffect().apply { radius = 8f })
         val shield_pip     = shield_pip_tex.region
 
-        val boost_icon_gem_x2   = region("boost_icon_gem_x2")
+        val boost_icon_frenzy   = region("boost_icon_frenzy")
         val boost_icon_magnet   = region("boost_icon_magnet")
         val boost_icon_pulse    = region("boost_icon_pulse")
         val boost_icon_shield   = region("boost_icon_shield")

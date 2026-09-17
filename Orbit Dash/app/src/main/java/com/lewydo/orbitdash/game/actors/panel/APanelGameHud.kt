@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.label.AMsdfLabel
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
 import com.lewydo.orbitdash.game.actors.panel.boost.APanelShield
-import com.lewydo.orbitdash.game.engine.RunEngine
+import com.lewydo.orbitdash.engine.RunEngine
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle

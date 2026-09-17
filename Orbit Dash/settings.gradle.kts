@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Orbit Dash"
 include(":app")
+include(":engine")

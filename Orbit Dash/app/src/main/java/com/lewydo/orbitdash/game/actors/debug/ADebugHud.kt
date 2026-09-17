@@ -1,16 +1,15 @@
 package com.lewydo.orbitdash.game.actors.debug
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.utils.Align
-import com.lewydo.orbitdash.game.utils.global.IS_DEBUG
+import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.lewydo.orbitdash.game.actors.label.AMsdfLabel
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
-import com.lewydo.orbitdash.game.utils.GameColor
-import com.lewydo.orbitdash.game.utils.actor.disable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.debug.PerfMonitor
+import com.lewydo.orbitdash.game.utils.debug.dragToMove
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.gdxGame
+import com.lewydo.orbitdash.game.utils.global.IS_DEBUG
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  ADebugHud — оверлей зі статистикою рендеру.
@@ -46,7 +45,9 @@ class ADebugHud(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
-        disable()
+        // childrenOnly, а не disable(): група на весь екран і мусить лишатись
+        // наскрізною, але сам напис має ловити дотик — за нього ми й тягнемо.
+        touchable = Touchable.childrenOnly
 
         if (!IS_DEBUG) { isVisible = false; return }
 
@@ -55,6 +56,9 @@ class ADebugHud(override val screen: AdvancedScreen) : AConstraintLayout(screen)
         //aStatsLbl.debug()
         //aStatsLbl.wrap = true
         add(aStatsLbl) { startToStart(margin = 14f); topToTop(margin = 14f) }
+
+        aStatsLbl.touchable = Touchable.enabled
+        aStatsLbl.dragToMove("${screen::class.simpleName}.hud")
     }
 
     override fun act(delta: Float) {
