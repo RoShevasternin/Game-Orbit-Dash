@@ -30,6 +30,7 @@ import com.lewydo.orbitdash.game.utils.font.msdf.MsdfManager
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.runGDX
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 import com.lewydo.orbitdash.game.utils.vfx.Blit
 import com.lewydo.orbitdash.game.utils.vfx.FboStack
 import com.lewydo.orbitdash.game.utils.vfx.VfxShaderCache
@@ -110,6 +111,8 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     var backgroundColor = GameColor.background
     val disposableSet   = mutableSetOf<Disposable>()
 
+    private val themeSync = ThemeSync(::syncTheme)
+
     // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
@@ -138,7 +141,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         ShaderClock.update()
         ThemeManager.update()
 
-        syncTheme()
+        themeSync.sync()
 
         // Спільні текстури — ДО сцени: жоден батч ще не відкритий, і всі Image,
         // що їх тримають, у цьому ж кадрі побачать уже свіжий результат.

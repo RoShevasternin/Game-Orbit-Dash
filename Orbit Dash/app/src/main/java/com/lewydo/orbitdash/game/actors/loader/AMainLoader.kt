@@ -20,6 +20,7 @@ import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 import java.util.concurrent.atomic.AtomicBoolean
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -99,6 +100,7 @@ class AMainLoader(
     // ------------------------------------------------------------------------
     private val onceTapToStart = AtomicBoolean(false)
     private val onceMorph      = AtomicBoolean(false)
+    private val themeSync      = ThemeSync(::syncTheme)
 
     var state = startState
         private set
@@ -140,12 +142,12 @@ class AMainLoader(
 
         addActor(aTitlesAnchor)
 
-        syncTheme()
+        themeSync.sync()
     }
 
     override fun act(delta: Float) {
         super.act(delta)
-        syncTheme()
+        themeSync.sync()
     }
 
     /** Титули завжди живуть у власній групі: так вони їдуть і масштабуються разом. */

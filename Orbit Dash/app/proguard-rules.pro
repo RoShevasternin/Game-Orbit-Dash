@@ -28,3 +28,9 @@
 -keep class com.android.installreferrer.api.** { *; }
 # Android Lifecycle
 -keep class androidx.lifecycle.** { *; }
+
+
+# Room (WorkManager з AdMob) -----------------------------------------------
+# Старий room-runtime 2.2.5 тримає клас бази без конструктора; full mode R8 його викидає,
+# і Room не може створити WorkDatabase_Impl через рефлексію — падіння на старті
+-keep class * extends androidx.room.RoomDatabase { <init>(); }

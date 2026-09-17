@@ -8,6 +8,7 @@ import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
@@ -24,30 +25,30 @@ class ABallDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen
     private val aBall = AMsdfImage(screen, gdxGame.assetsMsdf.circle)
 
     // ------------------------------------------------------------------------
+    // Field
+    // ------------------------------------------------------------------------
+    private val themeSync = ThemeSync(::syncTheme)
+
+    // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
         addGlow()
         addBall()
 
-        syncTheme()
+        themeSync.sync()
     }
-
-    private var themeVersion = -1
 
     override fun act(delta: Float) {
         super.act(delta)
-        if (themeVersion != ThemeManager.version) {
-            themeVersion = ThemeManager.version
-            syncTheme()
-        }
+        themeSync.sync()
     }
 
     // ------------------------------------------------------------------------
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        add(aGlow) { size(GLOW_SIZE, GLOW_SIZE); center() }
+        add(aGlow) { size(GLOW_SIZE); center() }
     }
 
     private fun addBall() {

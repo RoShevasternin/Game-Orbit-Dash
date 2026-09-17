@@ -9,6 +9,7 @@ import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
@@ -30,6 +31,11 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     private val aPoint   = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }
 
     // ------------------------------------------------------------------------
+    // Field
+    // ------------------------------------------------------------------------
+    private val themeSync = ThemeSync(::syncTheme)
+
+    // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
@@ -37,17 +43,12 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         addGem()
         addPoint()
 
-        syncTheme()
+        themeSync.sync()
     }
-
-    private var themeVersion = -1
 
     override fun act(delta: Float) {
         super.act(delta)
-        if (themeVersion != ThemeManager.version) {
-            themeVersion = ThemeManager.version
-            syncTheme()
-        }
+        themeSync.sync()
 
         // Крутиться САМ ромб, а не група: біла крапка стоїть у центрі й має
         // лишатись нерухомою. Origin — тут, а не в sizeChanged(): aGem має
@@ -60,8 +61,7 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        aGlow.setSizeScaled(GLOW_SIZE, GLOW_SIZE)
-        add(aGlow) { center() }
+        add(aGlow) { size(GLOW_SIZE); center() }
     }
 
     private fun addGem() {
@@ -70,8 +70,7 @@ class AGem(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     }
 
     private fun addPoint() {
-        aPoint.setSizeScaled(POINT_SIZE, POINT_SIZE)
-        add(aPoint) { center() }
+        add(aPoint) { size(POINT_SIZE); center() }
     }
 
     // ------------------------------------------------------------------------

@@ -124,7 +124,7 @@ class CLParams(internal val layout: AConstraintLayout, private val actor: Actor)
      * actor.setSizeScaled(w, h) перед add(). Актор отримує розмір ще в блоці,
      * тому require(width > 0) в add() проходить.
      */
-    fun size(width: Float, height: Float) {
+    fun size(width: Float, height: Float = width) {
         with(layout) { actor.setSizeScaled(width, height) }
         widthMode = Dimension.FIXED; heightMode = Dimension.FIXED
     }

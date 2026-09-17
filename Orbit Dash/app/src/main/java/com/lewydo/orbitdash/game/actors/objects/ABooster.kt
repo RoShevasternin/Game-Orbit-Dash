@@ -82,8 +82,8 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        add(aGlow2) { size(GLOW_2_SIZE, GLOW_2_SIZE); center() }
-        add(aGlow1) { size(GLOW_1_SIZE, GLOW_1_SIZE); center() }
+        add(aGlow2) { size(GLOW_2_SIZE); center() }
+        add(aGlow1) { size(GLOW_1_SIZE); center() }
         aGlow1.setOrigin(Align.center)
         aGlow2.setOrigin(Align.center)
     }

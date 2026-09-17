@@ -9,6 +9,7 @@ import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  ABadgeDot — точка «є нове»: halo + ядро.
@@ -42,6 +43,11 @@ class ABadgeDot(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     private val aDot  = Image(gdxGame.assetsMsdf.circle)
 
     // ------------------------------------------------------------------------
+    // Field
+    // ------------------------------------------------------------------------
+    private val themeSync = ThemeSync(::syncTheme)
+
+    // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
@@ -51,14 +57,14 @@ class ABadgeDot(override val screen: AdvancedScreen) : AConstraintLayout(screen)
 
         add(aDot) { fillParent() }
 
-        syncTheme()
+        themeSync.sync()
         startPulse()
     }
 
     /** Колір не зберігається — щокадру з теми, тому лерп скіна працює сам. */
     override fun act(delta: Float) {
         super.act(delta)
-        syncTheme()
+        themeSync.sync()
     }
 
     // ------------------------------------------------------------------------

@@ -13,6 +13,7 @@ import com.lewydo.orbitdash.game.utils.actor.disable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  AMenuButton — ЄДИНА кнопка меню: заокруглений фон + текст (+ опційний бейдж).
@@ -89,10 +90,11 @@ class ADefButton(
     // ------------------------------------------------------------------------
     // Field
     // ------------------------------------------------------------------------
+    private val themeSync = ThemeSync(::syncTheme)
 
     /** Вигляд. Змінюй коли завгодно — це лише параметри фону. */
     var variant = variant
-        set(value) { field = value; applyVariant() }
+        set(value) { field = value; applyVariant(); themeSync.invalidate() }   // variant міняє і кольори
 
     /**
      * Точка «є що забрати» у правому верхньому куті (DAILY).
@@ -111,6 +113,7 @@ class ADefButton(
      * Колір тексту завжди визначає variant.
      */
     var bgOverride: Color? = null
+        set(value) { field = value; themeSync.invalidate() }
 
     /**
      * Бекінг-поле, а не делегат до aBg: applyVariant() перезаписує фон
@@ -133,19 +136,16 @@ class ADefButton(
         label.setAlignment(Align.center)
 
         applyVariant()   // ініціалізатор поля НЕ проходить через сеттер
-        syncTheme()      // щоб перший кадр був уже правильного кольору
+        themeSync.sync() // щоб перший кадр був уже правильного кольору
 
         // Якщо бейдж створився ДО потрапляння на сцену, фон ляже поверх нього
         aBadge?.toFront()
     }
 
-    /**
-     * Кольори синхронізуються ЩОКАДРУ, бо ThemeManager не перемикає палітру,
-     * а лерпає її (~0.35 с) — разовий виклик зловив би проміжний кадр.
-     */
+    /** Тема лерпається ~2 с — sync() ловить кожен її кадр, а в спокої нічого не робить. */
     override fun act(delta: Float) {
         super.act(delta)
-        syncTheme()
+        themeSync.sync()
     }
 
     override fun sizeChanged() {
@@ -207,6 +207,7 @@ class ADefButton(
         aBadge = badge
         addActor(badge)
         layoutBadge()
+        themeSync.invalidate()   // тінт бейджа ставить syncTheme() — новий бейдж його ще не має
     }
 
     private fun layoutBadge() {

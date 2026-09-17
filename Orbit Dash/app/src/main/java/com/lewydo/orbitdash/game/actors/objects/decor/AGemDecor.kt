@@ -8,6 +8,7 @@ import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 import javax.microedition.khronos.opengles.GL
 
 class AGemDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
@@ -27,6 +28,8 @@ class AGemDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen)
     // ------------------------------------------------------------------------
     // Field
     // ------------------------------------------------------------------------
+    private val themeSync = ThemeSync(::syncTheme)
+
     var spin: Float
         get() = aDiamond.rotation
         set(value) { aDiamond.rotation = value }
@@ -38,17 +41,12 @@ class AGemDecor(override val screen: AdvancedScreen) : AConstraintLayout(screen)
         addGlow()
         addDiamond()
 
-        syncTheme()
+        themeSync.sync()
     }
-
-    private var themeVersion = -1
 
     override fun act(delta: Float) {
         super.act(delta)
-        if (themeVersion != ThemeManager.version) {
-            themeVersion = ThemeManager.version
-            syncTheme()
-        }
+        themeSync.sync()
 
         aDiamond.setOrigin(Align.center)
     }

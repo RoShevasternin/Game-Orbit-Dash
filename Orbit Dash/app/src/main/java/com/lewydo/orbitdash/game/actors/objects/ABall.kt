@@ -9,6 +9,7 @@ import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
@@ -29,6 +30,11 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     private val aPoint = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }
 
     // ------------------------------------------------------------------------
+    // Field
+    // ------------------------------------------------------------------------
+    private val themeSync = ThemeSync(::syncTheme)
+
+    // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
@@ -36,17 +42,12 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         addBall()
         addPoint()
 
-        syncTheme()
+        themeSync.sync()
     }
-
-    private var themeVersion = -1
 
     override fun act(delta: Float) {
         super.act(delta)
-        if (themeVersion != ThemeManager.version) {
-            themeVersion = ThemeManager.version
-            syncTheme()
-        }
+        themeSync.sync()
     }
 
     override fun sizeChanged() {
@@ -60,7 +61,7 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     // Add Actors
     // ------------------------------------------------------------------------
     private fun addGlow() {
-        add(aGlow) { size(GLOW_SIZE, GLOW_SIZE); center() }
+        add(aGlow) { size(GLOW_SIZE); center() }
     }
 
     private fun addBall() {
@@ -74,7 +75,7 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     private fun addPoint() {
         add(aPoint) {
-            size(POINT_SIZE, POINT_SIZE)
+            size(POINT_SIZE)
             startToStart(margin = POINT_PADDING); topToTop(margin = POINT_PADDING)
         }
     }

@@ -11,6 +11,7 @@ import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 // ----------------------------------------------------------------------------
 //  ВЕРХНЯ СМУГА ГРИ. Панель НІМА: щокадру читає стан рушія і показує його,
@@ -31,9 +32,8 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
     // ------------------------------------------------------------------------
     // Field
     // ------------------------------------------------------------------------
-    private val theme = ThemeManager.current
-
-    private var themeVersion = -1
+    private val theme     = ThemeManager.current
+    private val themeSync = ThemeSync(::syncTheme)
 
     // Кеш: HUD оновлює текст лише при зміні значення
     private var lastScore = -1
@@ -65,14 +65,13 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
         addComboLbl()
 
         addPanelShield()
+
+        themeSync.sync()
     }
 
     override fun act(delta: Float) {
         super.act(delta)
-        if (themeVersion != ThemeManager.version) {
-            themeVersion = ThemeManager.version
-            syncTheme()
-        }
+        themeSync.sync()
     }
 
     // ------------------------------------------------------------------------

@@ -15,6 +15,7 @@ import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  ГЛОБАЛЬНИЙ ГОДИННИК ОРБІТ.
@@ -75,7 +76,8 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
     // ------------------------------------------------------------------------
     // Field
     // ------------------------------------------------------------------------
-    private val tmpVec = Vector2()
+    private val tmpVec    = Vector2()
+    private val themeSync = ThemeSync(::syncTheme)
 
     var isSpinning = true
 
@@ -91,18 +93,13 @@ class AOrbitEmblem(override val screen: AdvancedScreen) : AConstraintLayout(scre
         addBall()
         addGem()
 
-        syncTheme()
+        themeSync.sync()
     }
-
-    private var themeVersion = -1
 
     override fun act(delta: Float) {
         super.act(delta)   // спершу констрейнти розкладуть кільця під поточний розмір
 
-        if (themeVersion != ThemeManager.version) {
-            themeVersion = ThemeManager.version
-            syncTheme()
-        }
+        themeSync.sync()
 
         if (isSpinning) OrbitEmblemClock.update(delta, BALL_SPEED_DEG, GEM_SPEED_DEG)
 

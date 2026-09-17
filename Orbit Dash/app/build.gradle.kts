@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationBuildType
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.serialization)
@@ -14,7 +16,7 @@ android {
         minSdk      = 24
         targetSdk   = 37
         versionCode = 6
-        versionName = "1.0.1" // test
+        versionName = "1.0.1-test" // test
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -32,17 +34,7 @@ android {
             )
 
             // Field ------------------------------------------------------------------------
-            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
-            buildConfigField(
-                "String",
-                "ADMOB_BANNER_ID",
-                "\"ca-app-pub-3940256099942544/9214589741\""
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_REWARDED_ID",
-                "\"ca-app-pub-3940256099942544/5224354917\""
-            )
+            admob("debug")
         }
         release {
             isMinifyEnabled   = true
@@ -53,17 +45,7 @@ android {
             )
 
             // Field ------------------------------------------------------------------------
-            manifestPlaceholders["admobAppId"] = "ca-app-pub-4052300465234748~9784404522"
-            buildConfigField(
-                "String",
-                "ADMOB_BANNER_ID",
-                "\"ca-app-pub-4052300465234748/6327275168\""
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_REWARDED_ID",
-                "\"ca-app-pub-4052300465234748/2627703303\""
-            )
+            admob("release")
         }
     }
     compileOptions {
@@ -173,4 +155,18 @@ tasks.configureEach {
     if ("package" in name) {
         dependsOn("copyAndroidNatives")
     }
+}
+
+// ------------------------------------------------------------------------
+// Helper
+// ------------------------------------------------------------------------
+
+// ID AdMob для типу збірки — з gradle.properties (admob.<type>.*)
+fun ApplicationBuildType.admob(type: String) {
+    fun id(key: String) = providers.gradleProperty("admob.$type.$key").orNull
+        ?: error("Missing 'admob.$type.$key' in gradle.properties")
+
+    manifestPlaceholders["admobAppId"] = id("appId")
+    buildConfigField("String", "ADMOB_BANNER_ID",   "\"${id("bannerId")}\"")
+    buildConfigField("String", "ADMOB_REWARDED_ID", "\"${id("rewardedId")}\"")
 }
