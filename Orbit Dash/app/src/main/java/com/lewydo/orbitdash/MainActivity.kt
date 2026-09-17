@@ -22,7 +22,9 @@ import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.google.gson.Gson
 import com.lewydo.orbitdash.databinding.ActivityMainBinding
 import com.lewydo.orbitdash.services.ads.AdManager
+import com.lewydo.orbitdash.services.leaderboard.LeaderboardIds
 import com.lewydo.orbitdash.services.leaderboard.LeaderboardManager
+import com.lewydo.orbitdash.services.leaderboard.LeaderboardScores
 import com.lewydo.orbitdash.services.tiktok.RemoteConfigModel
 import com.lewydo.orbitdash.services.tiktok.TikTokManager
 import com.lewydo.orbitdash.util.log
@@ -162,16 +164,23 @@ class MainActivity : AppCompatActivity(), AndroidFragmentApplication.Callbacks {
     // ------------------------------------------------------------------------
 
     private fun initializeLeaderboard() {
-        leaderboardManager = LeaderboardManager(this, getString(R.string.leaderboard_id))
+        leaderboardManager = LeaderboardManager(this, LeaderboardIds(
+            best    = getString(R.string.leaderboard_best_id),
+            combo   = getString(R.string.leaderboard_combo_id),
+            crashes = getString(R.string.leaderboard_crashes_id),
+            rich    = getString(R.string.leaderboard_rich_id),
+        ))
         leaderboardManager.initialize()
     }
 
-    fun submitXp(xp: Long) {
-        leaderboardManager.submitScore(xp)
+    /** Після рану й нових гемів — усі результати, лише якщо гравець уже увійшов (без вікна входу). */
+    fun submitScores(scores: LeaderboardScores) = runOnUiThread {
+        leaderboardManager.submitIfSignedIn(scores)
     }
 
-    fun showLeaderboard() {
-        leaderboardManager.showLeaderboard()
+    /** RANKS: вхід за потреби → результати з сейву → список лідербордів Google. */
+    fun showLeaderboards(scores: LeaderboardScores) = runOnUiThread {
+        leaderboardManager.showAll(scores)
     }
 
     // ------------------------------------------------------------------------

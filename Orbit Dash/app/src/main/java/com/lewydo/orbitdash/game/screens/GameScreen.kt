@@ -26,6 +26,7 @@ import com.lewydo.orbitdash.game.utils.actor.animShow
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
+import com.lewydo.orbitdash.services.analytics.AnalyticsManager
 import com.lewydo.orbitdash.util.log
 
 // ----------------------------------------------------------------------------
@@ -84,6 +85,9 @@ class GameScreen : AdvancedScreen() {
      * Дві швидкі смерті (<15с) вмикають mercy наступного рану.
      */
     private var quickDeaths    = 0
+
+    /** Скільки комбо цього рану вже закомічено — ревайв фіксує той самий ран удруге. */
+    private var comboCommitted = 0
 
     private var debugOrbit3    = false
     /** DEBUG: множник часу для рушія. x0.25 — розглядати near-miss «під лупою». */
@@ -169,6 +173,22 @@ class GameScreen : AdvancedScreen() {
         super.show()
         animShowScreen()
         startRun()
+    }
+
+    /** Екран іде (меню, назад) — ран далі не піде, геми рану в баланс. */
+    override fun hide() {
+        bankRun()
+        super.hide()
+    }
+
+    /**
+     * Застосунок іде у фон. GDXGame зберігає ПІСЛЯ screen.pause(), тож геми,
+     * забанкані тут, потраплять у сейв. Лише після смерті: живий ран після
+     * resume триває, а bank() віддає суму один раз — пізніші геми загубились би.
+     */
+    override fun pause() {
+        if (engine.phase == RunEngine.Phase.DEAD) bankRun()
+        super.pause()
     }
 
     override fun render(delta: Float) {
@@ -259,6 +279,7 @@ class GameScreen : AdvancedScreen() {
      * впливає, передається явно. Тому ран відтворюваний: Config + seed + тапи.
      */
     private fun startRun() {
+        bankRun()                 // геми попереднього рану — до того, як рушій зміниться
         releaseAllActors()
 
         engine = RunEngine(RunEngine.Config(
@@ -267,6 +288,7 @@ class GameScreen : AdvancedScreen() {
             // TODO: апгрейди й startBoost — коли розширимо PlayerData
         ))
         if (quickDeaths >= 2) quickDeaths = 0
+        comboCommitted = 0
 
         engine.listener = runListener
         applyDebugFlags()
@@ -276,6 +298,18 @@ class GameScreen : AdvancedScreen() {
         // показав би стару розкладку і смикнув би її на місце.
         syncField()
         gdxGame.analytics.runStart()
+    }
+
+    /**
+     * Геми рану → баланс гравця. Рушій віддає суму рівно раз, тож зайвий
+     * виклик (рестарт, потім вихід) нічого не подвоїть.
+     */
+    private fun bankRun() {
+        val gems = engine.bank()
+        if (gems <= 0) return
+        gdxGame.modelPlayer.addGems(gems, AnalyticsManager.GemSource.RUN)
+        gdxGame.saveGame()
+        gdxGame.activity.submitScores(gdxGame.modelPlayer.leaderboardScores())   // баланс виріс — лідерборд багатства
     }
 
     /**
@@ -292,16 +326,28 @@ class GameScreen : AdvancedScreen() {
         override fun onDied(result: RunEngine.RunResult) {
             quickDeaths = if (result.durationSec < 15) quickDeaths + 1 else 0
 
+            // Рекорд і лічильник ранів — одразу. Геми — пізніше, у bankRun():
+            // до рестарту чи виходу сума ще може змінитись (x2·AD, ревайв).
+            val player  = gdxGame.modelPlayer
+            // Комбо поки = прохід впритул повз шип. Зміниться механіка — міняється лише джерело тут
+            val combos   = result.nearMisses
+            val comboNew = combos - comboCommitted
+            comboCommitted = combos
+
+            val newBest = player.commitRun(result.score, comboNew)
+            gdxGame.saveGame()
+            gdxGame.activity.submitScores(player.leaderboardScores())
+
             gdxGame.analytics.runEnd(
                 score       = result.score,
                 durationSec = result.durationSec,
                 gemsEarned  = result.gems,
                 deathRing   = result.deathRing,
-                newBest     = false,   // TODO: порівняти з PlayerData.best
+                newBest     = newBest,
             )
 
             // TODO: GameOver-панель (score, +gems, REVIVE·AD, X2·AD, RESTART, MENU)
-            log("DEAD score=${result.score} gems=${result.gems} t=${result.durationSec}s ring=${result.deathRing}")
+            log("DEAD score=${result.score} gems=${result.gems} t=${result.durationSec}s ring=${result.deathRing} best=$newBest")
         }
 
         override fun onOrbit3Online() { log("ORBIT III ONLINE") }
@@ -359,16 +405,9 @@ class GameScreen : AdvancedScreen() {
         releaseMissing()
     }
 
-    /**
-     * Геми показуємо СУМОЮ: баланс гравця плюс незараховані за цей ран.
-     * Гравець має бачити, скільки в нього СТАНЕ, а не скільки було до старту —
-     * інакше підбір гема нічого не міняє на екрані й читається як баг.
-     */
+    /** HUD читає рушій сам: рахунок, геми рану, комбо, щит. */
     private fun syncHud() {
-        aPanelGameHud.syncFrom(
-            engine    = engine,
-            gemsTotal = gdxGame.modelPlayer.gems + engine.gemCount,
-        )
+        aPanelGameHud.syncFrom(engine)
     }
 
     // ------------------------------------------------------------------------

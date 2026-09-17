@@ -15,13 +15,10 @@ android {
         applicationId = "com.lewydo.orbitdash"
         minSdk      = 24
         targetSdk   = 37
-        versionCode = 6
-        versionName = "1.0.1-test" // test
+        versionCode = 7
+        versionName = "1.1.0" // test
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // Field ------------------------------------------------------------------------
-        //buildConfigField("String", "TIKTOK_APP_SECRET", "\"aaa\"")
     }
 
     buildTypes {

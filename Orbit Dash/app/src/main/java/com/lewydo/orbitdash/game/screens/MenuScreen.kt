@@ -9,7 +9,9 @@ import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.background.AComet
 import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.debug.ADebugHud
+import com.lewydo.orbitdash.game.actors.debug.ADebugSwatchBar
 import com.lewydo.orbitdash.game.actors.debug.addDebugHud
+import com.lewydo.orbitdash.game.actors.debug.addDebugSwatchBar
 import com.lewydo.orbitdash.game.actors.layout.AHug
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AAnchorOf
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
@@ -24,8 +26,11 @@ import com.lewydo.orbitdash.game.utils.actor.enable
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.runGDX
+import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.services.analytics.AnalyticsManager
 import com.lewydo.orbitdash.util.log
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 // ----------------------------------------------------------------------------
 //  ЧОМУ AHug, А НЕ detach. Політ панелей — це CSS transform:translate у
@@ -87,11 +92,31 @@ class MenuScreen : AdvancedScreen() {
         get() = gdxGame.navigationManager.fromScreenName == LoaderScreen::class.java.name
 
     // ------------------------------------------------------------------------
+    // Debug
+    // ------------------------------------------------------------------------
+    /**
+     * Кружечки тем: тап — той самий плавний перехід, що й при виборі скіна.
+     * Лише ThemeManager, без modelPlayer: вибір НЕ зберігається і не відкриває
+     * платних скінів — після перезапуску тема знову та, що в збереженні.
+     */
+    private val aDebugThemeBar by lazy {
+        ADebugSwatchBar(this, ThemeManager.palettes.mapIndexed { id, palette ->
+            ADebugSwatchBar.Item(
+                palette.player,
+                palette.gem,
+                isActive = { ThemeManager.currentId == id }) {
+                ThemeManager.switchTo(id)
+            }
+        })
+    }
+
+    // ------------------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------------------
     override fun show() {
         super.show()
         wirePanelMenu()
+        collectStats()
 
         // Реклама живе на UI-потоці, сцена — на GL. Кожен сигнал доступності
         // перестрибує через runGDX; початковий стан знімаємо одразу, бо
@@ -121,12 +146,30 @@ class MenuScreen : AdvancedScreen() {
         addPanels()
 
         addDebugHud(ADebugHud(this@MenuScreen))
+        addDebugSwatchBar(aDebugThemeBar)
     }
 
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         val v = stageUI.screenToStageCoordinates(Vector2(screenX.toFloat(), screenY.toFloat()))
         aStarField.animRippleAt(v.x, v.y)
         return false
+    }
+
+    // ------------------------------------------------------------------------
+    // Stats
+    // ------------------------------------------------------------------------
+
+    /**
+     * BEST і геми — потоком, а не разовим читанням: геми за рекламу приходять,
+     * поки меню відкрите, а на холодному старті сейв дочитується вже після show().
+     * Скоуп екрана гасне в dispose() — підписка не переживе меню.
+     */
+    private fun collectStats() {
+        val player = gdxGame.modelPlayer
+        coroutine?.launch {
+            combine(player.bestFlow, player.gemsFlow) { best, gems -> best to gems }
+                .collect { (best, gems) -> runGDX { aPanelMenuState.setStats(best, gems) } }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -170,6 +213,7 @@ class MenuScreen : AdvancedScreen() {
                 onEarned = {
                     runGDX {
                         gdxGame.modelPlayer.addGems(amount, AnalyticsManager.GemSource.AD)
+                        gdxGame.activity.submitScores(gdxGame.modelPlayer.leaderboardScores())
                         AnalyticsManager.adReward(AnalyticsManager.Placement.GEMS_MENU)
                         rerollGems()
                     }

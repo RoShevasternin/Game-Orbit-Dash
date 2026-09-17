@@ -1,0 +1,40 @@
+{
+  "id": "47",
+  "short": "Геми й очки",
+  "title": "Геми й очки: підрахунок, збереження, меню",
+  "date": "17.09.2026",
+  "order": "Файли 1 → 9, компілюється після 9. «Було» — дослівно з твого файлу.",
+  "summary_md": "pages/47.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/f03d26ed-12c3-428e-bcbc-fd80ce4b4d8f/scratchpad/lab/",
+  "files": [
+    {
+      "path": "engine/src/main/kotlin/com/lewydo/orbitdash/engine/RunEngine.kt",
+      "note": "Тести до цього (RunEngineTest) я вже поклав у проєкт — 8/8."
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/GDXGame.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/APanelGameHud.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/APanelMenuState.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/services/leaderboard/LeaderboardManager.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/MainActivity.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/LeaderboardScreen.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt"
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/MenuScreen.kt"
+    }
+  ]
+}

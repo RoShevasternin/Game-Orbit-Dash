@@ -3,6 +3,7 @@ package com.lewydo.orbitdash.game.model
 import com.lewydo.orbitdash.game.state.GameState
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.services.analytics.AnalyticsManager
+import com.lewydo.orbitdash.services.leaderboard.LeaderboardScores
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,6 +39,7 @@ class PlayerModel(
     val gemsFlow     = state.gemsFlow
     val bestFlow     = state.bestFlow
     val runsFlow     = state.runsFlow
+    val comboTotalFlow = state.comboTotalFlow
 
     val orbit3Flow   = state.orbit3Flow
     val noAdsFlow    = state.noAdsFlow
@@ -52,6 +54,7 @@ class PlayerModel(
     val gems  : Int     get() = state.gemsFlow.value
     val best  : Int     get() = state.bestFlow.value
     val runs  : Int     get() = state.runsFlow.value
+    val comboTotal: Int get() = state.comboTotalFlow.value
     val orbit3: Boolean get() = state.orbit3Flow.value
     val noAds : Boolean get() = state.noAdsFlow.value
 
@@ -104,7 +107,9 @@ class PlayerModel(
     // ------------------------------------------------------------------------
 
     /**
-     * Зафіксувати завершений ран: лічильник ранів і рекорд.
+     * Зафіксувати завершений ран: лічильник ранів, рекорд і комбо.
+     * [combos] — ПРИРІСТ за цей ран (після ревайву той самий ран
+     * фіксується вдруге — рахувати треба лише нові).
      * @return true, якщо це новий рекорд — для NEW BEST-чипа і run_end.
      *
      * ГЕМИ СЮДИ НЕ ВХОДЯТЬ СВІДОМО: на момент смерті сума ще не остаточна —
@@ -116,8 +121,9 @@ class PlayerModel(
      * RunEngine.bank() сам віддасть 0 при повторному виклику, тож подвійного
      * нарахування не буде навіть якщо натиснути і x2, і RESTART.
      */
-    fun commitRun(score: Int): Boolean {
+    fun commitRun(score: Int, combos: Int): Boolean {
         state.runsFlow.value += 1
+        if (combos > 0) state.comboTotalFlow.value += combos
 
         val newBest = score > state.bestFlow.value
         if (newBest) {
@@ -128,6 +134,18 @@ class PlayerModel(
         }
         return newBest
     }
+
+    /**
+     * Чотири лідерборди: рекорд рану, COMBO (усього комбо),
+     * програші (кожен ран закінчується смертю — тож це просто runs),
+     * багатство (поточний баланс; у таблиці лишається найбільший).
+     */
+    fun leaderboardScores() = LeaderboardScores(
+        best    = best.toLong(),
+        combo   = comboTotal.toLong(),
+        crashes = runs.toLong(),
+        rich    = gems.toLong(),
+    )
 
     // ------------------------------------------------------------------------
     // Purchases

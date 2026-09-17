@@ -16,6 +16,7 @@ class GameState {
     val gemsFlow   = MutableStateFlow(0)
     val bestFlow   = MutableStateFlow(0)
     val runsFlow   = MutableStateFlow(0)
+    val comboTotalFlow = MutableStateFlow(0)
 
     // Покупки
     val orbit3Flow = MutableStateFlow(false)
@@ -41,6 +42,7 @@ class GameState {
         gemsFlow.value   = data.gems
         bestFlow.value   = data.best
         runsFlow.value   = data.runs
+        comboTotalFlow.value = data.comboTotal
 
         orbit3Flow.value = data.orbit3
         noAdsFlow.value  = data.noAds
@@ -61,6 +63,7 @@ class GameState {
         gems   = gemsFlow.value,
         best   = bestFlow.value,
         runs   = runsFlow.value,
+        comboTotal = comboTotalFlow.value,
 
         orbit3 = orbit3Flow.value,
         noAds  = noAdsFlow.value,

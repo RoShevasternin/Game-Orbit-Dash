@@ -7,23 +7,44 @@ import com.google.android.gms.games.PlayGamesSdk
 import com.lewydo.orbitdash.util.log
 
 // ----------------------------------------------------------------------------
-// LeaderboardManager — Google Play Games Services v2
+// LeaderboardManager — Google Play Games Services v2, чотири лідерборди
 //
-//   submitScore() — відправити рахунок (XP) у лідерборд
-//   showLeaderboard() — відкрити стандартний UI Google
+//   submitIfSignedIn(scores) — усі результати, ТИХО (лише якщо вже увійшов)
+//   showAll(scores)          — вхід за потреби → результати → список лідербордів Google
 //
-//   Sign-in у v2 автоматичний при старті (PlayGamesSdk.initialize).
-//   Лідерборд по XP: level рахується локально з XP (PlayerModel.xpToLevel).
+//   Лідерборд тримає НАЙКРАЩЕ надіслане значення гравця, тож накопичувальні
+//   (комбо, програші) надсилаємо загальною сумою — вона лише росте.
+//   Багатство — поточний баланс: у таблиці лишається найбільший, який був.
+//   Надіслати старше чи те саме значення — безпечно, Play Games його відкине.
 // ----------------------------------------------------------------------------
 
+/** ID лідербордів із Play Console (strings.xml). */
+data class LeaderboardIds(
+    val best   : String,
+    val combo  : String,
+    val crashes: String,
+    val rich   : String,
+)
+
+/** Що відправляти: рекорд рану, усього комбо, усього програшів, баланс гемів. */
+data class LeaderboardScores(
+    val best   : Long,
+    val combo  : Long,
+    val crashes: Long,
+    val rich   : Long,
+)
+
 class LeaderboardManager(
-    private val activity      : Activity,
-    private val leaderboardId : String
+    private val activity: Activity,
+    private val ids     : LeaderboardIds,
 ) {
 
     companion object {
         // довільний код для startActivityForResult (UI лідерборда)
         const val RC_LEADERBOARD_UI = 9004
+
+        /** Заглушка в strings.xml, поки лідерборд не створено в Play Console. */
+        private const val NO_ID = "000"
     }
 
     private var isAuthenticated = false
@@ -45,32 +66,59 @@ class LeaderboardManager(
     }
 
     // ------------------------------------------------------------------------
-    // Submit score (XP)
+    // Submit
     // ------------------------------------------------------------------------
 
-    fun submitScore(xp: Long) {
-        if (xp <= 0) return
-        ensureSignedIn {
-            PlayGames.getLeaderboardsClient(activity).submitScore(leaderboardId, xp)
-            log("Leaderboard: submitted XP=$xp")
-        }
+    /**
+     * Тихо: лише якщо гравець уже увійшов. Кличеться після кожного рану, а
+     * вікно входу Google посеред гри ставило застосунок на паузу. Хто не
+     * увійшов, відправить результати, коли сам відкриє RANKS (showAll).
+     */
+    fun submitIfSignedIn(scores: LeaderboardScores) {
+        if (!isAuthenticated) return
+        submitAll(scores)
+    }
+
+    private fun submitAll(scores: LeaderboardScores) {
+        submit(ids.best,    scores.best)
+        submit(ids.combo,   scores.combo)
+        submit(ids.crashes, scores.crashes)
+        submit(ids.rich,    scores.rich)
+    }
+
+    /**
+     * submitScoreImmediate, а не submitScore: той відправляє наосліп, і
+     * неправильний ID чи неопублікований лідерборд мовчки губляться. Тут Google
+     * відповідає — у лозі видно, прийняв він результат чи ні.
+     */
+    private fun submit(id: String, value: Long) {
+        if (value <= 0 || id.isBlank() || id == NO_ID) return
+        PlayGames.getLeaderboardsClient(activity)
+            .submitScoreImmediate(id, value)
+            .addOnSuccessListener { log("Leaderboard: $id = $value прийнято") }
+            .addOnFailureListener { e -> log("Leaderboard: $id = $value відхилено: ${e.message}") }
     }
 
     // ------------------------------------------------------------------------
     // Show standard Google UI
     // ------------------------------------------------------------------------
 
-    fun showLeaderboard() {
+    /**
+     * RANKS: список усіх лідербордів гри. [scores] — із сейву: відправляємо
+     * перед показом, щоб гравець бачив себе навіть без жодного рану після входу.
+     */
+    fun showAll(scores: LeaderboardScores) {
         ensureSignedIn {
+            submitAll(scores)
             PlayGames.getLeaderboardsClient(activity)
-                .getLeaderboardIntent(leaderboardId)
+                .allLeaderboardsIntent
                 .addOnSuccessListener { intent: Intent ->
                     // startActivityForResult обов'язковий навіть без результату —
                     // API так отримує identity пакета (вимога Google).
                     activity.startActivityForResult(intent, RC_LEADERBOARD_UI)
                 }
                 .addOnFailureListener { e ->
-                    log("Leaderboard: showLeaderboard failed: ${e.message}")
+                    log("Leaderboard: showAll failed: ${e.message}")
                 }
         }
     }

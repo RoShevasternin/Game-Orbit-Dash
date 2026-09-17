@@ -81,18 +81,20 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
     /**
      * Єдина точка оновлення. Кличеться з GameScreen.render() щокадру.
      *
-     * @param gemsTotal баланс гравця ПЛЮС незараховані геми рану — гравець
-     *   має бачити, скільки в нього стане, а не скільки було до старту.
+     * Геми — ЗІБРАНІ ЗА РАН, не баланс: у рані важливо, скільки назбирав
+     * цього разу; баланс видно в меню.
      */
-    fun syncFrom(engine: RunEngine, gemsTotal: Int) {
+    fun syncFrom(engine: RunEngine) {
+        val gems = engine.gemsCollected
+
         if (engine.score != lastScore) {
             lastScore = engine.score
             aScoreLbl.setText(engine.score.toString())
         }
 
-        if (gemsTotal != lastGems) {
-            lastGems = gemsTotal
-            aGemLbl.setText("◆ $gemsTotal")
+        if (gems != lastGems) {
+            lastGems = gems
+            aGemLbl.setText("◆ $gems")
         }
 
         // Множник цілий і рідко міняється, тому кешуємо саме його, а не combo.

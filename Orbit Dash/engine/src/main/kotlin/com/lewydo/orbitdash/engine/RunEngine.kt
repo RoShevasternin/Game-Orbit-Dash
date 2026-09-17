@@ -219,6 +219,13 @@ class RunEngine(
     private var bonus = 0
     var score = 0;          private set
 
+    /**
+     * Геми, зібрані за ран, — ціле, яке бачить гравець (HUD, RunResult) і яке
+     * віддасть bank(). Не обнуляється після bank(): екран смерті показує суму
+     * рану, навіть якщо її вже зараховано.
+     */
+    val gemsCollected: Int get() = floor(gemsRun).toInt()
+
     var combo    = 0f;      private set
     // ------------------------------------------------------------------------
     //  ЗОНА NEAR-MISS — різниця РАДІУСІВ, не відстань між об'єктами.
@@ -288,11 +295,14 @@ class RunEngine(
      * Забрати геми рану в сейв. mult — множник (x2 за рекламу).
      * Повертає суму РІВНО ОДИН РАЗ: повторний виклик = 0, захист від
      * подвійного нарахування (кнопка + автобанк при рестарті).
+     *
+     * floor, а не round: гравець бачив floor (HUD, RunResult), і нарахувати
+     * треба рівно те, що він бачив, — без «+1 нізвідки».
      */
     fun bank(mult: Float = 1f): Int {
         if (banked) return 0
         banked = true
-        return Math.round(gemsRun * mult)
+        return floor(gemsRun * mult).toInt()
     }
 
     /**
@@ -692,7 +702,7 @@ class RunEngine(
     /** Підсумок поточного стану — для GameOver і run_end. */
     fun buildResult() = RunResult(
         score       = score,
-        gems        = floor(gemsRun).toInt(),
+        gems        = gemsCollected,
         durationSec = time.toInt(),
         deathRing   = ringIndex + 1,
         nearMisses  = nearCount,

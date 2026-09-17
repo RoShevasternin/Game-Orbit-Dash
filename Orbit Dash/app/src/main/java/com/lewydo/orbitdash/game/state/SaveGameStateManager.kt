@@ -102,6 +102,7 @@ class SaveGameStateManager(
         ║  GEMS         : ${data.gems}
         ║  BEST         : ${data.best}
         ║  RUNS         : ${data.runs}
+        ║  COMBO TOTAL  : ${data.comboTotal}
         ╟────────────────────────────────────────────╢
         ║  ORBIT III    : ${if (data.orbit3) "OWNED" else "—"}
         ║  NO ADS       : ${if (data.noAds) "OWNED" else "—"}

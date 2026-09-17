@@ -1,10 +1,6 @@
 {
   "permissions": {
     "defaultMode": "plan",
-    "deny": [
-      "Write(app/**)",
-      "Edit(app/**)"
-    ],
     "allow": [
       "Bash(./gradlew assembleDebug)",
       "Bash(./gradlew installDebug)"

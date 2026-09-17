@@ -148,6 +148,47 @@ class RunEngineTest {
     }
 
     /**
+     * Геми рану: bank() віддає рівно те, що гравець бачив (RunResult, HUD), і
+     * рівно один раз. upValue дає дробові геми — саме там round і floor
+     * розходились би.
+     */
+    @Test
+    fun bankPaysOnceExactlyWhatWasShown() {
+        val e = survive(RunEngine(RunEngine.Config(orbit3 = true, upValue = 1), seed = 7L), seconds = 31f)
+        assertTrue("контроль: за 31 с мали набратись геми, є ${e.gemsRun}", e.gemsRun >= 1f)
+        assertTrue("контроль: геми мали бути дробові, є ${e.gemsRun}", e.gemsRun % 1f != 0f)
+
+        killNow(e)
+        val shown = e.gemsCollected
+        assertEquals(e.buildResult().gems, shown)
+
+        assertEquals(shown, e.bank())
+        assertEquals(0, e.bank())
+        assertEquals("сума рану лишається на екрані після банку", shown, e.gemsCollected)
+    }
+
+    /** Ревайв після банку: старі геми вже в балансі, лічильник рану починає з нуля. */
+    @Test
+    fun reviveAfterBankStartsFromZero() {
+        val e = survive(RunEngine(RunEngine.Config(orbit3 = true), seed = 7L), seconds = 31f)
+        killNow(e)
+        assertTrue(e.bank() > 0)
+
+        e.revive()
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+        assertEquals(0, e.gemsCollected)
+        assertEquals(0f, e.gemsRun, 0f)
+    }
+
+    /** Шип просто перед м'ячем — і чекати, поки вб'є. */
+    private fun killNow(e: RunEngine) {
+        check(e.debugSpawnSpike()) { "немає місця під шип" }
+        var t = 0f
+        while (e.phase == RunEngine.Phase.RUN && t < 5f) { e.update(1f / 60f); t += 1f / 60f }
+        check(e.phase == RunEngine.Phase.DEAD) { "шип не вбив за 5 с" }
+    }
+
+    /**
      * Ран, що доживає до [seconds]: бот тапає, коли шип на його кільці ближче
      * за 25° попереду. Не вижив — тест про інше, тож падаємо одразу.
      */

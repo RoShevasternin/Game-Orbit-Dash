@@ -41,8 +41,8 @@ class LeaderboardScreen: AdvancedScreen() {
         super.show()
         animShowScreen()
 
-        // відправляємо актуальний XP і одразу відкриваємо стандартний UI Google
-        gdxGame.activity.showLeaderboard()
+        // відправляємо результати з сейву і одразу відкриваємо список лідербордів Google
+        gdxGame.activity.showLeaderboards(gdxGame.modelPlayer.leaderboardScores())
 
         stageUI.root.animDelay(0.07f) { gdxGame.navigationManager.back() }
     }

@@ -1,3 +1,130 @@
+# 42 — Шип: повільний оберт за годинниковою + удар
+
+## Що і навіщо
+
+Шип крутився на 180°/с проти годинникової: вісім зубців мерехтіли, і це
+читалось як пилка, дрібно й не страшно. Тепер рух має два шари:
+
+1. **Оберт за годинниковою, 40°/с** (повний оберт за 9 с). У libGDX додатний
+   кут крутить **проти** годинникової, тому в коді мінус.
+2. **Удар раз на 1.25 с.** Зірка **різко** стискається до 86 % (0.125 с),
+   **повільно** відпускає до макета (до 0.69 с), далі пауза до кінця такту.
+   У ту саму мить ореол розходиться на +35 % і гасне на 45 %: шип ніби
+   «б'є» хвилею назовні.
+
+**Чому не синус, як у `ABooster`.** Бустер рівно дихає, і це читається як
+«візьми мене». Тут різкий фронт, довгий хвіст і пауза: саме пауза робить
+удар помітним.
+
+**Зірка ніколи не більша за макет.** Зона зіткнення в рушії не пульсує, тож
+шип не має здаватись ширшим, ніж він б'є. Тому пульс лише зменшує.
+
+**Усі шипи б'ються в один такт.** Такт рахується від спільного
+`ShaderClock.time`, а не від лічильника в кожному акторі. Поле має один
+ритм, і шип, щойно взятий з пулу, не починає такт з випадкової фази.
+`ShaderClock` обнуляється кожні 100 с, тому `BEAT_PERIOD` мусить ділити
+100 націло (1.25 → 80 тактів), інакше раз на 100 с удар смикнеться.
+Це записано в коментарі біля константи.
+
+Попутно оновлено шапку класу: там ще був «TEMP-АРТ… беремо гем», хоча
+зірка шипа (`assetsMsdf.spike`) давно своя.
+
+### Перевірено на пристрої (Redmi, лабораторна копія, тема TOXIC)
+
+Дебаг-пауза, два шипи з дебаг-кнопки, серія з 14 знімків. Площа зірки в
+кадрі (пікселі кольору шипа):
+
+| | зірка | ореол |
+|---|---|---|
+| спокій | ≈ 3240 | ≈ 12 460 |
+| пік | 2323 (**72 %**, розрахунок 0.86² = 74 %) | ≈ 14 670 (ширший) |
+
+Зірка й ореол рухаються в протифазі, як задумано. FPS 60–61, падінь немає.
+Напрям оберту зі статичних знімків не заміряти (зірка симетрична через кожні
+45°), тож його я не міряв, а взяв із документації libGDX. Глянь очима.
+
+### Що крутити, якщо не сподобається
+
+Усе в `companion object`:
+
+| хочеш | змінюй |
+|---|---|
+| важче / легше обертання | `SPIN_SPEED` (40 → 25 ще важче) |
+| частіше / рідше удар | `BEAT_PERIOD` (лише дільники 100: 1.0, 1.25, 2.0, 2.5) |
+| різкіший удар | `BEAT_SQUEEZE` менше (0.10 → 0.06) |
+| глибший стиск | `SHRINK` (0.14 → 0.20) |
+| сильніша хвиля | `GLOW_FLARE`, `GLOW_FADE` |
+
+Якщо захочеш «серцебиття» (два удари підряд, тук-тук, потім пауза) —
+це друга гілка в `beatAt()`, скажи, дороблю.
+
+---
+
+## `app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ASpike.kt`
+
+Змін багато, простіше **ЗАМІНИТИ ВЕСЬ ФАЙЛ**. Нижче спершу що саме змінилось,
+потім файл цілком.
+
+### Що змінилось
+
+**Імпорти — ДОДАТИ:**
+```kotlin
+import com.badlogic.gdx.math.Interpolation
+import com.lewydo.orbitdash.game.utils.ShaderClock
+```
+**ВИДАЛИТИ** (більше не використовується):
+```kotlin
+import com.lewydo.orbitdash.game.utils.GameColor
+```
+
+**`companion object` — було:**
+```kotlin
+    companion object {
+        private const val GLOW_SIZE  = 100f
+        private const val POINT_SIZE = 10f
+
+        /** Швидше за гем — рух сам по собі сигналить «не чіпай». */
+        private const val SPIN_SPEED = 180f
+    }
+```
+стало — `GLOW_ALPHA`, `SPIN_SPEED = 40f`, константи такту (див. файл нижче).
+
+**`aGlow` — було `color.a = 0.90f`, стало `color.a = GLOW_ALPHA`** (той самий
+0.90; тепер ним же користується пульс).
+
+**`act()` — було:**
+```kotlin
+    override fun act(delta: Float) {
+        super.act(delta)
+        themeSync.sync()
+
+        aShape.setOrigin(Align.center)
+        aShape.rotation = (aShape.rotation + SPIN_SPEED * delta) % 360f   // актор із пулу живе всю сесію — кут не росте без меж
+    }
+```
+стало:
+```kotlin
+    override fun act(delta: Float) {
+        super.act(delta)
+        themeSync.sync()
+
+        // Origin — після super.act(): розміри дітей лейаут вирішує саме там
+        aShape.setOrigin(Align.center)
+        aGlow.setOrigin(Align.center)
+
+        // Мінус — за годинниковою: у libGDX додатний кут крутить проти
+        aShape.rotation = (aShape.rotation - SPIN_SPEED * delta) % 360f   // актор із пулу живе всю сесію — кут не росте без меж
+
+        applyBeat(beatAt(ShaderClock.time))
+    }
+```
+
+**ДОДАТИ** секцію `// Beat` між `// Add Actors` і `// Theme`: функції
+`beatAt()` і `applyBeat()`.
+
+### Файл цілком
+
+```kotlin
 package com.lewydo.orbitdash.game.actors.objects
 
 import com.badlogic.gdx.graphics.Color
@@ -34,7 +161,7 @@ class ASpike(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     companion object {
         private const val GLOW_SIZE  = 100f
-        private const val GLOW_ALPHA = 0.60f
+        private const val GLOW_ALPHA = 0.90f
         private const val POINT_SIZE = 10f
 
         /** Оберт за годинниковою, °/с. Повний оберт за 9 с — важко, без мерехтіння зубців. */
@@ -138,3 +265,17 @@ class ASpike(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         aShape.setColorRGB(ThemeManager.current.spike)
     }
 }
+```
+
+## Або скопіювати з лабораторії
+
+Поки жива сесія. `ASpike.kt` у лабораторії — твій файл станом на 11:35 17.09
+плюс ці зміни. Якщо ти відтоді його міняв, вставляй руками.
+
+```bash
+LAB=/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/f03d26ed-12c3-428e-bcbc-fd80ce4b4d8f/scratchpad/lab
+G=app/src/main/java/com/lewydo/orbitdash/game
+cp "$LAB/$G/actors/objects/ASpike.kt" "$G/actors/objects/ASpike.kt"
+```
+
+(запускати з `Orbit Dash/`)

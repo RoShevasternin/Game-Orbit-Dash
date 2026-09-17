@@ -1,7 +1,7 @@
 {
   "type": "all-projects",
   "version": "2.0",
-  "exportDate": "2026-08-29T13:03:45.646Z",
+  "exportDate": "2026-09-17T15:58:57.077Z",
   "projects": [
     {
       "id": "proj-imc-seed",
@@ -284,15 +284,74 @@
           "categoryId": 0,
           "title": "Публікація в PlayMarket",
           "details": "Перший реліз в PlayMarket"
+        },
+        {
+          "categoryId": 0,
+          "title": "OrbitFild",
+          "details": "Повноцінно реалізувати OrbitFild як він і буде в релізі"
+        },
+        {
+          "categoryId": 0,
+          "title": "R8 enable",
+          "details": "увімкнути R8 fullMode=true"
+        },
+        {
+          "categoryId": 0,
+          "title": "ASpike",
+          "details": "Реалізуй спайк як у Figma"
+        },
+        {
+          "categoryId": 0,
+          "title": "🔸 Підрахунок гемів і очок",
+          "details": "Зробити що б набрані очки і геми зберігались"
+        },
+        {
+          "categoryId": 0,
+          "title": "Liderboard",
+          "details": "<h2>🏆 Лідери</h2>\n\n<ol>\n  <li>\n    <strong>🥇 Лідер за очками</strong><br>\n    Гравець із найбільшою кількістю набраних очок.\n  </li>\n\n  <li>\n    <strong>⚡ Лідер за майстерністю</strong><br>\n    Гравець, який найбільше разів ухилився від шипа на близькій відстані.\n    Рейтинг визначається за загальною кількістю комбо за всі зіграні рани.\n  </li>\n\n  <li>\n    <strong>💀 Антилідер за програшами</strong><br>\n    Гравець із найбільшою кількістю програних ранів.\n    Тут першими опиняються користувачі, які програють найчастіше.\n  </li>\n\n  <li>\n    <strong>💎 Найбагатший гравець</strong><br>\n    Гравець із найбільшою кількістю гемів.\n  </li>\n</ol>"
         }
       ],
       "completedTasks": {
         "0-0": true,
-        "0-1": true
+        "0-1": true,
+        "0-2": true,
+        "0-3": true,
+        "0-4": true,
+        "0-5": true,
+        "0-6": true,
+        "0-7": true
       },
       "collapsedCategories": {
         "0": false
       }
+    },
+    {
+      "id": "proj-1789540698873-726",
+      "name": "CubePix",
+      "desc": "Збирай Піксельні Арти (купа равнів)",
+      "icon": "🎨",
+      "categories": [
+        {
+          "id": 0,
+          "title": "Start",
+          "subtitle": "Початок",
+          "icon": "⛳"
+        }
+      ],
+      "tasks": [
+        {
+          "categoryId": 0,
+          "title": "Створити проект",
+          "details": "Створи LibGDX проект"
+        },
+        {
+          "categoryId": 0,
+          "title": "Пройти Closed Test в Play Market",
+          "details": "Викласти закритий тест в маркет\nназбирати 12 тестерів\nпочекати 14 днів"
+        }
+      ],
+      "completedTasks": {},
+      "collapsedCategories": {}
     }
   ]
 }
