@@ -1,7 +1,11 @@
 package com.lewydo.orbitdash.game.screens
 
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
+import com.badlogic.gdx.scenes.scene2d.actions.Actions
+import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.background.AComet
 import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.debug.ADebugHud
@@ -12,8 +16,10 @@ import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayou
 import com.lewydo.orbitdash.game.actors.objects.ABall
 import com.lewydo.orbitdash.game.actors.objects.ABooster
 import com.lewydo.orbitdash.game.actors.objects.AGem
+import com.lewydo.orbitdash.game.actors.objects.ASpark
 import com.lewydo.orbitdash.game.actors.objects.ASpike
 import com.lewydo.orbitdash.game.actors.orbit.AOrbitField
+import com.lewydo.orbitdash.game.actors.label.AMsdfLabel
 import com.lewydo.orbitdash.game.actors.panel.APanelGameHud
 import com.lewydo.orbitdash.engine.RunEngine
 import com.lewydo.orbitdash.game.actors.debug.ADebugIconBar
@@ -24,6 +30,7 @@ import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
 import com.lewydo.orbitdash.game.utils.actor.animHide
 import com.lewydo.orbitdash.game.utils.actor.animShow
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
+import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.services.analytics.AnalyticsManager
@@ -55,13 +62,26 @@ class GameScreen : AdvancedScreen() {
         private const val BALL_SIZE     = 22f
         private const val GEM_SIZE      = 18f
         private const val SPIKE_SIZE    = 25f
+        private const val SPARK_SIZE    = 4f
         private const val BOOST_SIZE_W  = 22f
         private const val BOOST_SIZE_H  = 25f
 
         /** Скільки акторів кожного типу тримати напоготові. */
         private const val POOL_GEMS   = 14
         private const val POOL_SPIKES = 14
+        private const val POOL_SPARKS = 14   // по одній на шип
         private const val POOL_BOOSTS = 3
+
+        // ── спливний напис над точкою події («COMBO x3») ──
+        //  Порт pop() з прототипу: 26px на канві 720 при полі 640 = 13 юнітів у
+        //  нашому полі 320; підйом 50 px/с = 25 юнітів/с; життя 1/0.9 с.
+        /** Попапів одночасно. Комбо частіше за раз на 0.2 с не буває. */
+        private const val POOL_FLOATS = 4
+        private const val FLOAT_SIZE  = 13f    // кегль
+        private const val FLOAT_BOX_W = 120f   // коробка ширша за напис — центрується по точці
+        private const val FLOAT_BOX_H = 18f
+        private const val FLOAT_LIFE  = 1.11f  // с
+        private const val FLOAT_RISE  = 28f    // юнітів за все життя (25/с × 1.11)
     }
 
     // ------------------------------------------------------------------------
@@ -74,6 +94,19 @@ class GameScreen : AdvancedScreen() {
 
     private val aOrbitField by lazy { AOrbitField(this) }
     private val aBall       by lazy { ABall(this) }
+
+    // Спливні написи над полем («COMBO x3»). Не пул із поверненням: мітка сама
+    // гасне після 1.11 с, а isVisible каже, що її можна взяти під наступну подію.
+    private val styleFloat by lazy { MsdfStyle(gdxGame.msdfManager, gdxGame.msdfManager.fontInter_Bold, FLOAT_SIZE) }
+    private val aFloats    by lazy {
+        List(POOL_FLOATS) {
+            AMsdfLabel("", styleFloat).apply {
+                setSize(FLOAT_BOX_W, FLOAT_BOX_H)
+                setAlignment(Align.center)
+                isVisible = false
+            }
+        }
+    }
 
     // ------------------------------------------------------------------------
     // Engine
@@ -92,8 +125,8 @@ class GameScreen : AdvancedScreen() {
     private var debugOrbit3    = false
     /** DEBUG: множник часу для рушія. x0.25 — розглядати near-miss «під лупою». */
     private var debugTimeScale = 1f
-    /** DEBUG: широке вікно near-miss (22..145) — комбо з сусіднього кільця. */
-    private var debugComboWide = false
+    /** DEBUG · EZ COMBO: комбо за прохід повз шип без іскри, і з сусіднього кільця теж. */
+    private var debugEzCombo   = false
     /** DEBUG: м'яч стоїть, решта живе — див. RunEngine.debugFrozen. */
     private var debugPaused    = false
 
@@ -113,6 +146,12 @@ class GameScreen : AdvancedScreen() {
     private val freeSpikes = ArrayList<ASpike>(POOL_SPIKES)
     private val freeBoosts = ArrayList<ABooster>(POOL_BOOSTS)
 
+    // Іскра — не сутність рушія, а стан шипа: свій пул на id ТОГО Ж шипа.
+    // Живе, поки рушій віддає sparkAngle(e) — спіймали або шип зник, і актор у пул.
+    private val activeSparks = HashMap<Int, ASpark>()
+    private val seenSparkIds = HashSet<Int>()
+    private val freeSparks   = ArrayList<ASpark>(POOL_SPARKS)
+
     // ------------------------------------------------------------------------
     // Debug
     // ------------------------------------------------------------------------
@@ -125,17 +164,16 @@ class GameScreen : AdvancedScreen() {
                 engine.debugSetOrbit3(debugOrbit3)
                 btn.label.setText(if (debugOrbit3) "O3: ON" else "ORBIT III")
             },
-            ADebugPanel.Item("COMBO 100%") { btn ->
-                // Пресет «зараховувати сусіднє кільце»: різниця кілець 130,
-                // тож 145 накриває спайк на сусідній орбіті.
-                debugComboWide = !debugComboWide
-                engine.nearMin = if (debugComboWide) 22f else 26f
-                engine.nearMax = if (debugComboWide) 145f else 90f
-                btn.label.setText(if (debugComboWide) "COMBO: ON" else "COMBO 100%")
+            ADebugPanel.Item("EZ COMBO") { btn ->
+                // Будь-який прохід повз шип у радіусі 145 — комбо, іскру ловити
+                // не треба. Різниця кілець 130, тож накриває й сусідню орбіту.
+                debugEzCombo = !debugEzCombo
+                engine.debugEzCombo = debugEzCombo
+                btn.label.setText(if (debugEzCombo) "COMBO: ON" else "EZ COMBO")
             },
             ADebugPanel.Item("TIME x0.25") { btn ->
-                // Слоу-мо ВСЬОГО рушія (dt на вході). Кутова геометрія вікна
-                // near-miss від цього не змінюється — лише час на реакцію ×4.
+                // Слоу-мо ВСЬОГО рушія (dt на вході). Вікно іскри просторове,
+                // від цього не змінюється — лише час на реакцію ×4.
                 debugTimeScale = if (debugTimeScale < 1f) 1f else 0.25f
                 btn.label.setText(if (debugTimeScale < 1f) "TIME: ON" else "TIME x0.25")
             },
@@ -268,6 +306,9 @@ class GameScreen : AdvancedScreen() {
         // видно як спалах м'яча при відкритті екрана.
         aBall.isVisible = false
         aOrbitField.addActor(aBall)
+
+        // Написи — діти поля: позиція рахується в його ж координатах
+        for (f in aFloats) aOrbitField.addActor(f)
     }
 
     // ------------------------------------------------------------------------
@@ -317,9 +358,9 @@ class GameScreen : AdvancedScreen() {
      * RunEngine, і без цього кнопка лишалась би «ON», а рушій — у дефолтах.
      */
     private fun applyDebugFlags() {
-        engine.debugFrozen = debugPaused
+        engine.debugFrozen  = debugPaused
+        engine.debugEzCombo = debugEzCombo
         if (debugOrbit3) engine.debugSetOrbit3(true)
-        if (debugComboWide) { engine.nearMin = 22f; engine.nearMax = 145f }
     }
 
     private val runListener = object : RunEngine.Listener {
@@ -329,7 +370,7 @@ class GameScreen : AdvancedScreen() {
             // Рекорд і лічильник ранів — одразу. Геми — пізніше, у bankRun():
             // до рестарту чи виходу сума ще може змінитись (x2·AD, ревайв).
             val player  = gdxGame.modelPlayer
-            // Комбо поки = прохід впритул повз шип. Зміниться механіка — міняється лише джерело тут
+            // Комбо = спіймані іскри (RunResult.nearMisses). Зміниться механіка — міняється лише джерело тут
             val combos   = result.nearMisses
             val comboNew = combos - comboCommitted
             comboCommitted = combos
@@ -351,7 +392,11 @@ class GameScreen : AdvancedScreen() {
         }
 
         override fun onOrbit3Online() { log("ORBIT III ONLINE") }
-        override fun onNearMiss(e: RunEngine.Entity, bonus: Int) { log("CLOSE! +$bonus") }
+        override fun onNearMiss(e: RunEngine.Entity, sparkAngle: Float, bonus: Int) {
+            // Напис стає в точці ІСКРИ, не шипа — саме за цим рушій і віддає кут
+            showFloat("COMBO x${engine.multiplier}", e.rr * RunEngine.TO_FIELD, -sparkAngle)
+            log("COMBO! +$bonus")
+        }
         override fun onBoostApplied(boost: RunEngine.Boost, e: RunEngine.Entity?) { log("BOOST $boost") }
         override fun onShieldSaved(e: RunEngine.Entity) { log("SHIELD SAVED") }
         // TODO: звуки, партикли, вібро — кожен у своєму колбеку
@@ -384,8 +429,13 @@ class GameScreen : AdvancedScreen() {
         if (aOrbitField.width <= 0f) { aBall.isVisible = false; return }
 
         aOrbitField.positionAt(aBall, engine.radius * RunEngine.TO_FIELD, -engine.angle)
-        aBall.rotation = -engine.angle   // мінус — той самий переклад Y-вниз → Y-вгору, що й для позиції
+        aBall.heading = -engine.angle    // мінус — той самий переклад Y-вниз → Y-вгору, що й для позиції
         aBall.isVisible = true
+
+        // Стани м'яча з рушія: щит, вікно комбо, супутників — множник − 1
+        // (x2 → 1 … x5 → 4; без комбо множник 1 → нуль — кільця немає)
+        aBall.shieldOn = engine.shield > 0
+        aBall.setCombo(engine.comboFrac, engine.multiplier - 1)
 
         // Невразливість після щита — блимання
         aBall.color.a = if (engine.invuln > 0f && (engine.invuln * 10f).toInt() % 2 == 0) 0.35f else 1f
@@ -394,15 +444,49 @@ class GameScreen : AdvancedScreen() {
     private fun syncEntities() {
         seenIds.clear()
 
+        seenSparkIds.clear()
+
         for (e in engine.entities) {
             seenIds.add(e.id)
             val actor = activeActors.getOrPut(e.id) { acquire(e) }
 
             aOrbitField.positionAt(actor, e.rr * RunEngine.TO_FIELD, -e.a)
             actor.color.a = e.s   // spawn-fade 0→1
+
+            // Іскра шипа: той самий переклад кута й радіуса, що й для сутностей
+            val sparkA = engine.sparkAngle(e) ?: continue
+            seenSparkIds.add(e.id)
+            val spark = activeSparks.getOrPut(e.id) { acquireSpark(e) }
+
+            aOrbitField.positionAt(spark, e.rr * RunEngine.TO_FIELD, -sparkA)
+            spark.color.a = e.s
         }
 
         releaseMissing()
+        releaseMissingSparks()
+    }
+
+    /**
+     * Спливний напис у точці події: підіймається й лінійно тане, як pop() у
+     * прототипі. Немає вільної мітки — подія просто лишається без напису:
+     * пропустити напис дешевше, ніж обірвати чужий на півдорозі.
+     */
+    private fun showFloat(text: CharSequence, radiusDesign: Float, angleDeg: Float) {
+        val lbl = aFloats.firstOrNull { !it.isVisible } ?: return
+
+        lbl.setText(text)
+        lbl.color.a   = 1f
+        lbl.isVisible = true
+        aOrbitField.positionAt(lbl, radiusDesign, angleDeg)
+        lbl.toFront()
+
+        lbl.addAction(Actions.sequence(
+            Actions.parallel(
+                Actions.moveBy(0f, FLOAT_RISE, FLOAT_LIFE),
+                Actions.fadeOut(FLOAT_LIFE),
+            ),
+            Actions.visible(false),
+        ))
     }
 
     /** HUD читає рушій сам: рахунок, геми рану, комбо, щит. */
@@ -425,6 +509,27 @@ class GameScreen : AdvancedScreen() {
         aOrbitField.addActor(actor)
     }
 
+    /** Фаза пульсу — з кута шипа, як у прототипі; toFront — над шипом, доданим пізніше. */
+    private fun acquireSpark(e: RunEngine.Entity): ASpark =
+        (freeSparks.removeLastOrNull() ?: ASpark(this).also { prepare(it, SPARK_SIZE) }).also {
+            it.phase     = e.a * MathUtils.degreesToRadians
+            it.isVisible = true
+            it.toFront()
+        }
+
+    /** Іскру спіймано або шип зник — актор іскри в пул. */
+    private fun releaseMissingSparks() {
+        val it = activeSparks.entries.iterator()
+        while (it.hasNext()) {
+            val (id, spark) = it.next()
+            if (id in seenSparkIds) continue
+
+            spark.isVisible = false
+            freeSparks.add(spark)
+            it.remove()
+        }
+    }
+
     /** Сутність зникла в рушії (підібрана / пішла за спину) — актор у пул. */
     private fun releaseMissing() {
         val it = activeActors.entries.iterator()
@@ -444,8 +549,13 @@ class GameScreen : AdvancedScreen() {
 
     /** Новий ран — усі актори назад у пул, id старого рану більше не існують. */
     private fun releaseAllActors() {
+        // Написи минулого рану дограли б поверх нового поля
+        for (f in aFloats) { f.clearActions(); f.isVisible = false }
+
         seenIds.clear()
+        seenSparkIds.clear()
         releaseMissing()
+        releaseMissingSparks()
     }
 
 }

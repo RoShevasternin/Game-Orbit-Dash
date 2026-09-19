@@ -180,6 +180,241 @@ class RunEngineTest {
         assertEquals(0f, e.gemsRun, 0f)
     }
 
+    // ------------------------------------------------------------------------
+    // Іскра комбо
+    // ------------------------------------------------------------------------
+
+    /** Іскра є лише в шипа, висить за ORB_OFF попереду нього; в гема й буста її немає. */
+    @Test
+    fun sparkHangsAheadOfSpikeOnly() {
+        val e = RunEngine(RunEngine.Config(), seed = 1L).apply { debugFrozen = true }
+        check(e.debugSpawnSpike()); check(e.debugSpawnBoost(Boost.MAGNET))
+        val spike = e.entities.single { it.kind == RunEngine.Kind.SPIKE }
+        val boost = e.entities.single { it.kind == RunEngine.Kind.BOOST }
+
+        val expected = norm(spike.a - RunEngine.ORB_OFF / spike.rr * RAD_TO_DEG)
+        assertEquals(expected, e.sparkAngle(spike)!!, 0.001f)
+        assertEquals(null, e.sparkAngle(boost))
+
+        // Гем — через mercy-доріжку: шість гемів на 1-й секунді
+        val m = RunEngine(RunEngine.Config(mercy = true), seed = 1L)
+        repeat(70) { m.update(1f / 60f) }
+        val gem = m.entities.first { it.kind == RunEngine.Kind.GEM }
+        assertEquals(null, m.sparkAngle(gem))
+    }
+
+    /**
+     * Шип на своєму кільці: іскру спіймано по дорозі (комбо +1, слухач отримав
+     * кут ІСКРИ, вона погасла), а далі шип убиває — ризик той самий, що був.
+     */
+    @Test
+    fun sparkIsCaughtBeforeSpikeKills() {
+        val e = RunEngine(RunEngine.Config(), seed = 1L)
+        var caught = 0
+        var caughtAt = Float.NaN
+        e.listener = object : RunEngine.Listener {
+            override fun onNearMiss(e: RunEngine.Entity, sparkAngle: Float, bonus: Int) { caught++; caughtAt = sparkAngle }
+        }
+        check(e.debugSpawnSpike())
+        val spike  = e.entities.single()
+        val sparkA = e.sparkAngle(spike)!!
+
+        var comboSeen = 0f
+        var t = 0f
+        while (e.phase == RunEngine.Phase.RUN && t < 5f) {
+            e.update(1f / 60f); t += 1f / 60f
+            comboSeen = maxOf(comboSeen, e.combo)
+        }
+
+        assertEquals(RunEngine.Phase.DEAD, e.phase)
+        assertEquals(1, caught)
+        assertEquals(sparkA, caughtAt, 0.001f)
+        assertEquals(1f, comboSeen, 0f)
+        assertEquals(1, e.buildResult().nearMisses)
+        assertEquals("іскра погасла", null, e.sparkAngle(spike))
+    }
+
+    /** Торкнувся іскри — тапнув: комбо є, шип не вбив, бо м'яч уже летить геть. */
+    @Test
+    fun tapRightAfterSparkEscapesSpike() {
+        val e = RunEngine(RunEngine.Config(), seed = 1L)
+        check(e.debugSpawnSpike())
+
+        var tapped = false
+        var t = 0f
+        while (t < 2f) {
+            e.update(1f / 60f); t += 1f / 60f
+            if (!tapped && e.buildResult().nearMisses == 1) { e.tap(); tapped = true }
+        }
+
+        assertTrue("іскру мало бути спіймано", tapped)
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+        assertEquals("комбо тримається comboWin = 4 с", 1f, e.combo, 0f)
+    }
+
+    /**
+     * Стрибок НА кільце шипа рівно в іскру: радіус ще лерпиться (30 з 45 після
+     * першого кадру), а іскра вже зарахована. Тап назад одразу — м'яч цілий.
+     */
+    @Test
+    fun jumpingOntoSparkCatchesIt() {
+        val e = RunEngine(RunEngine.Config(), seed = 1L)
+        check(e.debugSpawnSpike())          // на кільці 0, де м'яч
+        e.tap()                             // м'яч на кільце 1, шип лишився на 0
+        val spike   = e.entities.single()
+        val pickDeg = RunEngine.ORB_PICK / spike.rr * RAD_TO_DEG
+
+        var jumped = false
+        var t = 0f
+        while (t < 2f) {
+            val sparkA = e.sparkAngle(spike)
+            if (!jumped && sparkA != null && angDiff(sparkA, e.angle) < pickDeg) { e.tap(); jumped = true }
+            e.update(1f / 60f); t += 1f / 60f
+            if (jumped && e.ringIndex == 0 && e.buildResult().nearMisses == 1) e.tap()   // спіймав — назад
+        }
+
+        assertTrue(jumped)
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+        assertEquals(1, e.buildResult().nearMisses)
+    }
+
+    /** DEBUG · EZ COMBO: прохід повз шип на сусідньому кільці зараховує без іскри; без прапорця — ні. */
+    @Test
+    fun ezComboCountsPassOnNeighbourRing() {
+        fun pass(ez: Boolean): RunEngine {
+            val e = RunEngine(RunEngine.Config(), seed = 1L).apply { debugEzCombo = ez }
+            check(e.debugSpawnSpike())      // на кільці м'яча
+            e.tap()                         // м'яч на сусіднє: шип пройде повз на 130
+            repeat(90) { e.update(1f / 60f) }
+            check(e.phase == RunEngine.Phase.RUN) { "контроль: із сусіднього кільця шип не б'є" }
+            return e
+        }
+
+        assertEquals(0, pass(ez = false).buildResult().nearMisses)
+        assertEquals(1, pass(ez = true).buildResult().nearMisses)
+    }
+
+    // ------------------------------------------------------------------------
+    // Вікно комбо
+    // ------------------------------------------------------------------------
+
+    /**
+     * Вікно вийшло — комбо гасне в нуль ОДРАЗУ, не x3 → x2. Дві іскри → combo 2,
+     * далі бот тікає від усього (шипи, геми — гем поновив би вікно), і від
+     * останнього поновлення до нуля минає рівно comboWin без проміжної 1.
+     */
+    @Test
+    fun comboExpiresToZeroNotStepDown() {
+        val e = withCombo(seed = 1L)
+        catchOneMore(e)
+        assertTrue("контроль: combo ≥ 2, є ${e.combo}", e.combo >= 2f)
+
+        // Скільки вікна лишилось на старті — стільки й має минути до нуля;
+        // поновлення (іскра, гем) переставляє відлік
+        var t = 0f
+        var sinceT    = 0f
+        var remaining = e.comboFrac * e.comboWin
+        var prevFrac  = e.comboFrac
+        var sawOne    = false
+        while (e.combo > 0f && t < e.comboWin + 3f) {
+            dodgeWide(e)
+            e.update(1f / 60f); t += 1f / 60f
+            if (e.comboFrac > prevFrac) { sinceT = t; remaining = e.comboFrac * e.comboWin }
+            if (e.combo == 1f) sawOne = true
+            prevFrac = e.comboFrac
+        }
+
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+        assertEquals(0f, e.combo, 0f)
+        assertEquals(0f, e.comboFrac, 0f)
+        assertTrue("сходинки x2 → x1 бути не мало", !sawOne)
+        assertEquals("до нуля минає рівно залишок вікна", remaining, t - sinceT, 1.5f / 60f)
+    }
+
+    /** Гем при живому комбо повертає вікно на 100 %, не додає частку. */
+    @Test
+    fun gemRefillsComboWindowFully() {
+        val e = withCombo(seed = 1L, mercy = true)     // mercy: доріжка гемів на кільці 0 з 1-ї секунди
+        repeat(60) { e.update(1f / 60f) }              // вікно частково стануло
+        val before = e.comboFrac
+        assertTrue("контроль: вікно мало стати меншим за 1, є $before", before < 0.9f)
+
+        val gems0 = e.gemCount
+        var t = 0f
+        while (e.gemCount == gems0 && t < 4f) { e.update(1f / 60f); t += 1f / 60f }
+        check(e.gemCount > gems0) { "гем не підібрано за 4 с" }
+
+        assertEquals("одразу після гема — повне вікно", 1f, e.comboFrac, 1f / 60f / e.comboWin + 0.001f)
+        assertTrue("комбо живе", e.combo > 0f)
+    }
+
+    /**
+     * Щит з'їв удар шипа — комбо і його вікно не чіпає. Порівнюємо з кадром
+     * ПЕРЕД ударом: іскру цього ж шипа м'яч ловить на три кадри раніше, і вона
+     * законно ставить вікно на 100 %.
+     */
+    @Test
+    fun shieldHitKeepsCombo() {
+        val e = withCombo(seed = 1L, upShield = 1)
+        assertEquals(1, e.shield)
+
+        // Шип на кільці м'яча — і летимо в нього, не тапаючи
+        check(e.debugSpawnSpike())
+        var comboPrev = e.combo
+        var fracPrev  = e.comboFrac
+        var t = 0f
+        while (e.shield == 1 && t < 3f) {
+            comboPrev = e.combo; fracPrev = e.comboFrac
+            e.update(1f / 60f); t += 1f / 60f
+        }
+
+        assertEquals("щит мав спрацювати", 0, e.shield)
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+        assertTrue("комбо було", comboPrev > 0f)
+        assertEquals(comboPrev, e.combo, 0f)
+        val dtFrac = 1f / 60f / e.comboWin
+        assertEquals("вікно за кадр удару лише стануло на один крок", fracPrev - dtFrac, e.comboFrac, 0.001f)
+    }
+
+    /**
+     * Ухиляння з ЗАПАСОМ: тап, коли шип АБО гем на своєму кільці ближче за 45°
+     * попереду (гем поновлює вікно комбо — теж «подія»).
+     * 45° на внутрішньому кільці — 150 юнітів, тобто тап за 98 до іскри, поза
+     * її вікном ±32: бот не ловить іскор, лише тікає (бот survive() із 25°
+     * тапнув би за 31 до іскри — і спіймав би її на першому кадрі лерпу).
+     */
+    private fun dodgeWide(e: RunEngine) {
+        val danger = e.entities.any {
+            it.kind != RunEngine.Kind.BOOST && it.ring == e.ringIndex && angDiff(it.a, e.angle) in 0f..45f
+        }
+        if (danger) e.tap()
+    }
+
+    /** Ще один debug-шип на кільці м'яча: спіймати його іскру і тапнути геть. */
+    private fun catchOneMore(e: RunEngine) {
+        val before = e.buildResult().nearMisses
+        check(e.debugSpawnSpike())
+        var t = 0f
+        while (e.buildResult().nearMisses == before && t < 3f) { e.update(1f / 60f); t += 1f / 60f }
+        check(e.buildResult().nearMisses > before) { "іскру не спіймано" }
+        e.tap()
+        repeat(6) { e.update(1f / 60f) }
+        check(e.phase == RunEngine.Phase.RUN)
+    }
+
+    /** Ран, у якому щойно спіймано одну іскру: м'яч тапнув геть і живий. */
+    private fun withCombo(seed: Long, mercy: Boolean = false, upShield: Int = 0): RunEngine {
+        val e = RunEngine(RunEngine.Config(mercy = mercy, upShield = upShield), seed)
+        check(e.debugSpawnSpike())
+        var t = 0f
+        while (e.buildResult().nearMisses == 0 && t < 3f) { e.update(1f / 60f); t += 1f / 60f }
+        check(e.buildResult().nearMisses == 1) { "іскру не спіймано" }
+        e.tap()
+        repeat(6) { e.update(1f / 60f) }               // відлетів від шипа
+        check(e.phase == RunEngine.Phase.RUN && e.combo == 1f)
+        return e
+    }
+
     /** Шип просто перед м'ячем — і чекати, поки вб'є. */
     private fun killNow(e: RunEngine) {
         check(e.debugSpawnSpike()) { "немає місця під шип" }
@@ -204,5 +439,7 @@ class RunEngineTest {
         return e
     }
 
+    private val RAD_TO_DEG = (180.0 / PI).toFloat()
+    private fun norm(a: Float): Float { var x = a % 360f; if (x < 0f) x += 360f; return x }
     private fun angDiff(a: Float, b: Float): Float = ((a - b) % 360f + 540f) % 360f - 180f
 }

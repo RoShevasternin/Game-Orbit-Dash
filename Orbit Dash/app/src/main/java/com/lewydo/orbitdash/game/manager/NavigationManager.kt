@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx
 import com.lewydo.orbitdash.game.GDXGame
 import com.lewydo.orbitdash.game.screens.BrandScreen
 import com.lewydo.orbitdash.game.screens.GameScreen
-import com.lewydo.orbitdash.game.screens.LeaderboardScreen
 import com.lewydo.orbitdash.game.screens.LoaderScreen
 import com.lewydo.orbitdash.game.screens.MenuScreen
 import com.lewydo.orbitdash.game.screens.TestScreen
@@ -26,8 +25,8 @@ class NavigationManager(val game: GDXGame) {
     //
     //  Кому це потрібно: MenuScreen мусить знати, чи приїхав він з лоадера.
     //  З лоадера aMain уже стоїть у кадрі на тих самих якорях — це безшовний
-    //  морф, і анімація появи його зламала б. З GameScreen чи RANKS брендблоку
-    //  не існувало, і він має з'явитись сам.
+    //  морф, і анімація появи його зламала б. З GameScreen брендблоку не
+    //  існувало, і він має з'явитись сам.
     // ------------------------------------------------------------------------
 
     /**
@@ -87,9 +86,6 @@ class NavigationManager(val game: GDXGame) {
         LoaderScreen     ::class.java.name -> LoaderScreen()
         MenuScreen       ::class.java.name -> MenuScreen()
         GameScreen       ::class.java.name -> GameScreen()
-        LeaderboardScreen::class.java.name -> LeaderboardScreen()
-
-
 
         TestScreen::class.java.name -> TestScreen()
 

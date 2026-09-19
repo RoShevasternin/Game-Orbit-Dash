@@ -1,0 +1,13 @@
+{
+  "id": "52",
+  "short": "Кільця м'яча: keepScaled",
+  "title": "Кільця м'яча не малювались — похідна геометрія через keepScaled",
+  "date": "18.09.2026",
+  "order": "Один файл, дві зміни.",
+  "summary_md": "pages/52.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/ba5ec0f8-0a0b-4091-ab84-4efb9a52b72e/scratchpad/lab/",
+  "files": [
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ABall.kt", "note": "keepScaled у addActorsOnGroup замість sizeChanged."}
+  ]
+}

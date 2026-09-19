@@ -22,17 +22,19 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
 
     companion object {
         // Figma boost_hex → glow: два плоскі кола, без блюру
-        private const val GLOW_1_SIZE  = 50f      // v1
+        private const val GLOW_1_SIZE = 50f      // v1
         private const val GLOW_1_ALPHA = 0.20f
-        private const val GLOW_2_SIZE  = 70f      // v2
+        private const val GLOW_2_SIZE = 70f      // v2
         private const val GLOW_2_ALPHA = 0.10f
 
         private const val PULSE_SPEED = 6f
-        private const val PULSE_AMP   = 0.12f
+        private const val PULSE_AMP = 0.12f
+
         /** Зовнішнє кільце відстає на чверть періоду — хвиля йде зсередини назовні. 0 = у фазі. */
-        private const val PULSE_LAG   = (PI / 2).toFloat()
+        private const val PULSE_LAG = (PI / 2).toFloat()
+
         /** Наскільки кільце гасне на піку розширення. 0 = лише масштаб, без згасання. */
-        private const val PULSE_FADE  = 0.4f
+        private const val PULSE_FADE = 0.4f
     }
 
     override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 35f)
@@ -40,10 +42,10 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow1  = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_1_ALPHA }
-    private val aGlow2  = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_2_ALPHA }
-    private val aHex    = Image(gdxGame.assetsMsdf.boost_hex)
-    private val aIcon   = Image(RunEngine.Boost.MAGNET.info.icon)
+    private val aGlow1 = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_1_ALPHA }
+    private val aGlow2 = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_2_ALPHA }
+    private val aHex = Image(gdxGame.assetsMsdf.boost_hex)
+    private val aIcon = Image(RunEngine.Boost.MAGNET.info.icon)
 
     // ------------------------------------------------------------------------
     // Field
@@ -124,3 +126,4 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
     }
 
 }
+

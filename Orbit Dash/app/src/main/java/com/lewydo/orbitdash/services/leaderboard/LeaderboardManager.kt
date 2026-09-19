@@ -49,6 +49,13 @@ class LeaderboardManager(
 
     private var isAuthenticated = false
 
+    /**
+     * Відкриття вже в дорозі. Раніше від подвійного тапу беріг екран-трамплін
+     * (він гасив меню), тепер меню лишається живим і клікабельним увесь час,
+     * поки Google асинхронно готує intent.
+     */
+    private var isOpening = false
+
     // ------------------------------------------------------------------------
     // Init — викликати в MainActivity.onCreate
     // ------------------------------------------------------------------------
@@ -108,16 +115,21 @@ class LeaderboardManager(
      * перед показом, щоб гравець бачив себе навіть без жодного рану після входу.
      */
     fun showAll(scores: LeaderboardScores) {
-        ensureSignedIn {
+        if (isOpening) return
+        isOpening = true
+
+        ensureSignedIn(onFailed = { isOpening = false }) {
             submitAll(scores)
             PlayGames.getLeaderboardsClient(activity)
                 .allLeaderboardsIntent
                 .addOnSuccessListener { intent: Intent ->
+                    isOpening = false
                     // startActivityForResult обов'язковий навіть без результату —
                     // API так отримує identity пакета (вимога Google).
                     activity.startActivityForResult(intent, RC_LEADERBOARD_UI)
                 }
                 .addOnFailureListener { e ->
+                    isOpening = false
                     log("Leaderboard: showAll failed: ${e.message}")
                 }
         }
@@ -130,7 +142,7 @@ class LeaderboardManager(
     // Якщо вже авторизовані — одразу виконуємо дію. Інакше пробуємо
     // manualSignIn (показує діалог входу Google), і за успіху виконуємо.
 
-    private fun ensureSignedIn(onReady: () -> Unit) {
+    private fun ensureSignedIn(onFailed: () -> Unit = {}, onReady: () -> Unit) {
         if (isAuthenticated) {
             onReady()
             return
@@ -143,6 +155,7 @@ class LeaderboardManager(
                     onReady()
                 } else {
                     log("Leaderboard: sign-in failed/declined")
+                    onFailed()
                 }
             }
     }

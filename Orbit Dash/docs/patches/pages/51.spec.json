@@ -1,0 +1,18 @@
+{
+  "id": "51",
+  "short": "Стани м'яча",
+  "title": "Стани м'яча в ABall: кільце-таймер комбо, супутники, кільце щита",
+  "date": "18.09.2026",
+  "order": "Файли 1 → 6. Рушій і тести разом, потім шейдер, ефект, ABall, GameScreen.",
+  "summary_md": "pages/51.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/ba5ec0f8-0a0b-4091-ab84-4efb9a52b72e/scratchpad/lab/",
+  "files": [
+    {"path": "engine/src/main/kotlin/com/lewydo/orbitdash/engine/RunEngine.kt", "note": "comboFrac — частка вікна для кільця."},
+    {"path": "engine/src/test/kotlin/com/lewydo/orbitdash/engine/RunEngineTest.kt", "note": "Три тести вікна: гем 100 %, гасне в нуль, щит не чіпає."},
+    {"path": "app/src/main/assets/shader/orbit/progressRingFS.glsl", "note": "Новий шейдер кільця із заповненням, поруч з orbitRingFS."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/ProgressRingEffect.kt", "note": "Новий ефект за зразком OrbitRingEffect; радіус явний."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ABall.kt", "note": "Усі стани м'яча: щит, супутники, кільце комбо; heading замість rotation."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt", "note": "heading, shieldOn, setCombo у syncPlayer — три рядки."}
+  ]
+}

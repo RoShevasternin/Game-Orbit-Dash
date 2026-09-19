@@ -1,0 +1,32 @@
+{
+  "id": "50",
+  "short": "Іскра комбо",
+  "title": "Комбо = спіймана іскра біля шипа (з JSX-прототипу)",
+  "date": "18.09.2026",
+  "order": "Файли 1 → 5. Рушій і тести — разом (2 без 1 не скомпілюється), далі HUD, новий актор і GameScreen.",
+  "summary_md": "pages/50.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/ba5ec0f8-0a0b-4091-ab84-4efb9a52b72e/scratchpad/lab/",
+  "files": [
+    {
+      "path": "engine/src/main/kotlin/com/lewydo/orbitdash/engine/RunEngine.kt",
+      "note": "Entity.orb, sparkAngle(), підбір іскри замість часового near-miss, debugEzCombo замість nearMin/nearMax, onNearMiss з кутом іскри."
+    },
+    {
+      "path": "engine/src/test/kotlin/com/lewydo/orbitdash/engine/RunEngineTest.kt",
+      "note": "П'ять тестів іскри. Тести рушія — мої, але без рушія з файлу 1 не скомпілюються."
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/APanelGameHud.kt",
+      "note": "Множник бере з рушія; власна константа MAX_MULT більше не потрібна."
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ASpark.kt",
+      "note": "Новий актор: крапка 6 + ореол у фреймі 18, білі, пульс ±15 %."
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt",
+      "note": "Пул іскор на id шипа, синк за sparkAngle, EZ COMBO замість COMBO 100%, новий підпис onNearMiss."
+    }
+  ]
+}

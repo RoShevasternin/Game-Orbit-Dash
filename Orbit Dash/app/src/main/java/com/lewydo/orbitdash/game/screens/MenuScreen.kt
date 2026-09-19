@@ -227,10 +227,10 @@ class MenuScreen : AdvancedScreen() {
         onShop  = { log("SHOP") }   // TODO: navigate ShopScreen
         onDaily = { log("DAILY") }  // TODO: navigate MissionsScreen
         onRanks = {
-            gdxGame.navigationManager.navigate(
-                toScreenName   = LeaderboardScreen::class.java.name,
-                fromScreenName = MenuScreen::class.java.name,
-            )
+            // Лідерборди показує Google своєю Activity поверх гри — власний екран
+            // не потрібен. Меню лишається під нею і чекає повернення, а не
+            // перестворюється через navigate → back.
+            gdxGame.activity.showLeaderboards(gdxGame.modelPlayer.leaderboardScores())
         }
     }
 

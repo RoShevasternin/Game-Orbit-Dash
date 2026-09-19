@@ -1,0 +1,575 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Патч 51 · Стани м'яча</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script><style id="style">
+:root {
+  --ground:  #F6F7F9;
+  --surface: #FFFFFF;
+  --sunk:    #F6F8FA;
+  --line:    #E1E4E8;
+  --text:    #1F2328;
+  --muted:   #59636E;
+  --faint:   #A1A9B3;
+  --accent:  #1F6FEB;
+  --accent-ink: #FFFFFF;
+  --gem:     #9A6700;
+  --gem-bg:  #FFF8C5;
+  --spike:   #CF222E;
+  --spike-bg:#FFEBE9;
+  --good:    #1A7F37;
+  --good-bg: #E6FFEC;
+  --shadow:  0 -4px 16px rgba(31, 35, 40, .08);
+  /* підсвітка коду */
+  --syn-kw:   #CF222E;
+  --syn-type: #953800;
+  --syn-fn:   #8250DF;
+  --syn-str:  #0A3069;
+  --syn-num:  #0550AE;
+  --syn-com:  #6E7781;
+  --syn-meta: #953800;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0D1117;
+    --surface: #151B23;
+    --sunk:    #0D1117;
+    --line:    #30363D;
+    --text:    #E6EDF3;
+    --muted:   #9198A1;
+    --faint:   #5C646E;
+    --accent:  #4493F8;
+    --accent-ink: #FFFFFF;
+    --gem:     #D29922;
+    --gem-bg:  rgba(187, 128, 9, .15);
+    --spike:   #F85149;
+    --spike-bg:rgba(248, 81, 73, .12);
+    --good:    #3FB950;
+    --good-bg: rgba(46, 160, 67, .14);
+    --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+    --syn-kw:   #FF7B72;
+    --syn-type: #FFA657;
+    --syn-fn:   #D2A8FF;
+    --syn-str:  #A5D6FF;
+    --syn-num:  #79C0FF;
+    --syn-com:  #8B949E;
+    --syn-meta: #FFA657;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0D1117;
+  --surface: #151B23;
+  --sunk:    #0D1117;
+  --line:    #30363D;
+  --text:    #E6EDF3;
+  --muted:   #9198A1;
+  --faint:   #5C646E;
+  --accent:  #4493F8;
+  --accent-ink: #FFFFFF;
+  --gem:     #D29922;
+  --gem-bg:  rgba(187, 128, 9, .15);
+  --spike:   #F85149;
+  --spike-bg:rgba(248, 81, 73, .12);
+  --good:    #3FB950;
+  --good-bg: rgba(46, 160, 67, .14);
+  --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+  --syn-kw:   #FF7B72;
+  --syn-type: #FFA657;
+  --syn-fn:   #D2A8FF;
+  --syn-str:  #A5D6FF;
+  --syn-num:  #79C0FF;
+  --syn-com:  #8B949E;
+  --syn-meta: #FFA657;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: 15px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.page { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 190px; }
+h1, h2, h3 { font-family: "IBM Plex Sans", system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code {
+  font-size: .88em; background: var(--sunk); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+/* ── шапка ─────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em; border-radius: 999px; padding: 2px 10px;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.new     { color: var(--muted); background: var(--sunk); border: 1px solid var(--line); }
+.pill.pending { color: var(--gem);   background: var(--gem-bg); }
+.pill.done    { color: var(--good);  background: var(--good-bg); }
+.pill.fail    { color: var(--spike); background: var(--spike-bg); }
+
+/* ── пояснення ─────────────────────────────────────── */
+.summary { max-width: 68ch; }
+.summary > * + * { margin-top: 12px; }
+.summary h3 { margin-top: 22px; }
+.summary ul { padding-left: 20px; margin-block: 8px; }
+.summary li + li { margin-top: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.summary table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.summary th, .summary td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.summary tr:last-child td { border-bottom: 0; }
+.summary th { font-weight: 600; background: var(--sunk); }
+
+/* ── кроки ─────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 26px; margin-top: 30px; }
+.steps-title { display: flex; flex-direction: column; gap: 4px; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.file { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.file-head {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--sunk); border-bottom: 1px solid var(--line);
+}
+.file-id { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.file-id .idx { font-family: "JetBrains Mono", monospace; color: var(--muted); font-weight: 500; flex: none; }
+.file-id .path { font-family: "JetBrains Mono", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.file-all { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px; font-size: 12px;
+}
+.link:disabled { color: var(--faint); cursor: default; text-decoration: none; }
+.file-note { padding: 10px 14px 0; margin: 0; color: var(--muted); font-size: 13px; }
+
+.hunk { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hunk + .hunk { border-top: 1px dashed var(--line); }
+.hunk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hunk-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; }
+.hid { font-family: "JetBrains Mono", monospace; color: var(--muted); }
+.verb { font-weight: 600; letter-spacing: .06em; font-size: 12px; }
+.verb.replace { color: var(--gem); }
+.verb.add, .verb.create { color: var(--good); }
+.verb.remove, .verb.delete { color: var(--spike); }
+.where { color: var(--muted); }
+
+/* вибір на зміну */
+.choice { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.choice button {
+  background: var(--surface); color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer;
+  font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; font-size: 12.5px;
+}
+.choice button + button { border-left: 1px solid var(--line); }
+.choice button[aria-pressed="true"].self { background: var(--text); color: var(--surface); }
+.choice button[aria-pressed="true"].auto { background: var(--accent); color: var(--accent-ink); }
+.choice button:disabled { cursor: default; }
+.choice button:disabled:not([aria-pressed="true"]) { opacity: .45; }
+
+/* код */
+.code { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+.code-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 4px 10px;
+}
+.code-label { color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line); }
+.code.old .code-label span:first-child::before { content: "● "; color: var(--spike); }
+.code.new .code-label span:first-child::before { content: "● "; color: var(--good); }
+.code pre {
+  margin: 0; padding: 8px 0; overflow-x: auto; background: var(--sunk);
+  font-size: 12.5px; line-height: 1.6; tab-size: 4;
+}
+.ln { display: block; white-space: pre; padding-right: 14px; min-height: 1.6em; }
+.ln::before { content: " "; display: inline-block; width: 26px; text-align: center; color: var(--faint); user-select: none; }
+.ln.ctx { opacity: .6; }
+.code.old .ln.chg { background: var(--spike-bg); }
+.code.old .ln.chg::before { content: "−"; color: var(--spike); }
+.code.new .ln.chg { background: var(--good-bg); }
+.code.new .ln.chg::before { content: "+"; color: var(--good); }
+.copy {
+  font: 500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .04em;
+  color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  padding: 4px 8px; cursor: pointer;
+}
+
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syn-kw); }
+.hljs-type, .hljs-title.class_, .hljs-class .hljs-title { color: var(--syn-type); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--syn-fn); }
+.hljs-string, .hljs-char { color: var(--syn-str); }
+.hljs-number { color: var(--syn-num); }
+.hljs-comment, .hljs-doctag, .hljs-quote { color: var(--syn-com); font-style: italic; }
+.hljs-meta, .hljs-annotation, .hljs-variable, .hljs-template-variable { color: var(--syn-meta); }
+
+/* ── панель ────────────────────────────────────────── */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.status { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.status .note { color: var(--muted); }
+.tally { font-variant-numeric: tabular-nums; }
+.bulk { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.bulk .link { font-size: 13px; }
+.send {
+  font: 600 15px/1.2 "IBM Plex Sans", system-ui, sans-serif;
+  border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.send.ghost { background: transparent; color: var(--accent); }
+.send:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 420px) { h1 { font-size: 22px; } .choice button { padding: 7px 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .send, .choice button { transition: transform .08s ease, background-color .12s ease; }
+  .send:active:not(:disabled) { transform: scale(.98); }
+}
+</style></head><body><main class="page" id="root"></main><div class="bar" id="bar"><div class="bar-inner"><div class="status" id="status"></div><div class="bulk" id="bulk"></div><button class="send" id="send" type="button">Готово — надіслати Claude</button></div></div><script id="patch-data" type="application/json">{"id": "51", "title": "Стани м'яча в ABall: кільце-таймер комбо, супутники, кільце щита", "date": "18.09.2026", "order": "Файли 1 → 6. Рушій і тести разом, потім шейдер, ефект, ABall, GameScreen.", "summaryHtml": "\u003ch3>Що і навіщо\u003c/h3>\n\u003cp>Комбо є, а над м'ячем його не видно: ні скільки лишилось часу, ні який множник. Прототип і твій Figma показують обидва — кільце-таймер і супутники, плюс кільце щита. Переношу \u003cstrong>один в один зі свого SVG\u003c/strong> (\u003ccode>BALL + COMBO\u003c/code>, \u003ccode>ball + shield + combo\u003c/code>).\u003c/p>\n\u003ch3>Усе — в ABall, одним актором\u003c/h3>\n\u003cp>Перша версія цього патча робила окремий \u003ccode>AComboHalo\u003c/code> у тій самій точці, що й м'яч. Ти спитав «а чому не в ABall» — і мав рацію. Окремий актор був обходом того, що \u003ccode>GameScreen\u003c/code> крутить \u003cstrong>усю групу\u003c/strong> м'яча, щоб цятка вказувала напрям, — а обертати групу заради однієї цятки й було помилкою: цятку можна ставити по колу через \u003ccode>cos/sin\u003c/code>, як \u003ccode>ctx.rotate\u003c/code> у прототипі. Тепер \u003ccode>ABall.heading\u003c/code> крутить лише її, група не обертається — а це була \u003cstrong>єдина transform-група серед об'єктів поля\u003c/strong> (\u003ccode>AGem\u003c/code> / \u003ccode>ASpike\u003c/code> крутять дитину-\u003ccode>Image\u003c/code>), тобто мінус два флаші батча на кадр. Кільця й супутники — звичайні діти \u003ccode>ABall\u003c/code>, і \u003ccode>GameScreen\u003c/code> віддає м'ячу стан трьома рядками.\u003c/p>\n\u003cp>\u003cstrong>Цятка виглядає так само, як була.\u003c/strong> Старий \u003ccode>rotation = −angle\u003c/code> переносив її з 135° на \u003ccode>135° − angle\u003c/code>; \u003ccode>heading = −angle\u003c/code> дає рівно ту ж формулу: один оберт цятки на оберт по орбіті, зчеплено з рухом — м'яч «повертається разом з орбітою», як \u003ccode>ctx.rotate(st.angle)\u003c/code> у прототипі. Множник \u003ccode>POINT_SPIN = 1\u003c/code> тримає це рішення в коді: ~9.5 (r кільця / r м'яча) котило б м'яч колесом, але на 100–300°/с це мерехтіння. Записано в \u003ccode>docs/decisions.md\u003c/code> §8, разом із двома іншими варіантами, які ти назвав, і чому вони гірші.\u003c/p>\n\u003ch3>Розміри — з SVG, база 40 = діаметр м'яча\u003c/h3>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>шар\u003c/th>\u003cth>Figma\u003c/th>\u003cth>у коді\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>ореол м'яча\u003c/td>\u003ctd>диск r 23.8 + blur σ 11\u003c/td>\u003ctd>\u003ccode>GLOW_SIZE 100\u003c/code> — уже було: 47.6 × 84/40\u003c/td>\u003c/tr>\u003ctr>\u003ctd>цятка напряму\u003c/td>\u003ctd>r 5 на (−5, −5)\u003c/td>\u003ctd>\u003ccode>POINT_R 7.07\u003c/code> під 135° + \u003ccode>heading\u003c/code>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>кільце щита\u003c/td>\u003ctd>r 28.75, обводка 2.5\u003c/td>\u003ctd>\u003ccode>SHIELD_R / SHIELD_W\u003c/code>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>супутники\u003c/td>\u003ctd>d 6 на r 29, ореол — диск r 4.8 + σ 2.2\u003c/td>\u003ctd>\u003ccode>SAT_DOT 6\u003c/code>, \u003ccode>SAT_R 29\u003c/code>, \u003ccode>SAT_GLOW 20\u003c/code> = 9.6 × 84/40\u003c/td>\u003c/tr>\u003ctr>\u003ctd>кільце комбо\u003c/td>\u003ctd>r 40, обводка 4\u003c/td>\u003ctd>\u003ccode>COMBO_R / COMBO_W\u003c/code>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>квад кілець\u003c/td>\u003ctd>фрейм компонента 100\u003c/td>\u003ctd>\u003ccode>RING_QUAD 100\u003c/code> — обводка до 42 + запас під AA\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Ореол супутника не підбирався оком — та сама формула, що дала \u003ccode>GLOW_SIZE = 100\u003c/code> для м'яча (текстура \u003ccode>glow\u003c/code> = диск 40 у outer 84). Порядок шарів як у SVG: ореол → щит → тіло → цятка → супутники → кільце комбо; супутники сидять на кільці щита, як у макеті \u003ccode>ball + shield + combo\u003c/code>.\u003c/p>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>множник\u003c/th>\u003cth>супутників\u003c/th>\u003cth>де\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>x2\u003c/td>\u003ctd>1\u003c/td>\u003ctd>12-та\u003c/td>\u003c/tr>\u003ctr>\u003ctd>x3\u003c/td>\u003ctd>2\u003c/td>\u003ctd>12 і 6\u003c/td>\u003c/tr>\u003ctr>\u003ctd>x4\u003c/td>\u003ctd>3\u003c/td>\u003ctd>через 120°\u003c/td>\u003c/tr>\u003ctr>\u003ctd>x5\u003c/td>\u003ctd>4\u003c/td>\u003ctd>12, 3, 6, 9\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Крутяться 260°/с за годинниковою, як у прототипі. Кільце комбо: заповнення від 12-ї за годинниковою на \u003ccode>comboFrac\u003c/code>, доріжка з альфою 0.25 (це не з Figma, а з прототипу — крутити, якщо треба). Іскра чи гем — 100 %, далі тане; вийшло — кільце й супутники зникають.\u003c/p>\n\u003ch3>Кільце щита\u003c/h3>\n\u003cp>У грі його не було — лише піпси в HUD. Ти намалював \u003ccode>ball + shield + combo\u003c/code>, тож воно тут: той самий \u003ccode>ProgressRingEffect\u003c/code> з \u003ccode>frac = 1\u003c/code>, видиме, поки \u003ccode>engine.shield &gt; 0\u003c/code>. Без пульсу (у прототипі \u003ccode>30 + sin\u003c/code>) — у Figma його немає; скажеш — додам.\u003c/p>\n\u003ch3>Правила вікна — вже були в рушії, тепер під тестами\u003c/h3>\n\u003cul>\u003cli>\u003cstrong>гем → 100 %\u003c/strong> — \u003ccode>gemRefillsComboWindowFully\u003c/code>;\u003c/li>\u003cli>\u003cstrong>вийшло — гасне в нуль, не x3 → x2\u003c/strong> — \u003ccode>comboExpiresToZeroNotStepDown\u003c/code>: дві іскри, далі бот тікає від усього (і від гемів — вони теж поновлюють), з 2 падає одразу в 0 за залишок вікна;\u003c/li>\u003cli>\u003cstrong>щит з'їв шип — комбо ціле\u003c/strong> — \u003ccode>shieldHitKeepsCombo\u003c/code>: порівняння з кадром *перед* ударом, бо іскру того ж шипа м'яч ловить на три кадри раніше і законно ставить 100 %;\u003c/li>\u003cli>\u003cstrong>вікно 4 с\u003c/strong> — як було.\u003c/li>\u003c/ul>\n\u003cp>Єдина зміна в рушії — \u003ccode>val comboFrac\u003c/code>.\u003c/p>\n\u003ch3>Шейдер\u003c/h3>\n\u003cp>\u003ccode>shader/orbit/progressRingFS.glsl\u003c/code> поруч з \u003ccode>orbitRingFS.glsl\u003c/code>, \u003ccode>ProgressRingEffect\u003c/code> поруч з \u003ccode>OrbitRingEffect\u003c/code> — той самий single-pass механізм, радіус задається явно (макет). Кут від 12-ї: \u003ccode>atan(p.x, −p.y)\u003c/code>, бо \u003ccode>v_localUV\u003c/code> іде Y-вниз. Торець заповнення згладжено тією ж \u003ccode>u_aa\u003c/code>, що й краї; при \u003ccode>frac = 1\u003c/code> шва на 12-й немає.\u003c/p>\n\u003ch3>Відео\u003c/h3>\n\u003cp>Допомогло: кадр на 14.7 с показав \u003ccode>COMBO x4\u003c/code> з кільцем і трьома супутниками між м'ячем і кільцем — звірив порядок шарів. Витягнув кадри через AVFoundation (\u003ccode>ffmpeg\u003c/code> тут немає).\u003c/p>\n\u003ch3>Перевірено\u003c/h3>\n\u003cul>\u003cli>\u003ccode>:engine:test\u003c/code> — \u003cstrong>16 із 16\u003c/strong>, три нових.\u003c/li>\u003cli>\u003ccode>assembleDebug\u003c/code> — \u003cstrong>BUILD SUCCESSFUL\u003c/strong>.\u003c/li>\u003cli>\u003cstrong>На пристрої — ще ні.\u003c/strong> Перша версія (окремим актором) на Redmi 220333QNY малювалась: кільце, супутник, шейдер без помилок, 60 FPS. Цю, у \u003ccode>ABall\u003c/code>, поставити не вийшло: MIUI двічі скасував USB-встановлення (\u003ccode>INSTALL_FAILED_USER_RESTRICTED\u003c/code>). Дозволь встановлення на телефоні — зніму кадри й домалюю сюди.\u003c/li>\u003c/ul>", "files": [{"path": "engine/src/main/kotlin/com/lewydo/orbitdash/engine/RunEngine.kt", "note": "comboFrac — частка вікна для кільця.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 610", "old": "\n    /**\n     * Кут іскри шипа [e] (одиниці рушія) або null — не шип чи іскру вже спіймано.\n     * Лінійний зсув ORB_OFF переведений у градуси через радіус кільця: на", "new": "\n    /**\n     * Частка вікна комбо, що лишилась, 0..1 — виду для кільця над м'ячем.\n     * 0, коли комбо немає. Іскра й гем ставлять вікно заново на 100 %,\n     * далі воно лише тане; вийшло — комбо гасне в нуль, без сходинок.\n     */\n    val comboFrac: Float get() = if (combo > 0f) (comboT / comboWin).coerceIn(0f, 1f) else 0f\n\n    /**\n     * Кут іскри шипа [e] (одиниці рушія) або null — не шип чи іскру вже спіймано.\n     * Лінійний зсув ORB_OFF переведений у градуси через радіус кільця: на", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "1.1"}]}, {"path": "engine/src/test/kotlin/com/lewydo/orbitdash/engine/RunEngineTest.kt", "note": "Три тести вікна: гем 100 %, гасне в нуль, щит не чіпає.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 295", "old": "    }\n\n    /** Шип просто перед м'ячем — і чекати, поки вб'є. */\n    private fun killNow(e: RunEngine) {", "new": "    }\n\n    // ------------------------------------------------------------------------\n    // Вікно комбо\n    // ------------------------------------------------------------------------\n\n    /**\n     * Вікно вийшло — комбо гасне в нуль ОДРАЗУ, не x3 → x2. Дві іскри → combo 2,\n     * далі бот тікає від усього (шипи, геми — гем поновив би вікно), і від\n     * останнього поновлення до нуля минає рівно comboWin без проміжної 1.\n     */\n    @Test\n    fun comboExpiresToZeroNotStepDown() {\n        val e = withCombo(seed = 1L)\n        catchOneMore(e)\n        assertTrue(\"контроль: combo ≥ 2, є ${e.combo}\", e.combo >= 2f)\n\n        // Скільки вікна лишилось на старті — стільки й має минути до нуля;\n        // поновлення (іскра, гем) переставляє відлік\n        var t = 0f\n        var sinceT    = 0f\n        var remaining = e.comboFrac * e.comboWin\n        var prevFrac  = e.comboFrac\n        var sawOne    = false\n        while (e.combo > 0f && t \u003c e.comboWin + 3f) {\n            dodgeWide(e)\n            e.update(1f / 60f); t += 1f / 60f\n            if (e.comboFrac > prevFrac) { sinceT = t; remaining = e.comboFrac * e.comboWin }\n            if (e.combo == 1f) sawOne = true\n            prevFrac = e.comboFrac\n        }\n\n        assertEquals(RunEngine.Phase.RUN, e.phase)\n        assertEquals(0f, e.combo, 0f)\n        assertEquals(0f, e.comboFrac, 0f)\n        assertTrue(\"сходинки x2 → x1 бути не мало\", !sawOne)\n        assertEquals(\"до нуля минає рівно залишок вікна\", remaining, t - sinceT, 1.5f / 60f)\n    }\n\n    /** Гем при живому комбо повертає вікно на 100 %, не додає частку. */\n    @Test\n    fun gemRefillsComboWindowFully() {\n        val e = withCombo(seed = 1L, mercy = true)     // mercy: доріжка гемів на кільці 0 з 1-ї секунди\n        repeat(60) { e.update(1f / 60f) }              // вікно частково стануло\n        val before = e.comboFrac\n        assertTrue(\"контроль: вікно мало стати меншим за 1, є $before\", before \u003c 0.9f)\n\n        val gems0 = e.gemCount\n        var t = 0f\n        while (e.gemCount == gems0 && t \u003c 4f) { e.update(1f / 60f); t += 1f / 60f }\n        check(e.gemCount > gems0) { \"гем не підібрано за 4 с\" }\n\n        assertEquals(\"одразу після гема — повне вікно\", 1f, e.comboFrac, 1f / 60f / e.comboWin + 0.001f)\n        assertTrue(\"комбо живе\", e.combo > 0f)\n    }\n\n    /**\n     * Щит з'їв удар шипа — комбо і його вікно не чіпає. Порівнюємо з кадром\n     * ПЕРЕД ударом: іскру цього ж шипа м'яч ловить на три кадри раніше, і вона\n     * законно ставить вікно на 100 %.\n     */\n    @Test\n    fun shieldHitKeepsCombo() {\n        val e = withCombo(seed = 1L, upShield = 1)\n        assertEquals(1, e.shield)\n\n        // Шип на кільці м'яча — і летимо в нього, не тапаючи\n        check(e.debugSpawnSpike())\n        var comboPrev = e.combo\n        var fracPrev  = e.comboFrac\n        var t = 0f\n        while (e.shield == 1 && t \u003c 3f) {\n            comboPrev = e.combo; fracPrev = e.comboFrac\n            e.update(1f / 60f); t += 1f / 60f\n        }\n\n        assertEquals(\"щит мав спрацювати\", 0, e.shield)\n        assertEquals(RunEngine.Phase.RUN, e.phase)\n        assertTrue(\"комбо було\", comboPrev > 0f)\n        assertEquals(comboPrev, e.combo, 0f)\n        val dtFrac = 1f / 60f / e.comboWin\n        assertEquals(\"вікно за кадр удару лише стануло на один крок\", fracPrev - dtFrac, e.comboFrac, 0.001f)\n    }\n\n    /**\n     * Ухиляння з ЗАПАСОМ: тап, коли шип АБО гем на своєму кільці ближче за 45°\n     * попереду (гем поновлює вікно комбо — теж «подія»).\n     * 45° на внутрішньому кільці — 150 юнітів, тобто тап за 98 до іскри, поза\n     * її вікном ±32: бот не ловить іскор, лише тікає (бот survive() із 25°\n     * тапнув би за 31 до іскри — і спіймав би її на першому кадрі лерпу).\n     */\n    private fun dodgeWide(e: RunEngine) {\n        val danger = e.entities.any {\n            it.kind != RunEngine.Kind.BOOST && it.ring == e.ringIndex && angDiff(it.a, e.angle) in 0f..45f\n        }\n        if (danger) e.tap()\n    }\n\n    /** Ще один debug-шип на кільці м'яча: спіймати його іскру і тапнути геть. */\n    private fun catchOneMore(e: RunEngine) {\n        val before = e.buildResult().nearMisses\n        check(e.debugSpawnSpike())\n        var t = 0f\n        while (e.buildResult().nearMisses == before && t \u003c 3f) { e.update(1f / 60f); t += 1f / 60f }\n        check(e.buildResult().nearMisses > before) { \"іскру не спіймано\" }\n        e.tap()\n        repeat(6) { e.update(1f / 60f) }\n        check(e.phase == RunEngine.Phase.RUN)\n    }\n\n    /** Ран, у якому щойно спіймано одну іскру: м'яч тапнув геть і живий. */\n    private fun withCombo(seed: Long, mercy: Boolean = false, upShield: Int = 0): RunEngine {\n        val e = RunEngine(RunEngine.Config(mercy = mercy, upShield = upShield), seed)\n        check(e.debugSpawnSpike())\n        var t = 0f\n        while (e.buildResult().nearMisses == 0 && t \u003c 3f) { e.update(1f / 60f); t += 1f / 60f }\n        check(e.buildResult().nearMisses == 1) { \"іскру не спіймано\" }\n        e.tap()\n        repeat(6) { e.update(1f / 60f) }               // відлетів від шипа\n        check(e.phase == RunEngine.Phase.RUN && e.combo == 1f)\n        return e\n    }\n\n    /** Шип просто перед м'ячем — і чекати, поки вб'є. */\n    private fun killNow(e: RunEngine) {", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "2.1"}]}, {"path": "app/src/main/assets/shader/orbit/progressRingFS.glsl", "note": "Новий шейдер кільця із заповненням, поруч з orbitRingFS.", "lang": "glsl", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "#ifdef GL_ES\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n#endif\n\n// ─────────────────────────────────────────────────────────────────────────────\n// PROGRESS RING — кільце із заповненням, один прохід (таймер комбо, щит).\n//\n// Доріжка (u_trackA) по всьому колу і заповнена дуга від 12-ї години за\n// годинниковою на u_frac оберту; u_frac = 1 — суцільне кільце. Колір один, тож\n// компонувати шари не треба: альфа — або доріжка, або повна. Усі довжини — у частках\n// ширини квада, як в orbitRingFS.\n// ─────────────────────────────────────────────────────────────────────────────\n\nvarying vec4 v_color;      // колір/альфа актора (фейди груп працюють самі)\nvarying vec2 v_localUV;    // 0..1 у межах регіону (дає BATCH_VERT)\n\nuniform float u_hOverW;    // height/width квада — аспект-корекція\nuniform float u_radius;    // радіус осі кільця\nuniform float u_width;     // товщина кільця\nuniform float u_aa;        // згладжування країв\nuniform vec3  u_color;     // колір кільця\nuniform float u_frac;      // заповнення 0..1 від 12-ї години за годинниковою\nuniform float u_trackA;    // альфа незаповненої частини\n\nconst float TWO_PI = 6.2831853;\n\n/** Покриття обводки товщиною w на відстані d від її осі (як в orbitRingFS). */\nfloat stroke(float d, float w) {\n    float halfW = w * 0.5;\n    return 1.0 - smoothstep(halfW - u_aa * 0.5, halfW + u_aa * 0.5, d);\n}\n\nvoid main() {\n    vec2 p = v_localUV - vec2(0.5);\n    p.y *= u_hOverW;\n\n    float ring = stroke(abs(length(p) - u_radius), u_width);\n\n    // Частка оберту від 12-ї години ЗА годинниковою. v_localUV — UV текстури,\n    // Y у нього вниз: (0,−1) — верх. atan(x, −y): верх → 0, правий бік → +¼.\n    float t = fract(atan(p.x, -p.y) / TWO_PI);\n\n    // Кінець дуги згладжений по дузі тією ж шириною u_aa, що й краї кільця\n    float e    = u_aa / (TWO_PI * max(u_radius, 1e-4));\n    float fill = 1.0 - smoothstep(u_frac - e, u_frac + e, t);\n    fill = max(fill, step(1.0, u_frac));   // повне — без шва на 12-й\n    fill *= step(1e-4, u_frac);            // нуль — сама доріжка\n\n    float a = ring * mix(u_trackA, 1.0, fill);\n    gl_FragColor = vec4(u_color, a) * v_color;\n}", "id": "3.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/ProgressRingEffect.kt", "note": "Новий ефект за зразком OrbitRingEffect; радіус явний.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.utils.vfx.effects\n\nimport com.badlogic.gdx.graphics.Color\nimport com.badlogic.gdx.graphics.glutils.ShaderProgram\nimport com.lewydo.orbitdash.game.utils.vfx.VfxContext\nimport com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect\n\n// ─────────────────────────────────────────────────────────────────────────────\n// ProgressRingEffect — кільце із заповненням (single-pass).\n//\n// Доріжка по всьому колу з альфою trackAlpha і заповнена дуга від 12-ї години\n// за годинниковою на frac оберту; frac = 1 — звичайне суцільне кільце. Так\n// малюються обидва кільця м'яча: таймер комбо (frac тане) і щит (frac = 1).\n//\n// Розміри — у world-юнітах групи, у частки квада переводяться тут через\n// ctx.width, як в OrbitRingEffect. Радіус задається явно (макет), а без нього —\n// найбільший, що влазить у квад разом із товщиною й AA.\n// ─────────────────────────────────────────────────────────────────────────────\nclass ProgressRingEffect : VfxEffect() {\n\n    override val fragmentShader = \"shader/orbit/progressRingFS.glsl\"\n\n    /** Радіус осі кільця у world-юнітах; null — найбільший, що влазить. */\n    var radius: Float? = null\n\n    /** Товщина кільця у world-юнітах. */\n    var thickness = 4f\n\n    /** Колір кільця. */\n    val color: Color = Color(1f, 1f, 1f, 1f)\n\n    /** Заповнення 0..1 від 12-ї години за годинниковою. */\n    var frac = 1f\n\n    /** Альфа незаповненої частини кільця. */\n    var trackAlpha = 0.25f\n\n    override fun setUniforms(shader: ShaderProgram, ctx: VfxContext) {\n        val invW = 1f / ctx.width\n        val aa   = 1.5f                                           // згладжування, world\n\n        // Без явного радіуса зовнішня грань — на aa всередину від межі квада,\n        // інакше фейд зрізається\n        val r = radius ?: ((minOf(ctx.width, ctx.height) - thickness) * 0.5f - aa)\n\n        shader.setUniformf(\"u_hOverW\", ctx.height / ctx.width)\n        shader.setUniformf(\"u_radius\", r * invW)\n        shader.setUniformf(\"u_width\",  thickness * invW)\n        shader.setUniformf(\"u_aa\",     aa * invW)\n        shader.setUniformf(\"u_color\",  color.r, color.g, color.b)\n        shader.setUniformf(\"u_frac\",   frac.coerceIn(0f, 1f))\n        shader.setUniformf(\"u_trackA\", trackAlpha)\n    }\n\n    override fun stateKey(): Long {\n        var k = 23L\n        k = k * 31 + (radius ?: -1f).toRawBits()\n        k = k * 31 + thickness.toRawBits()\n        k = k * 31 + color.toIntBits().toLong()\n        k = k * 31 + frac.toRawBits()\n        k = k * 31 + trackAlpha.toRawBits()\n        return k\n    }\n}", "id": "4.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ABall.kt", "note": "Усі стани м'яча: щит, супутники, кільце комбо; heading замість rotation.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 1", "old": "package com.lewydo.orbitdash.game.actors.objects\n\nimport com.badlogic.gdx.scenes.scene2d.ui.Image\nimport com.badlogic.gdx.utils.Align", "new": "package com.lewydo.orbitdash.game.actors.objects\n\nimport com.badlogic.gdx.math.MathUtils\nimport com.badlogic.gdx.scenes.scene2d.ui.Image\nimport com.badlogic.gdx.utils.Align", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "5.1"}, {"verb": "replace", "where": "біля рядка 11", "old": "import com.lewydo.orbitdash.game.utils.theme.ThemeManager\nimport com.lewydo.orbitdash.game.utils.theme.ThemeSync\n\nclass ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {\n\n    companion object {\n        private const val GLOW_SIZE  = 100f\n        private const val POINT_SIZE = 10f\n\n        private const val POINT_PADDING = 10f\n    }\n\n    override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 40f)\n\n    // ------------------------------------------------------------------------\n    // Actors\n    // ------------------------------------------------------------------------\n    private val aGlow  = Image(gdxGame.assetsMsdf.glow).apply { color.a = 0.90f }\n    private val aBall  = Image(gdxGame.assetsMsdf.circle)\n    private val aPoint = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }\n\n    // ------------------------------------------------------------------------", "new": "import com.lewydo.orbitdash.game.utils.theme.ThemeManager\nimport com.lewydo.orbitdash.game.utils.theme.ThemeSync\nimport com.lewydo.orbitdash.game.utils.vfx.VfxImage\nimport com.lewydo.orbitdash.game.utils.vfx.effects.ProgressRingEffect\n\n// ─────────────────────────────────────────────────────────────────────────────\n//  ABall — м'яч гравця з усіма його станами: один актор, як один компонент у\n//  Figma (BALL + COMBO / ball + shield + combo). Шари знизу вгору, як у макеті:\n//  ореол → кільце щита → тіло → цятка напряму → супутники комбо → кільце комбо.\n//\n//  База скейлера 40 = діаметр м'яча; усі числа дітей — з Figma в цій базі.\n//  Кільця й ореол більші за фрейм і живуть назовні — модель «межі актора =\n//  фігура».\n//\n//  НАПРЯМ КРУТИТЬ ЛИШЕ ЦЯТКУ, не групу. Група з rotation — transform-матриця\n//  і два флаші батча на кадр, а обертати в м'ячі є що одне — білу цятку. Тому\n//  heading ставить її по колу (cos/sin): та сама картинка, що давав rotation\n//  групи (135° − angle, один оберт цятки на оберт по орбіті — м'яч\n//  «повертається» разом з орбітою, як ctx.rotate у прототипі), але кільце\n//  комбо завжди починається з 12-ї, а супутники крутяться своїм темпом.\n//\n//  Кільця — один шейдер ProgressRingEffect: комбо тане від 12-ї за\n//  годинниковою, щит — те саме кільце з frac = 1. Супутники — та сама графіка,\n//  що іскра на полі: гравець читає «спіймані іскри стали моїми».\n// ─────────────────────────────────────────────────────────────────────────────\nclass ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {\n\n    companion object {\n        // ── м'яч ──\n        /** Диск r 23.8 + blur σ 11 у Figma → квад 47.6 × 84/40 (outer/диск текстури glow). */\n        private const val GLOW_SIZE  = 100f\n        private const val GLOW_ALPHA = 0.90f\n        private const val POINT_SIZE = 10f\n        /** Цятка в макеті на (−5, −5) від центру: 7.07 під 135° при heading = 0. */\n        private const val POINT_R     = 7.071f\n        private const val POINT_ANGLE = 135f\n        /**\n         * Обертів цятки на один оберт по орбіті. 1 — як у прототипі (ctx.rotate\n         * на кут орбіти): цятка тримає одне місце відносно напряму руху, м'яч\n         * «повертається разом з орбітою». ~9.5 (r кільця / r м'яча) — котився б\n         * колесом; на 100–300°/с це вже мерехтіння, тому не воно.\n         */\n        private const val POINT_SPIN  = 1f\n\n        // ── кільце щита ──\n        private const val SHIELD_R = 28.75f\n        private const val SHIELD_W = 2.5f\n\n        // ── супутники комбо ──\n        /** Найбільше супутників: x5 дає чотири (множник − 1). */\n        const val MAX_SATS = 4\n        private const val SAT_R      = 29f\n        private const val SAT_DOT    = 6f\n        /** Ореол супутника: диск r 4.8 + σ 2.2 у Figma → 9.6 × 84/40, та сама формула, що GLOW_SIZE. */\n        private const val SAT_GLOW   = 20f\n        private const val SAT_GLOW_A = 0.90f\n        /** Оберт супутників, °/с, як у прототипі; мінус — за годинниковою, куди летить м'яч. */\n        private const val SAT_SPEED  = 260f\n\n        // ── кільце комбо ──\n        private const val COMBO_R       = 40f\n        private const val COMBO_W       = 4f\n        private const val COMBO_TRACK_A = 0.25f\n\n        /** Квад під кільця — фрейм компонента у Figma (100): обводка до 42 + запас під AA. */\n        private const val RING_QUAD = 100f\n    }\n\n    override val sizeScaler = SizeScaler(SizeScaler.Axis.X, 40f)\n\n    /** Напрям руху, екранні градуси. Крутить лише цятку. Ставить GameScreen. */\n    var heading = 0f\n\n    // ------------------------------------------------------------------------\n    // Actors\n    // ------------------------------------------------------------------------\n    private val aGlow  = Image(gdxGame.assetsMsdf.glow).apply { color.a = GLOW_ALPHA }\n    private val aBall  = Image(gdxGame.assetsMsdf.circle)\n    private val aPoint = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }\n\n    private val fxShield = ProgressRingEffect().apply { frac = 1f }\n    private val aShield  = VfxImage(screen, screen.drawerUtil.getRegion(), fxShield)\n\n    private val fxCombo = ProgressRingEffect().apply { trackAlpha = COMBO_TRACK_A }\n    private val aCombo  = VfxImage(screen, screen.drawerUtil.getRegion(), fxCombo)\n\n    private class Sat(val aGlow: Image, val aDot: Image)\n    private val sats = List(MAX_SATS) {\n        Sat(\n            aGlow = Image(gdxGame.assetsMsdf.glow).apply { color.a = SAT_GLOW_A },\n            aDot  = Image(gdxGame.assetsMsdf.circle),\n        )\n    }\n\n    // ------------------------------------------------------------------------", "oldMarks": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.2"}, {"verb": "add", "where": "біля рядка 35", "old": "    private val themeSync = ThemeSync(::syncTheme)\n\n    // ------------------------------------------------------------------------\n    // Lifecycle", "new": "    private val themeSync = ThemeSync(::syncTheme)\n\n    /** Скільки супутників показувати; 0 — комбо немає, кільця теж. */\n    private var satCount = 0\n\n    /** Кут першого супутника, градуси; решта — рівномірно по колу. */\n    private var spin = 0f\n\n    // ------------------------------------------------------------------------\n    // Lifecycle", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.3"}, {"verb": "add", "where": "біля рядка 40", "old": "    override fun addActorsOnGroup() {\n        addGlow()\n        addBall()\n        addPoint()\n\n        themeSync.sync()", "new": "    override fun addActorsOnGroup() {\n        addGlow()\n        addShield()\n        addBall()\n        addPoint()\n        addSats()\n        addCombo()\n\n        themeSync.sync()", "oldMarks": [0, 0, 0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0, 1, 1, 0, 0], "id": "5.4"}, {"verb": "replace", "where": "біля рядка 49", "old": "        super.act(delta)\n        themeSync.sync()\n    }\n\n    override fun sizeChanged() {\n        super.sizeChanged()\n        setOrigin(Align.center)\n        // Розміри дітей тримає реєстр групи, margin'и лейаут множить сам —\n        // тут повторювати нічого.\n    }\n", "new": "        super.act(delta)\n        themeSync.sync()\n\n        placePoint()\n\n        spin = (spin - SAT_SPEED * delta) % 360f\n        placeSats()\n    }\n\n    override fun sizeChanged() {\n        super.sizeChanged()\n        // Похідна геометрія кілець у world-юнітах поточного розміру\n        fxShield.radius    = SHIELD_R.toActual\n        fxShield.thickness = SHIELD_W.toActual\n        fxCombo.radius     = COMBO_R.toActual\n        fxCombo.thickness  = COMBO_W.toActual\n    }\n\n    // ------------------------------------------------------------------------\n    // Sync · стан із рушія\n    // ------------------------------------------------------------------------\n\n    /** Кільце щита є, поки є заряд. */\n    var shieldOn: Boolean\n        get() = aShield.isVisible\n        set(value) { aShield.isVisible = value }\n\n    /**\n     * Комбо: [frac] — частка вікна 0..1 (кільце), [count] — супутників\n     * (множник − 1). count = 0 — комбо немає: ні кільця, ні супутників.\n     */\n    fun setCombo(frac: Float, count: Int) {\n        fxCombo.frac = frac\n        val n = count.coerceIn(0, MAX_SATS)\n        if (n == satCount) return\n        satCount = n\n        aCombo.isVisible = n > 0\n        sats.forEachIndexed { i, s -> val on = i \u003c n; s.aGlow.isVisible = on; s.aDot.isVisible = on }\n    }\n", "oldMarks": [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.5"}, {"verb": "replace", "where": "біля рядка 65", "old": "    }\n\n    private fun addBall() {\n        add(aBall) { fillParent() }\n\n        // keepScaled {\n        //     aBg.radius      = RADIUS.toActual\n        //     aBg.strokeWidth = STROKE.toActual\n        // }\n    }\n\n    private fun addPoint() {\n        add(aPoint) {\n            size(POINT_SIZE)\n            startToStart(margin = POINT_PADDING); topToTop(margin = POINT_PADDING)\n        }\n    }", "new": "    }\n\n    private fun addShield() {\n        add(aShield) { size(RING_QUAD); center() }\n        aShield.isVisible = false\n    }\n\n    private fun addBall() {\n        add(aBall) { fillParent() }\n    }\n\n    /** Позицію цятки веде heading у act() — у реєстрі лише розмір. */\n    private fun addPoint() {\n        addActor(aPoint)\n        aPoint.setSizeScaled(POINT_SIZE, POINT_SIZE)\n    }\n\n    private fun addSats() {\n        for (s in sats) {\n            addActor(s.aGlow); s.aGlow.setSizeScaled(SAT_GLOW, SAT_GLOW)\n            addActor(s.aDot);  s.aDot.setSizeScaled(SAT_DOT, SAT_DOT)\n            s.aGlow.isVisible = false\n            s.aDot.isVisible  = false\n        }\n    }\n\n    private fun addCombo() {\n        add(aCombo) { size(RING_QUAD); center() }\n        aCombo.isVisible = false\n    }\n\n    // ------------------------------------------------------------------------\n    // Place\n    // ------------------------------------------------------------------------\n    private fun placePoint() {\n        val a = (POINT_ANGLE + heading * POINT_SPIN) * MathUtils.degreesToRadians\n        val r = POINT_R.toActual\n        aPoint.setPosition(width / 2f + MathUtils.cos(a) * r, height / 2f + MathUtils.sin(a) * r, Align.center)\n    }\n\n    /** Супутники рівномірно по колу від spin; перший починає з 12-ї години. */\n    private fun placeSats() {\n        if (satCount == 0) return\n        val cx = width / 2f\n        val cy = height / 2f\n        val r  = SAT_R.toActual\n        val step = 360f / satCount\n\n        for (i in 0 until satCount) {\n            val a = (90f + spin + i * step) * MathUtils.degreesToRadians\n            val x = cx + MathUtils.cos(a) * r\n            val y = cy + MathUtils.sin(a) * r\n            sats[i].aGlow.setPosition(x, y, Align.center)\n            sats[i].aDot.setPosition(x, y, Align.center)\n        }\n    }", "oldMarks": [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.6"}, {"verb": "remove", "where": "біля рядка 88", "old": "        aBall.setColorRGB(ThemeManager.current.player)\n    }\n\n}", "new": "        aBall.setColorRGB(ThemeManager.current.player)\n    }\n}", "oldMarks": [0, 0, 1, 0], "newMarks": [0, 0, 0], "id": "5.7"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt", "note": "heading, shieldOn, setCombo у syncPlayer — три рядки.", "lang": "kotlin", "hunks": [{"verb": "replace", "where": "біля рядка 430", "old": "\n        aOrbitField.positionAt(aBall, engine.radius * RunEngine.TO_FIELD, -engine.angle)\n        aBall.rotation = -engine.angle   // мінус — той самий переклад Y-вниз → Y-вгору, що й для позиції\n        aBall.isVisible = true\n\n        // Невразливість після щита — блимання", "new": "\n        aOrbitField.positionAt(aBall, engine.radius * RunEngine.TO_FIELD, -engine.angle)\n        aBall.heading = -engine.angle    // мінус — той самий переклад Y-вниз → Y-вгору, що й для позиції\n        aBall.isVisible = true\n\n        // Стани м'яча з рушія: щит, вікно комбо, супутників — множник − 1\n        // (x2 → 1 … x5 → 4; без комбо множник 1 → нуль — кільця немає)\n        aBall.shieldOn = engine.shield > 0\n        aBall.setCombo(engine.comboFrac, engine.multiplier - 1)\n\n        // Невразливість після щита — блимання", "oldMarks": [0, 0, 1, 0, 0, 0], "newMarks": [0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0], "id": "6.1"}]}], "state": {"submitted": "2026-09-18T13:13:16.242Z", "hunks": {"1.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "2.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "3.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "4.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.4": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.5": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.6": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "5.7": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}, "6.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-18T13:22:00.000Z", "note": "вставлено"}}}, "result": {"ok": true, "at": "2026-09-18T13:22:00.000Z", "note": "усі 12 вставлено, файли байт-у-байт як у лабораторії; :engine:test 16/16, assembleDebug зелений. На пристрій не ставив — телефон від'єднано."}}}</script><script id="app">
+(function () {
+  "use strict";
+
+  const data = JSON.parse(document.getElementById("patch-data").textContent);
+  const state = data.state || (data.state = {});
+  state.hunks = state.hunks || {};
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const fmtTime = (iso) => {
+    try { return new Date(iso).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso || ""; }
+  };
+
+  const allHunks = [];
+  data.files.forEach((f) => f.hunks.forEach((h) => allHunks.push(h)));
+
+  const submitted = () => !!state.submitted;
+  const hasResults = () => allHunks.some((h) => state.hunks[h.id] && state.hunks[h.id].result);
+
+  // Чернетка вибору до «Готово» — лише в цьому браузері; не вдалось — не страшно
+  const DRAFT_KEY = "patch-draft-" + data.id;
+  function loadDraft() {
+    if (submitted()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+      Object.keys(d).forEach((id) => {
+        if (allHunks.some((h) => h.id === id)) state.hunks[id] = { choice: d[id] };
+      });
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try {
+      const d = {};
+      Object.keys(state.hunks).forEach((id) => { if (state.hunks[id].choice) d[id] = state.hunks[id].choice; });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) { /* немає сховища */ }
+  }
+
+  // ── підсвітка: блок цілком (коментарі на кілька рядків), потім різання на рядки ──
+  function highlight(text, lang) {
+    const hl = window.hljs;
+    if (!hl || !lang || !hl.getLanguage(lang)) return null;
+    try { return hl.highlight(text, { language: lang, ignoreIllegals: true }).value; }
+    catch (e) { return null; }
+  }
+  function splitHtmlLines(htmlText) {
+    const lines = [];
+    let cur = "";
+    const open = [];
+    const re = /(<span[^>]*>)|(<\/span>)|(\n)|([^<\n]+|<(?!\/?span)[^>]*>)/g;
+    let m;
+    while ((m = re.exec(htmlText))) {
+      if (m[1]) { open.push(m[1]); cur += m[1]; }
+      else if (m[2]) { open.pop(); cur += m[2]; }
+      else if (m[3]) { cur += "</span>".repeat(open.length); lines.push(cur); cur = open.join(""); }
+      else cur += m[4];
+    }
+    lines.push(cur);
+    return lines;
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function codeBlock(kind, label, text, marks, lang) {
+    const box = el("div", "code " + kind);
+    const head = el("div", "code-label");
+    head.appendChild(el("span", null, label));
+    const btn = el("button", "copy", "Копіювати");
+    btn.type = "button";
+    btn.addEventListener("click", async () => {
+      const ok = await copyText(text);
+      btn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => { btn.textContent = "Копіювати"; }, 1600);
+    });
+    head.appendChild(btn);
+    box.appendChild(head);
+
+    const pre = el("pre");
+    const code = el("code");
+    const hl = highlight(text, lang);
+    const lines = hl != null ? splitHtmlLines(hl) : text.split("\n").map(escapeHtml);
+    code.innerHTML = lines.map((l, i) => {
+      const cls = marks ? (marks[i] ? "ln chg" : "ln ctx") : "ln";
+      return '<span class="' + cls + '">' + (l || "") + "</span>";
+    }).join("");
+    pre.appendChild(code);
+    box.appendChild(pre);
+    return box;
+  }
+
+  const VERB = { replace: "ЗАМІНИТИ", add: "ДОДАТИ", remove: "ВИДАЛИТИ", create: "НОВИЙ ФАЙЛ", delete: "ВИДАЛИТИ ФАЙЛ" };
+
+  function hunkStatus(h) {
+    const s = state.hunks[h.id];
+    if (!s || !s.choice) return el("span", "pill new", "не обрано");
+    if (s.result) {
+      const p = el("span", "pill " + (s.result.ok ? "done" : "fail"), s.result.note || (s.result.ok ? "готово" : "не вийшло"));
+      return p;
+    }
+    if (submitted()) return el("span", "pill pending", s.choice === "auto" ? "Claude вставляє" : "Claude перевіряє");
+    return null;
+  }
+
+  function setChoice(id, choice) {
+    if (submitted()) return;
+    const s = state.hunks[id] || (state.hunks[id] = {});
+    s.choice = s.choice === choice ? null : choice;
+    saveDraft();
+    render();
+  }
+
+  function renderPage() {
+    const root = $("root");
+    const scrollY = window.scrollY;
+    root.textContent = "";
+
+    const head = el("header", "head");
+    const eyebrow = el("div", "eyebrow");
+    eyebrow.appendChild(el("span", "num", "патч " + data.id));
+    if (data.date) eyebrow.appendChild(el("span", null, data.date));
+    head.appendChild(eyebrow);
+    head.appendChild(el("h1", null, data.title));
+    root.appendChild(head);
+
+    // summaryHtml генерує Claude з власного .md — довірений вміст
+    const summary = el("section", "summary");
+    summary.innerHTML = data.summaryHtml || "";
+    root.appendChild(summary);
+
+    const steps = el("section", "steps");
+    const t = el("div", "steps-title");
+    t.appendChild(el("h2", null, "Зміни"));
+    t.appendChild(el("p", null, (data.order ? data.order + " " : "") +
+      "Біля кожної зміни обери, хто її вставляє, потім «Готово» внизу."));
+    steps.appendChild(t);
+
+    const locked = submitted();
+    data.files.forEach((f, fi) => {
+      const card = el("article", "file");
+      const fh = el("div", "file-head");
+      const fid = el("div", "file-id");
+      fid.appendChild(el("span", "idx", String(fi + 1)));
+      fid.appendChild(el("span", "path", f.path));
+      fh.appendChild(fid);
+      if (f.hunks.length > 1) {
+        const all = el("div", "file-all");
+        all.appendChild(el("span", null, "увесь файл:"));
+        [["self", "сам"], ["auto", "авто"]].forEach(([c, label]) => {
+          const b = el("button", "link", label);
+          b.type = "button";
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            f.hunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = c === "self" ? "manual" : "auto"; });
+            saveDraft(); render();
+          });
+          all.appendChild(b);
+        });
+        fh.appendChild(all);
+      }
+      card.appendChild(fh);
+      if (f.note) card.appendChild(el("p", "file-note", f.note));
+
+      f.hunks.forEach((h) => {
+        const hb = el("div", "hunk");
+        const top = el("div", "hunk-top");
+        const ht = el("div", "hunk-title");
+        ht.appendChild(el("span", "hid", h.id));
+        ht.appendChild(el("span", "verb " + h.verb, VERB[h.verb] || h.verb));
+        if (h.where) ht.appendChild(el("span", "where", h.where));
+        const st = hunkStatus(h);
+        if (st && (locked || !state.hunks[h.id] || !state.hunks[h.id].choice)) ht.appendChild(st);
+        top.appendChild(ht);
+
+        const choice = el("div", "choice");
+        choice.setAttribute("role", "group");
+        choice.setAttribute("aria-label", "Хто вставляє зміну " + h.id);
+        const cur = (state.hunks[h.id] || {}).choice;
+        [["manual", "self", "Вставив сам"], ["auto", "auto", "Вставити автоматично"]].forEach(([val, cls, label]) => {
+          const b = el("button", cls, label);
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(cur === val));
+          b.disabled = locked;
+          b.addEventListener("click", () => setChoice(h.id, val));
+          choice.appendChild(b);
+        });
+        top.appendChild(choice);
+        hb.appendChild(top);
+
+        const lang = h.lang || f.lang;
+        if (h.old != null) hb.appendChild(codeBlock("old", h.verb === "add" ? "Знайти (вже є у файлі)" : "Було", h.old, h.oldMarks, lang));
+        if (h.new != null) hb.appendChild(codeBlock("new", h.verb === "create" ? "Файл цілком" : "Стало", h.new, h.newMarks, lang));
+        card.appendChild(hb);
+      });
+      steps.appendChild(card);
+    });
+    root.appendChild(steps);
+    window.scrollTo(0, scrollY);
+  }
+
+  // ── панель ───────────────────────────────────────────────────────────
+  let artifactApi = null;
+  let busy = false;
+
+  function counts() {
+    let self = 0, auto = 0, none = 0;
+    allHunks.forEach((h) => {
+      const c = (state.hunks[h.id] || {}).choice;
+      if (c === "manual") self++; else if (c === "auto") auto++; else none++;
+    });
+    return { self, auto, none };
+  }
+
+  function renderBar() {
+    const status = $("status"), bulk = $("bulk"), send = $("send");
+    status.textContent = ""; bulk.textContent = "";
+    const c = counts();
+
+    if (state.result) {
+      status.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Готово" : "Є проблеми"));
+      status.appendChild(el("span", null, fmtTime(state.result.at)));
+      if (state.result.note) status.appendChild(el("span", "note", state.result.note));
+      send.hidden = true;
+      return;
+    }
+
+    const tally = el("span", "tally", "сам " + c.self + " · авто " + c.auto + (c.none ? " · не обрано " + c.none : ""));
+    status.appendChild(tally);
+
+    if (submitted()) {
+      status.appendChild(el("span", "pill pending", "Надіслано"));
+      status.appendChild(el("span", "note", fmtTime(state.submitted) + " — Claude вставить «авто», перевірить «сам» і збере проєкт"));
+      send.hidden = hasResults();
+      send.className = "send ghost";
+      send.textContent = "Змінити вибір";
+      send.disabled = !artifactApi || busy;
+      return;
+    }
+
+    if (!artifactApi) status.appendChild(el("span", "note", "надіслати можна на claude.ai; інакше напиши в чат"));
+    else if (c.none) status.appendChild(el("span", "note", "обери для кожної зміни"));
+
+    bulk.appendChild(el("span", null, "усе одразу:"));
+    [["manual", "усе сам"], ["auto", "усе автоматично"], [null, "очистити"]].forEach(([val, label]) => {
+      const b = el("button", "link", label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        allHunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = val; });
+        saveDraft(); render();
+      });
+      bulk.appendChild(b);
+    });
+
+    send.hidden = false;
+    send.className = "send";
+    send.textContent = c.none ? "Готово — ще " + c.none + " без вибору" : "Готово — надіслати Claude";
+    send.disabled = !artifactApi || busy || c.none > 0;
+  }
+
+  function render() { renderPage(); renderBar(); }
+
+  // Документ = незмінні частини + новий стан; живий DOM не серіалізуємо
+  const HEAD_EXTRA =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"><\/script>';
+  const BAR =
+    '<div class="bar" id="bar"><div class="bar-inner">' +
+    '<div class="status" id="status"></div><div class="bulk" id="bulk"></div>' +
+    '<button class="send" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app = document.getElementById("app").textContent;
+    const json = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main>" + BAR +
+      "<script id=\"patch-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", "note", code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+
+  $("send").addEventListener("click", () => {
+    if (!artifactApi || busy) return;
+    if (submitted()) {           // «Змінити вибір» — поки Claude не почав
+      if (hasResults()) return;
+      state.submitted = null;
+    } else {
+      if (counts().none > 0) return;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  });
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script></body></html>

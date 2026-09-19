@@ -15,8 +15,8 @@ android {
         applicationId = "com.lewydo.orbitdash"
         minSdk      = 24
         targetSdk   = 37
-        versionCode = 7
-        versionName = "1.1.0" // test
+        versionCode = 8
+        versionName = "1.2.0-test" // test
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

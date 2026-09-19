@@ -20,7 +20,7 @@ import kotlin.random.Random
 //
 //  ОДИНИЦІ. Рушій працює в «одиницях прототипу»: радіуси кілець [190, 320].
 //  Це збігається з ДІАМЕТРАМИ поля в новому дизайні, тож усі лінійні константи
-//  (вікно попадання, коридор near-miss, поріг «доїхав») діють дослівно.
+//  (вікно попадання, зсув іскри, поріг «доїхав») діють дослівно.
 //  Межа з видом: fieldRadius = engineRadius * TO_FIELD (0.5).
 //
 //  НАПРЯМОК. У прототипі Y-вниз: кут зростає = за годинниковою на екрані.
@@ -52,6 +52,16 @@ class RunEngine(
         val LAYOUT_3 = floatArrayOf(130f, 225f, 320f)
 
         const val MAX_COMBO = 8
+
+        // ── іскра комбо ──
+        /**
+         * Іскра висить за ORB_OFF ПЕРЕД шипом по ходу руху (engine units по дузі),
+         * вікно підбору — ±ORB_PICK по дузі. Менший ORB_OFF притискає іскру до
+         * шипа (страшніше), більший ORB_PICK — щедріший підбір. Вікно ПРОСТОРОВЕ:
+         * однакове на будь-якій швидкості й будь-якому кільці.
+         */
+        const val ORB_OFF  = 52f
+        const val ORB_PICK = 32f
 
         // ── debug-розстановка ──
         /**
@@ -149,7 +159,14 @@ class RunEngine(
     ) {
         var s = 0f             // spawn-scale 0→1 (виду для появи, логіці для «дозрів»)
         var pulled  = false    // магніт захопив — інші правила зникнення
-        var prevRel: Float? = null   // rel минулого кадру: детектор near-miss
+        var prevRel: Float? = null   // rel минулого кадру: детектор проходу повз (DEBUG · EZ COMBO)
+
+        /**
+         * Іскра комбо ще висить перед шипом. Іскра — НЕ сутність: її кут рахується
+         * від шипа щокадру ([sparkAngle]), а стан — цей прапорець. Спіймали або
+         * зарахували EZ COMBO — false, і вдруге за той самий шип не спрацює.
+         */
+        var orb = kind == Kind.SPIKE
     }
 
     /** Підсумок рану — все для GameOver-екрана й аналітики (run_end). */
@@ -158,7 +175,7 @@ class RunEngine(
         val gems       : Int,
         val durationSec: Int,
         val deathRing  : Int,      // 1-базований, як в аналітиці
-        val nearMisses : Int,
+        val nearMisses : Int,      // спійманих іскор = комбо за ран
         val boostsUsed : Int,
         val revived    : Boolean,
     )
@@ -166,7 +183,8 @@ class RunEngine(
     /** Події для звуку/партиклів/вібро/аналітики. Рушій сам по собі німий. */
     interface Listener {
         fun onTap() {}
-        fun onNearMiss(e: Entity, bonus: Int) {}
+        /** Іскру шипа [e] спіймано. [sparkAngle] — де вона була: ефекти в точці іскри, не шипа. */
+        fun onNearMiss(e: Entity, sparkAngle: Float, bonus: Int) {}
         fun onGemPicked(e: Entity, value: Float) {}
         fun onBoostApplied(boost: Boost, e: Entity?) {}
         fun onShieldSaved(e: Entity) {}
@@ -226,22 +244,19 @@ class RunEngine(
      */
     val gemsCollected: Int get() = floor(gemsRun).toInt()
 
+    // ------------------------------------------------------------------------
+    //  КОМБО — СПІЙМАНА ІСКРА, не near-miss.
+    //
+    //  Біля кожного шипа за ORB_OFF попереду висить видима іскра. Гравець у
+    //  вікні ±ORB_PICK по дузі та ±45 по радіусу — іскра спіймана, комбо +1.
+    //  Іскра стоїть на кільці шипа, ближче за зону зіткнення (ORB_OFF − ORB_PICK
+    //  = 20 < 37), тож узяти її можна лише проходячи впритул — ризик той самий,
+    //  що був, але тепер він ВИДИМИЙ, а вікно не залежить від швидкості.
+    //
+    //  Старе вікно було часовим (тап за 16–84 мс до перетину) і на внутрішньому
+    //  кільці на старті не існувало фізично — див. docs/decisions.md.
+    // ------------------------------------------------------------------------
     var combo    = 0f;      private set
-    // ------------------------------------------------------------------------
-    //  ЗОНА NEAR-MISS — різниця РАДІУСІВ, не відстань між об'єктами.
-    //
-    //  Спайк зараховується, коли він проскочив повз (rel змінив знак) і при
-    //  цьому його кільце віддалене від твого на gap юнітів. Ближче за nearMin —
-    //  це вже зіткнення, далі за nearMax — надто безпечно.
-    //
-    //  ВАЖЛИВО ПРО БАЛАНС: кільця стоять на 190 і 320, різниця 130. Тобто
-    //  спайк на СУСІДНЬОМУ кільці має gap=130 і в зону 26..90 не входить —
-    //  near-miss ловиться ЛИШЕ під час перельоту між кільцями. Це робить
-    //  комбо рідкісним. Підняти nearMax до ~145 = зараховувати сусіднє кільце.
-    // ------------------------------------------------------------------------
-    var nearMin = 26f
-    var nearMax = 90f
-
     var comboT   = 0f;      private set
     val comboWin = 4f + 0.5f * config.upKeeper
 
@@ -436,6 +451,13 @@ class RunEngine(
      */
     var debugFrozen = false
 
+    /**
+     * DEBUG · EZ COMBO: комбо за будь-який прохід повз шип (rel змінив знак)
+     * у радіусі 145 — накриває сусіднє кільце, іскру ловити не треба. Гасить
+     * іскру шипа, тож двічі за один шип не зарахує. Лише тест.
+     */
+    var debugEzCombo = false
+
     /** true — третю орбіту вже перемкнув debug, правило «з 30-ї секунди» мовчить. */
     private var debugOrbit3Set = false
 
@@ -580,13 +602,36 @@ class RunEngine(
 
     private fun comboMult(): Float = min(5f, 1f + combo)
 
-    private fun nearMiss(e: Entity) {
+    /**
+     * Множник для ВИДУ (HUD, попап над іскрою). Стеля 5 — правило гри, тож
+     * живе тут, а не дублюється константою в кожному, хто його показує.
+     */
+    val multiplier: Int get() = comboMult().toInt()
+
+    /**
+     * Частка вікна комбо, що лишилась, 0..1 — виду для кільця над м'ячем.
+     * 0, коли комбо немає. Іскра й гем ставлять вікно заново на 100 %,
+     * далі воно лише тане; вийшло — комбо гасне в нуль, без сходинок.
+     */
+    val comboFrac: Float get() = if (combo > 0f) (comboT / comboWin).coerceIn(0f, 1f) else 0f
+
+    /**
+     * Кут іскри шипа [e] (одиниці рушія) або null — не шип чи іскру вже спіймано.
+     * Лінійний зсув ORB_OFF переведений у градуси через радіус кільця: на
+     * меншому колі той самий зсув — більший кут, дуга по кільцях однакова.
+     * Виду — щоб поставити актора іскри; окремої сутності для неї немає.
+     */
+    fun sparkAngle(e: Entity): Float? =
+        if (e.kind == Kind.SPIKE && e.orb) norm(e.a - ORB_OFF / e.rr * RAD_TO_DEG) else null
+
+    /** Іскру спіймано: комбо +1, таймер заново, бонус 5·множник одразу в рахунок. */
+    private fun nearMiss(e: Entity, sparkA: Float) {
         combo  = min(MAX_COMBO.toFloat(), combo + 1f)
         comboT = comboWin
         nearCount++
         val b = (5f * comboMult()).toInt()
         bonus += b
-        listener?.onNearMiss(e, b)
+        listener?.onNearMiss(e, sparkA, b)
     }
 
     private fun updateEntities(dt: Float, wdt: Float) {
@@ -612,18 +657,31 @@ class RunEngine(
 
             val rel = angDiff(e.a, angle)
 
-            // NEAR-MISS: спайк щойно ПРОСКОЧИВ повз (rel змінив знак + → −),
-            // а гравець фізично поруч по радіусу — «прошелестіло біля вуха».
-            // Коридор 26..90: ближче = мав би вбити, далі = і не страшно було.
+            // DEBUG · EZ COMBO: шип щойно ПРОСКОЧИВ повз (rel змінив знак + → −)
+            // і гравець у радіусі 145 — зараховуємо без іскри
             val pr = e.prevRel
-            if (e.kind == Kind.SPIKE && pr != null && pr > 0f && rel <= 0f && phase == Phase.RUN) {
-                val gap = abs(radius - e.rr)
-                if (gap > nearMin && gap < nearMax) nearMiss(e)
+            if (debugEzCombo && e.orb && pr != null && pr > 0f && rel <= 0f && abs(radius - e.rr) < 145f) {
+                e.orb = false
+                nearMiss(e, e.a)
             }
             e.prevRel = rel
 
             // Пішов далеко за спину — прибираємо (магнітні геми не чіпаємо)
             if (rel < -60f && !e.pulled) { it.remove(); continue }
+
+            // ІСКРА КОМБО: гравець у вікні ±ORB_PICK по дузі навколо іскри і
+            // близько по радіусу. Радіусне вікно ±45 тримається ще ~30 мс після
+            // тапу (лерп радіуса), тож ловиться і «проїхав крізь іскру на кільці
+            // шипа», і «тапнув рівно на іскрі й полетів геть». Правило для
+            // гравця одне: тапни, коли торкнувся іскри.
+            val sparkA = sparkAngle(e)
+            if (sparkA != null && e.s > 0.5f) {
+                val orel = angDiff(sparkA, angle)
+                if (abs(orel) < ORB_PICK / e.rr * RAD_TO_DEG && abs(radius - e.rr) < 45f) {
+                    e.orb = false
+                    nearMiss(e, sparkA)
+                }
+            }
 
             when (e.kind) {
                 Kind.GEM -> if (e.s > 0.5f) {

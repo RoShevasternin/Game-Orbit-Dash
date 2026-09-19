@@ -25,10 +25,6 @@ import com.lewydo.orbitdash.game.utils.theme.ThemeSync
 // ----------------------------------------------------------------------------
 class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
-    companion object {
-        private const val MAX_MULT = 5
-    }
-
     // ------------------------------------------------------------------------
     // Field
     // ------------------------------------------------------------------------
@@ -98,7 +94,8 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
         }
 
         // Множник цілий і рідко міняється, тому кешуємо саме його, а не combo.
-        val mult = if (engine.combo > 0f) minOf(MAX_MULT, 1 + engine.combo.toInt()) else 0
+        // Стеля — у рушії (RunEngine.multiplier): це правило гри, не вигляд.
+        val mult = if (engine.combo > 0f) engine.multiplier else 0
         if (mult != lastMult) {
             lastMult = mult
             aComboLbl.isVisible = mult > 0
