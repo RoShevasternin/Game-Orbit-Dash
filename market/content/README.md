@@ -6,8 +6,9 @@
 ```
 tools/                       інструменти монтажу
   build-devlog-01.py         драйвер DEVLOG 01: сирі записи → готовий mp4 + обкладинка
+  build-devlog-02.py         драйвер DEVLOG 02: трекер м'яча для крупних планів, кадрова сітка тактів
   build-teaser.py            драйвер ролика #1 (18.09, en/uk) — сировини до нього на диску вже немає
-  render-caption.swift       текст → прозорий PNG (CoreText, Inter ExtraBold); ffmpeg тут без drawtext
+  render-caption.swift       текст → прозорий PNG (CoreText, Inter ExtraBold); --color RRGGBB — колір підпису
   fonts/                     Inter 28pt, усі накреслення (ними ж підписує market/leaderboards)
 
 source/                      сировина: не публікується, але без неї нічого не перезібрати
@@ -17,8 +18,12 @@ source/                      сировина: не публікується, а
     gameplay-48s-combo-ladder.mp4    48 с, чиста драбина ×2→×5 (REC3)
     gameplay-48s-events.log          події до нього
     gameplay-55s-orbit3.mp4          55 с на третій орбіті (REC2, логу немає)
+    gameplay-90s-neon-boosts.mp4     DEVLOG 02: патчі 55–64, тема NEON, буст кожні 8 с (lab.txt: boostEvery=8)
+    gameplay-75s-synth-boosts.mp4    те саме, тема SYNTH, буст кожні 7 с
+    stand-progress-bar.mp4           TestScreen: ABarProgress з ковзною текстурою (16 с; нижня смуга — тестова фотка, у ролик не йде)
   music/                     треки під ролики
     phonk-aggressive-drift-night.mp3   Pixabay, alex-morgan, Content License (Shorts/Reels/TikTok)
+    brazilian-hype-walen.mp3           freetouse.com, Walen — Brazilian Hype, 130 BPM; атрибуція в описі обов'язкова
   tuner/                     кадри тюнера 53-spark для сегмента «ми зробили тюнер»
     tuner-53-spark-default.png         повзунки на дефолтах
     tuner-53-spark-tuned.png           ті самі повзунки підкручені
@@ -29,6 +34,10 @@ tiktok/
     devlog-01-video.mp4      що залито в TikTok: 1080×1920, 27.4 с, БЕЗ звуку (трек додано в застосунку)
     devlog-01-cover.png      обкладинка для сітки профілю
     devlog-01-copy.md        опис, хештеги, закріплений комент, структура ролика по секундах
+  devlog-02/
+    devlog-02-video-music.mp4  1080×1920, 29.5 с, З музикою — монтаж різаний під трек, у бібліотеці TikTok його може не бути
+    devlog-02-cover.png        обкладинка: м'яч із кільцем комбо, «DEVLOG 02» тим самим кеглем, що й 01
+    devlog-02-copy.md          опис із атрибуцією треку, хештеги, комент, структура по тактах
   teaser-copy.md             тексти ролика #1 (не публікувався під цим акаунтом)
 
 youtube/
@@ -36,6 +45,10 @@ youtube/
     devlog-01-video-music.mp4  що заливати в Shorts: те саме відео + вшитий трек, 27.4 с
     devlog-01-copy.md          назва ≤100 символів, опис, теги, налаштування Studio
     devlog-01-thumbnail.png    та сама обкладинка, як прев'ю Shorts
+  devlog-02/
+    devlog-02-video-music.mp4  той самий файл, що в TikTok
+    devlog-02-copy.md          назва, опис з атрибуцією freetouse.com, теги
+    devlog-02-thumbnail.png    та сама обкладинка
 ```
 
 **Правило іменування:** `<випуск>-<що це>.<розширення>`. Назва має читатись без цієї теки —
@@ -66,3 +79,38 @@ ffmpeg -i tiktok/devlog-01/devlog-01-video.mp4 -ss 10.24 -t 27.4 -i source/music
 
 `volume` рахується з заміру: `ebur128` на самому відрізку дав −9.5 LUFS, ціль −14 (норма
 YouTube) → −4.5 дБ. `alimiter` тримає пік нижче −1 dBTP. Відео не перекодовується (`-c:v copy`).
+
+## Як зібрано DEVLOG 02
+
+```bash
+python3 tools/build-devlog-02.py <scratch> devlog-02-video.mp4 devlog-02-cover.png   # німий майстер + обкладинка
+ffmpeg -i devlog-02-video.mp4 -ss 20.769 -t 29.53 -i source/music/brazilian-hype-walen.mp3 \
+  -filter_complex "[1:a]volume=-5.0dB,afade=t=in:st=0:d=0.12,afade=t=out:st=28.93:d=0.60,\
+                   alimiter=limit=0.891:level=false[a]" \
+  -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 192k -movflags +faststart -shortest devlog-02-video-music.mp4
+```
+
+Драйверу потрібен скомпільований `render-caption` у `<scratch>/video/caption`
+(`swiftc -O -o <scratch>/video/caption tools/render-caption.swift`).
+
+Трек — **рівно 130 BPM** (пошук по сітці 128–132 з кроком 0.02: максимум енергії онсетів на
+130.00, фаза 0), такт 1.8462 с. Відрізок береться з **20.769 с** (такт 11): один тихий такт, і на
+22.615 с (такт 12) повертається бас — у ролику це 1.846 с, зріз «BEFORE → AFTER». Уся секція
+до 50.3 с щільна, брейкдаун треку починається на 53-й — до нього не доходимо.
+
+`volume` — із заміру: `ebur128` на відрізку дав −9.0 LUFS, ціль −14 → −5.0 дБ; вийшло −14.1.
+**`alimiter … :level=false` обов'язково**: за умовчанням `level=true` і лімітер сам піднімає
+сигнал до порога — DEVLOG 01 через це вийшов на −13.1 замість −14.
+
+Дві речі в драйвері, яких не було в першому:
+
+- **Кадрова сітка тактів.** Такт = 55.3846 кадру при 30 fps; `-t 1.846` ріже 55 кадрів, і за
+  16 тактів зрізи з'їжджали на 0.11 с. Тепер сегмент задається в тактах, а довжина в кадрах
+  рахується від початку ролика (`bars_to_frames`), тож межа такту не пливе.
+- **Трекер м'яча.** Крупний план — це `crop`, що їде за м'ячем: позиція шукається по кольору
+  гравця з `ThemeManager` (NEON `00E5FF`, SYNTH `FF3EC8`), кластер — найближчий до попереднього
+  кадру, згладжування ±4 кадри, і все це стає кусково-лінійним виразом для `crop` (сума
+  обрізаних пандусів `clip((t-t0)/dt,0,1)`, без вкладених `if`). Кроп 520×924 — ширший за
+  м'яч навмисно: на зовнішньому кільці м'яч доходить до x=60/660, і вужчий кроп упирався в
+  край кадру. Для обкладинки трекер не годиться (на одному кадрі нема від чого відштовхнутись) —
+  там центроїд майже білих пікселів ядра.
