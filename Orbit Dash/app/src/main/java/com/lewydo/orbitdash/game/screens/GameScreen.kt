@@ -1,6 +1,5 @@
 package com.lewydo.orbitdash.game.screens
 
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
@@ -18,6 +17,8 @@ import com.lewydo.orbitdash.game.actors.objects.ABooster
 import com.lewydo.orbitdash.game.actors.objects.AGem
 import com.lewydo.orbitdash.game.actors.objects.ASpark
 import com.lewydo.orbitdash.game.actors.objects.ASpike
+import com.lewydo.orbitdash.game.actors.fx.ABurst
+import com.lewydo.orbitdash.game.actors.fx.AWave
 import com.lewydo.orbitdash.game.actors.orbit.AOrbitField
 import com.lewydo.orbitdash.game.actors.label.AMsdfLabel
 import com.lewydo.orbitdash.game.actors.panel.APanelGameHud
@@ -82,6 +83,14 @@ class GameScreen : AdvancedScreen() {
         private const val FLOAT_BOX_H = 18f
         private const val FLOAT_LIFE  = 1.11f  // с
         private const val FLOAT_RISE  = 28f    // юнітів за все життя (25/с × 1.11)
+
+        // ── спалах у точці спійманої іскри (хвиля + крапки) ──
+        //  Обидва живуть менше за напис (0.4 і до 0.9 с проти 1.11), тому їх
+        //  треба менше: три комбо поспіль за 0.4 с — це вже не гра, а EZ COMBO.
+        private const val POOL_WAVES  = 3
+        private const val POOL_BURSTS = 3
+        /** Квад бурста — точка: крапки малюються за межами, як glow в об'єктах. */
+        private const val BURST_SIZE  = 8f
     }
 
     // ------------------------------------------------------------------------
@@ -97,6 +106,11 @@ class GameScreen : AdvancedScreen() {
 
     // Спливні написи над полем («COMBO x3»). Не пул із поверненням: мітка сама
     // гасне після 1.11 с, а isVisible каже, що її можна взяти під наступну подію.
+    // Спалах іскри: хвиля й розліт крапок. Той самий «пул без повернення», що
+    // й написи, — актор сам гасне і сам стає вільним (isVisible == false).
+    private val aWaves  by lazy { List(POOL_WAVES)  { AWave(this)  } }
+    private val aBursts by lazy { List(POOL_BURSTS) { ABurst(this) } }
+
     private val styleFloat by lazy { MsdfStyle(gdxGame.msdfManager, gdxGame.msdfManager.fontInter_Bold, FLOAT_SIZE) }
     private val aFloats    by lazy {
         List(POOL_FLOATS) {
@@ -307,7 +321,10 @@ class GameScreen : AdvancedScreen() {
         aBall.isVisible = false
         aOrbitField.addActor(aBall)
 
-        // Написи — діти поля: позиція рахується в його ж координатах
+        // Ефекти й написи — діти поля: позиція рахується в його ж координатах.
+        // Спершу спалах, потім написи: напис має лишатись поверх крапок.
+        for (w in aWaves)  { w.setSize(AWave.QUAD, AWave.QUAD); aOrbitField.addActor(w) }
+        for (b in aBursts) { b.setSize(BURST_SIZE, BURST_SIZE); aOrbitField.addActor(b) }
         for (f in aFloats) aOrbitField.addActor(f)
     }
 
@@ -393,8 +410,10 @@ class GameScreen : AdvancedScreen() {
 
         override fun onOrbit3Online() { log("ORBIT III ONLINE") }
         override fun onNearMiss(e: RunEngine.Entity, sparkAngle: Float, bonus: Int) {
-            // Напис стає в точці ІСКРИ, не шипа — саме за цим рушій і віддає кут
-            showFloat("COMBO x${engine.multiplier}", e.rr * RunEngine.TO_FIELD, -sparkAngle)
+            // Усе — в точці ІСКРИ, не шипа: саме за цим рушій і віддає кут
+            val r = e.rr * RunEngine.TO_FIELD
+            showSparkFx(r, -sparkAngle)
+            showFloat("COMBO x${engine.multiplier}", r, -sparkAngle)
             log("COMBO! +$bonus")
         }
         override fun onBoostApplied(boost: RunEngine.Boost, e: RunEngine.Entity?) { log("BOOST $boost") }
@@ -489,6 +508,25 @@ class GameScreen : AdvancedScreen() {
         ))
     }
 
+    /**
+     * Спалах на місці спійманої іскри: кільцева хвиля + розліт крапок. Світ у
+     * цю мить стоїть (RunEngine.HIT_STOP_NEAR), тож перші два кадри ефект
+     * розходиться із застиглої картинки — це й читається як удар.
+     *
+     * Немає вільного актора — ефект просто пропускаємо, як і напис: обірвати
+     * чужий спалах на півдорозі гірше, ніж не показати цей.
+     */
+    private fun showSparkFx(radiusDesign: Float, angleDeg: Float) {
+        aWaves.firstOrNull { !it.isVisible }?.let {
+            aOrbitField.positionAt(it, radiusDesign, angleDeg)
+            it.fire()
+        }
+        aBursts.firstOrNull { !it.isVisible }?.let {
+            aOrbitField.positionAt(it, radiusDesign, angleDeg)
+            it.fire()
+        }
+    }
+
     /** HUD читає рушій сам: рахунок, геми рану, комбо, щит. */
     private fun syncHud() {
         aPanelGameHud.syncFrom(engine)
@@ -549,8 +587,10 @@ class GameScreen : AdvancedScreen() {
 
     /** Новий ран — усі актори назад у пул, id старого рану більше не існують. */
     private fun releaseAllActors() {
-        // Написи минулого рану дограли б поверх нового поля
+        // Написи й спалахи минулого рану дограли б поверх нового поля
         for (f in aFloats) { f.clearActions(); f.isVisible = false }
+        for (w in aWaves)  w.isVisible = false
+        for (b in aBursts) b.isVisible = false
 
         seenIds.clear()
         seenSparkIds.clear()

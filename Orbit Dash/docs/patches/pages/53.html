@@ -1,0 +1,592 @@
+<title>Патч 53 · Спалах іскри</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script>
+<style id="style">
+:root {
+  --ground:  #F6F7F9;
+  --surface: #FFFFFF;
+  --sunk:    #F6F8FA;
+  --line:    #E1E4E8;
+  --text:    #1F2328;
+  --muted:   #59636E;
+  --faint:   #A1A9B3;
+  --accent:  #1F6FEB;
+  --accent-ink: #FFFFFF;
+  --gem:     #9A6700;
+  --gem-bg:  #FFF8C5;
+  --spike:   #CF222E;
+  --spike-bg:#FFEBE9;
+  --good:    #1A7F37;
+  --good-bg: #E6FFEC;
+  --shadow:  0 -4px 16px rgba(31, 35, 40, .08);
+  /* підсвітка коду */
+  --syn-kw:   #CF222E;
+  --syn-type: #953800;
+  --syn-fn:   #8250DF;
+  --syn-str:  #0A3069;
+  --syn-num:  #0550AE;
+  --syn-com:  #6E7781;
+  --syn-meta: #953800;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0D1117;
+    --surface: #151B23;
+    --sunk:    #0D1117;
+    --line:    #30363D;
+    --text:    #E6EDF3;
+    --muted:   #9198A1;
+    --faint:   #5C646E;
+    --accent:  #4493F8;
+    --accent-ink: #FFFFFF;
+    --gem:     #D29922;
+    --gem-bg:  rgba(187, 128, 9, .15);
+    --spike:   #F85149;
+    --spike-bg:rgba(248, 81, 73, .12);
+    --good:    #3FB950;
+    --good-bg: rgba(46, 160, 67, .14);
+    --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+    --syn-kw:   #FF7B72;
+    --syn-type: #FFA657;
+    --syn-fn:   #D2A8FF;
+    --syn-str:  #A5D6FF;
+    --syn-num:  #79C0FF;
+    --syn-com:  #8B949E;
+    --syn-meta: #FFA657;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0D1117;
+  --surface: #151B23;
+  --sunk:    #0D1117;
+  --line:    #30363D;
+  --text:    #E6EDF3;
+  --muted:   #9198A1;
+  --faint:   #5C646E;
+  --accent:  #4493F8;
+  --accent-ink: #FFFFFF;
+  --gem:     #D29922;
+  --gem-bg:  rgba(187, 128, 9, .15);
+  --spike:   #F85149;
+  --spike-bg:rgba(248, 81, 73, .12);
+  --good:    #3FB950;
+  --good-bg: rgba(46, 160, 67, .14);
+  --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+  --syn-kw:   #FF7B72;
+  --syn-type: #FFA657;
+  --syn-fn:   #D2A8FF;
+  --syn-str:  #A5D6FF;
+  --syn-num:  #79C0FF;
+  --syn-com:  #8B949E;
+  --syn-meta: #FFA657;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: 15px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.page { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 190px; }
+h1, h2, h3 { font-family: "IBM Plex Sans", system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code {
+  font-size: .88em; background: var(--sunk); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+/* ── шапка ─────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em; border-radius: 999px; padding: 2px 10px;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.new     { color: var(--muted); background: var(--sunk); border: 1px solid var(--line); }
+.pill.pending { color: var(--gem);   background: var(--gem-bg); }
+.pill.done    { color: var(--good);  background: var(--good-bg); }
+.pill.fail    { color: var(--spike); background: var(--spike-bg); }
+
+/* ── пояснення ─────────────────────────────────────── */
+.summary { max-width: 68ch; }
+.summary > * + * { margin-top: 12px; }
+.summary h3 { margin-top: 22px; }
+.summary ul { padding-left: 20px; margin-block: 8px; }
+.summary li + li { margin-top: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.summary table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.summary th, .summary td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.summary tr:last-child td { border-bottom: 0; }
+.summary th { font-weight: 600; background: var(--sunk); }
+
+/* ── кроки ─────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 26px; margin-top: 30px; }
+.steps-title { display: flex; flex-direction: column; gap: 4px; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.file { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.file-head {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--sunk); border-bottom: 1px solid var(--line);
+}
+.file-id { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.file-id .idx { font-family: "JetBrains Mono", monospace; color: var(--muted); font-weight: 500; flex: none; }
+.file-id .path { font-family: "JetBrains Mono", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.file-all { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px; font-size: 12px;
+}
+.link:disabled { color: var(--faint); cursor: default; text-decoration: none; }
+.file-note { padding: 10px 14px 0; margin: 0; color: var(--muted); font-size: 13px; }
+
+.hunk { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hunk + .hunk { border-top: 1px dashed var(--line); }
+.hunk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hunk-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; }
+.hid { font-family: "JetBrains Mono", monospace; color: var(--muted); }
+.verb { font-weight: 600; letter-spacing: .06em; font-size: 12px; }
+.verb.replace { color: var(--gem); }
+.verb.add, .verb.create { color: var(--good); }
+.verb.remove, .verb.delete { color: var(--spike); }
+.where { color: var(--muted); }
+
+/* вибір на зміну */
+.choice { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.choice button {
+  background: var(--surface); color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer;
+  font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; font-size: 12.5px;
+}
+.choice button + button { border-left: 1px solid var(--line); }
+.choice button[aria-pressed="true"].self { background: var(--text); color: var(--surface); }
+.choice button[aria-pressed="true"].auto { background: var(--accent); color: var(--accent-ink); }
+.choice button:disabled { cursor: default; }
+.choice button:disabled:not([aria-pressed="true"]) { opacity: .45; }
+
+/* код */
+.code { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+.code-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 4px 10px;
+}
+.code-label { color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line); }
+.code.old .code-label span:first-child::before { content: "● "; color: var(--spike); }
+.code.new .code-label span:first-child::before { content: "● "; color: var(--good); }
+.code pre {
+  margin: 0; padding: 8px 0; overflow-x: auto; background: var(--sunk);
+  font-size: 12.5px; line-height: 1.6; tab-size: 4;
+}
+.ln { display: block; white-space: pre; padding-right: 14px; min-height: 1.6em; }
+.ln::before { content: " "; display: inline-block; width: 26px; text-align: center; color: var(--faint); user-select: none; }
+.ln.ctx { opacity: .6; }
+.code.old .ln.chg { background: var(--spike-bg); }
+.code.old .ln.chg::before { content: "−"; color: var(--spike); }
+.code.new .ln.chg { background: var(--good-bg); }
+.code.new .ln.chg::before { content: "+"; color: var(--good); }
+.copy {
+  font: 500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .04em;
+  color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  padding: 4px 8px; cursor: pointer;
+}
+
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syn-kw); }
+.hljs-type, .hljs-title.class_, .hljs-class .hljs-title { color: var(--syn-type); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--syn-fn); }
+.hljs-string, .hljs-char { color: var(--syn-str); }
+.hljs-number { color: var(--syn-num); }
+.hljs-comment, .hljs-doctag, .hljs-quote { color: var(--syn-com); font-style: italic; }
+.hljs-meta, .hljs-annotation, .hljs-variable, .hljs-template-variable { color: var(--syn-meta); }
+
+/* ── панель ────────────────────────────────────────── */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.status { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.status .note { color: var(--muted); }
+.tally { font-variant-numeric: tabular-nums; }
+.bulk { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.bulk .link { font-size: 13px; }
+.send {
+  font: 600 15px/1.2 "IBM Plex Sans", system-ui, sans-serif;
+  border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.send.ghost { background: transparent; color: var(--accent); }
+.send:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 420px) { h1 { font-size: 22px; } .choice button { padding: 7px 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .send, .choice button { transition: transform .08s ease, background-color .12s ease; }
+  .send:active:not(:disabled) { transform: scale(.98); }
+}
+</style>
+
+<main class="page" id="root"></main>
+
+<div class="bar" id="bar"><div class="bar-inner">
+  <div class="status" id="status"></div>
+  <div class="bulk" id="bulk"></div>
+  <button class="send" id="send" type="button">Готово — надіслати Claude</button>
+</div></div>
+
+<script id="patch-data" type="application/json">{"id": "53", "title": "Хвиля, крапки й мікрофриз у точці спійманої іскри", "date": "19.09.2026", "order": "1 → 7. Компілюється після 5; 6–7 — документація.", "summaryHtml": "\u003ch3>Що і навіщо\u003c/h3>\n\u003cp>Остання незроблена частина комбо з прототипу. Там реакція на спійману іскру — п'ять рядків, із них у нас були зроблені два (напис і бонус), а три — ні:\u003c/p>\n\u003cp>``\u003ccode> st.freeze = Math.max(st.freeze, 0.03);      // мікрофриз wave(x, y, 10, 64, 0.4, \"#ffffff\", 3);      // хвиля burst(x, y, \"#ffffff\", 5);                  // крапки \u003c/code>``\u003c/p>\n\u003cp>Усі числа перенесені один в один, поділені навпіл: у прототипу поле 640 px, у нас 320 юнітів поля (\u003ccode>TO_FIELD = 0.5\u003c/code>). Тобто хвиля r 5→32 за 0.4 с, товщина 1.5→0.75; крапки — п'ять, швидкість 30..210 юн/с, життя 0.4..0.9 с, діаметр 3 + 5·life.\u003c/p>\n\u003ch3>Партикли — не \u003ccode>ParticleEffect\u003c/code>, і ось чому\u003c/h3>\n\u003cp>У проєкті libGDX-емітер \u003cstrong>є цілим конвеєром\u003c/strong>: \u003ccode>ParticleEffectManager\u003c/code>, \u003ccode>AParticleEffectPool\u003c/code> з «губернатором», \u003ccode>AParticleEffectActor\u003c/code>, \u003ccode>assets/particle/confetti.p\u003c/code> і атлас \u003ccode>particles.png\u003c/code> на 386 КБ, який вантажиться на \u003ccode>LoaderScreen\u003c/code>. І при цьому \u003cstrong>жоден ігровий код його не кличе\u003c/strong> — це спадок шаблону, мертвий вантаж.\u003c/p>\n\u003cp>Для п'яти крапок він коштує дорожче, ніж дає:\u003c/p>\n\u003cul>\u003cli>атлас партиклів — \u003cstrong>друга текстура в батчі\u003c/strong>, тобто зайвий bind і draw call поверх усього поля, щокадру поки летить;\u003c/li>\u003cli>\u003ccode>.p\u003c/code>-файл правиться в \u003cstrong>десктопному редакторі\u003c/strong> — числа перестають лежати поруч із прототипом у коді;\u003c/li>\u003cli>свій пул поверх нашого власного пулу акторів.\u003c/li>\u003c/ul>\n\u003cp>Тому \u003ccode>ABurst\u003c/code> малює крапки \u003cstrong>тією самою\u003c/strong> \u003ccode>msdf.circle\u003c/code> / \u003ccode>msdf.glow\u003c/code>, що й сама іскра: батч не рветься, малює власний \u003ccode>draw()\u003c/code> по двох \u003ccode>FloatArray\u003c/code> — нуль алокацій у кадрі. Це точно той самий прийом, що вже працює в \u003ccode>AComet\u003c/code> («актор малює ~14 квадів рівно тоді, коли летить»). Емітер має сенс, коли партиклів сотні й потрібні криві життя — у нас їх п'ять.\u003c/p>\n\u003cp>Одну помилку прототипу при цьому виправлено: там тертя \u003ccode>0.98\u003c/code> \u003cstrong>за кадр\u003c/strong>, тобто прив'язане до FPS — на 120 Гц крапки долітали б удвічі далі. У нас \u003ccode>0.98^(dt·60)\u003c/code>: на 60 Гц один в один, на будь-якому іншому — так само.\u003c/p>\n\u003ch3>Мікрофриз — це не пауза екрана\u003c/h3>\n\u003cp>30 мс, на які завмирає \u003cstrong>світ\u003c/strong> у момент удару: м'яч стоїть на місці, шипи не рухаються, — а ефект удару продовжує анімуватись реальним часом. Прийом старий як аркади: ті самі 30 мс дають відчуття ваги, якого не дає жоден ефект сам по собі.\u003c/p>\n\u003cp>У нас він вийшов в один рядок, бо рушій \u003cstrong>уже\u003c/strong> розділяє два годинники: світовий \u003ccode>wdt\u003c/code> (кут, радіус, спавн, сутності) і реальний \u003ccode>dt\u003c/code> (комбо, бусти, \u003ccode>invuln\u003c/code>). Мікрофриз — це той самий важіль, що й SLOW-буст, лише до нуля:\u003c/p>\n\u003cp>``\u003ccode> val ts = if (hitStopT &gt; 0f) 0f else if (slowT &gt; 0f) 0.6f else 1f \u003c/code>``\u003c/p>\n\u003cp>\u003cstrong>Свідоме відхилення від прототипу.\u003c/strong> Там \u003ccode>freeze\u003c/code> зупиняє і \u003ccode>update\u003c/code>, і \u003ccode>updateFx\u003c/code>, тож хвиля з крапками народжуються і \u003cstrong>примерзають\u003c/strong> на два кадри. Щоб повторити це, довелося б глушити \u003ccode>stage.act()\u003c/code> — ефект тягнув би руку в рендер екрана заради двох кадрів. У нас спалах розходиться \u003cstrong>із застиглої\u003c/strong> картинки, і це виглядає краще, а не гірше.\u003c/p>\n\u003ch3>Перевірено\u003c/h3>\n\u003cul>\u003cli>\u003ccode>sh gradlew assembleDebug\u003c/code> + \u003ccode>:engine:test\u003c/code> — \u003cstrong>17 тестів, 0 падінь\u003c/strong> (новий: \u003ccode>caughtSparkFreezesWorldButNotComboTimer\u003c/code> — спіймана іскра морозить світ рівно на два кадри при 60 FPS, а \u003ccode>comboT\u003c/code> тікає й у ці кадри).\u003c/li>\u003cli>На пристрої (Redmi 220333QNY, 2 px на юніт), хвиля застигнута на \u003ccode>f = 0.5\u003c/code> під замір: радіус \u003cstrong>50.5 px = 25.25 юн\u003c/strong> проти розрахункових 25.25, товщина 3.1 px = 1.53 юн проти 1.5, кільце суцільне — 36 напрямків із 36. Крапки в польоті видно на живому кадрі.\u003c/li>\u003c/ul>\n\u003ch3>Куди лягли нові файли\u003c/h3>\n\u003cp>\u003ccode>game/actors/objects/fx/\u003c/code> — новий підпакет, як уже наявний \u003ccode>objects/decor/\u003c/code>. Чому саме там: хвиля й крапки живуть у координатах \u003cstrong>поля\u003c/strong> (їх садить \u003ccode>aOrbitField.positionAt\u003c/code>, як шипи й геми), але сутностями рушія не є — їх не чіпає \u003ccode>syncEntities\u003c/code>, їх запускає подія. Це те саме, чим уже є \u003ccode>ASpark\u003c/code> у \u003ccode>objects/\u003c/code>, тільки одноразове. У \u003ccode>actors/vfx/\u003c/code> їм не місце: там обгортки над інструментами (\u003ccode>ABlur\u003c/code>, \u003ccode>AMask\u003c/code>, \u003ccode>AMsdfImage\u003c/code>), а не ігрові ефекти.\u003c/p>", "files": [{"path": "engine/src/main/kotlin/com/lewydo/orbitdash/engine/RunEngine.kt", "note": "Мікрофриз: константа, поле, ts = 0, списання таймера, виклик у nearMiss.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 63", "old": "        const val ORB_OFF  = 52f\n        const val ORB_PICK = 32f\n\n        // ── debug-розстановка ──", "new": "        const val ORB_OFF  = 52f\n        const val ORB_PICK = 32f\n\n        /**\n         * МІКРОФРИЗ: світ стоїть стільки секунд у момент спійманої іскри.\n         * 30 мс = два кадри при 60 FPS — рівно стільки, щоб удар відчувся\n         * важким, і замало, щоб здатись лагом. Число з прототипу; там же\n         * удар шипом 0.04 і смерть 0.08 — обидва ще не перенесені.\n         */\n        const val HIT_STOP_NEAR = 0.03f\n\n        // ── debug-розстановка ──", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "1.1"}, {"verb": "add", "where": "біля рядка 268", "old": "    var announceT = 0f;     private set   // «ORBIT III ONLINE», виду\n    var shake     = 0f;     private set   // сила трясіння камери, виду\n\n    private val durMul = 1f + 0.1f * config.upBdur", "new": "    var announceT = 0f;     private set   // «ORBIT III ONLINE», виду\n    var shake     = 0f;     private set   // сила трясіння камери, виду\n    var hitStopT  = 0f;     private set   // мікрофриз: поки > 0, світ стоїть\n\n    private val durMul = 1f + 0.1f * config.upBdur", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "1.2"}, {"verb": "replace", "where": "біля рядка 351", "old": "        // SLOW-MO уповільнює СВІТ (wdt), але не таймери ефектів (dt) —\n        // інакше буст тривав би довше просто тому, що він активний.\n        val ts  = if (slowT > 0f) 0.6f else 1f\n        val wdt = dt * ts\n", "new": "        // SLOW-MO уповільнює СВІТ (wdt), але не таймери ефектів (dt) —\n        // інакше буст тривав би довше просто тому, що він активний.\n        //\n        // МІКРОФРИЗ — той самий важіль, але до нуля: на 30 мс кут, радіус,\n        // спавн і сутності стоять, а таймери (комбо, бусти, invuln) і актори\n        // виду живуть далі. Тому хвиля й партикли встигають розійтись, поки\n        // світ завмер, — саме це й читається як удар.\n        val ts  = if (hitStopT > 0f) 0f else if (slowT > 0f) 0.6f else 1f\n        val wdt = dt * ts\n", "oldMarks": [0, 0, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 0, 0], "id": "1.3"}, {"verb": "add", "where": "біля рядка 375", "old": "        announceT = max(0f, announceT - dt)\n        shake     = max(0f, shake - dt * 1.6f)\n\n        // ORBIT III вмикається з 30-ї секунди — посеред рану, звідси й лерп.", "new": "        announceT = max(0f, announceT - dt)\n        shake     = max(0f, shake - dt * 1.6f)\n        // Списуємо ПІСЛЯ того, як порахований ts: інакше перший же кадр з'їв\n        // би 16 мс із 30 ще до фризу, і замість двох кадрів вийшов би один.\n        hitStopT  = max(0f, hitStopT - dt)\n\n        // ORBIT III вмикається з 30-ї секунди — посеред рану, звідси й лерп.", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 0, 0], "id": "1.4"}, {"verb": "add", "where": "біля рядка 632", "old": "        val b = (5f * comboMult()).toInt()\n        bonus += b\n        listener?.onNearMiss(e, sparkA, b)\n    }\n", "new": "        val b = (5f * comboMult()).toInt()\n        bonus += b\n        hitStop(HIT_STOP_NEAR)\n        listener?.onNearMiss(e, sparkA, b)\n    }\n\n    /**\n     * Зупинити світ на [sec]. Довший активний фриз не вкорочуємо — дві події\n     * в один кадр (іскра і щит) мають дати довшу з двох пауз, а не останню.\n     */\n    private fun hitStop(sec: Float) {\n        hitStopT = max(hitStopT, sec)\n    }\n", "oldMarks": [0, 0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "1.5"}]}, {"path": "engine/src/test/kotlin/com/lewydo/orbitdash/engine/RunEngineTest.kt", "note": "Тест: світ стоїть два кадри, таймер комбо — ні.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 279", "old": "    }\n\n    /** DEBUG · EZ COMBO: прохід повз шип на сусідньому кільці зараховує без іскри; без прапорця — ні. */\n    @Test", "new": "    }\n\n    /**\n     * МІКРОФРИЗ. Спіймана іскра зупиняє СВІТ на 30 мс — рівно два кадри при\n     * 60 FPS (кут і шип стоять), — але таймер комбо тікає реальним часом і в\n     * ці кадри. Якби фриз зупиняв і його, пауза мовчки дарувала б вікно комбо.\n     */\n    @Test\n    fun caughtSparkFreezesWorldButNotComboTimer() {\n        val e = RunEngine(RunEngine.Config(), seed = 1L)\n        check(e.debugSpawnSpike())\n        val spike = e.entities.single()\n\n        var t = 0f\n        while (e.buildResult().nearMisses == 0 && t \u003c 3f) { e.update(1f / 60f); t += 1f / 60f }\n        check(e.buildResult().nearMisses == 1) { \"іскру не спіймано\" }\n        e.tap()                                   // геть від шипа: міряємо фриз, а не смерть\n\n        assertEquals(\"фриз зведено в кадрі спіймання\", RunEngine.HIT_STOP_NEAR, e.hitStopT, 0f)\n\n        var frozen = 0\n        repeat(4) {\n            val angle0  = e.angle\n            val spikeA0 = spike.a\n            val comboT0 = e.comboT\n\n            e.update(1f / 60f)\n\n            if (e.angle == angle0) { frozen++; assertEquals(\"шип теж стоїть\", spikeA0, spike.a, 0f) }\n            assertEquals(\"комбо тікає реальним часом\", comboT0 - 1f / 60f, e.comboT, 1e-4f)\n        }\n\n        assertEquals(\"30 мс = два кадри по 16.7\", 2, frozen)\n        assertEquals(RunEngine.Phase.RUN, e.phase)\n    }\n\n    /** DEBUG · EZ COMBO: прохід повз шип на сусідньому кільці зараховує без іскри; без прапорця — ні. */\n    @Test", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "2.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/fx/AWave.kt", "note": "НОВИЙ. Кільцева хвиля на ProgressRingEffect.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.actors.objects.fx\n\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen\nimport com.lewydo.orbitdash.game.utils.vfx.VfxImage\nimport com.lewydo.orbitdash.game.utils.vfx.effects.ProgressRingEffect\n\n// ─────────────────────────────────────────────────────────────────────────────\n//  AWave — кільцева хвиля в точці події. Порт wave() з прототипу:\n//  радіус росте ease-out, альфа й товщина падають лінійно, життя 0.4 с.\n//\n//  ЧОМУ ProgressRingEffect, А НЕ НОВИЙ ШЕЙДЕР: хвиля — це та сама обводка кола,\n//  що вже малює кільце комбо й щит у ABall, лише з frac = 1 і радіусом, який\n//  їде. Новий .glsl додав би третій однаковий шейдер і ще один перемикач у\n//  батчі; тут же — ті самі юніформи, той самий білий 4×4 регіон під ними.\n//\n//  ЧИСЛА — З ПРОТОТИПУ, ПОДІЛЕНІ НАВПІЛ: у нього поле 640 px, у нас 320 юнітів\n//  поля (TO_FIELD = 0.5). wave(10, 64, 0.4, 3) → r 5..32, товщина 1.5 → 0.75.\n//\n//  Межі актора = КВАД під максимальний радіус (як RING_QUAD у ABall): шейдер\n//  малює всередині квада, тож він мусить умістити r 32 + півтовщини + AA.\n// ─────────────────────────────────────────────────────────────────────────────\nclass AWave(screen: AdvancedScreen) : VfxImage(\n    screen,\n    screen.drawerUtil.getRegion(),\n    ProgressRingEffect(),\n) {\n\n    companion object {\n        /** Квад під хвилю: 2×(R_TO + W_FROM/2 + AA 1.5) з запасом. */\n        const val QUAD = 72f\n\n        private const val R_FROM = 5f      // 10 engine\n        private const val R_TO   = 32f     // 64 engine\n        private const val W_FROM = 1.5f    // 3 engine\n        private const val W_MIN  = 0.75f   // «+1.5» прототипу — хвиста не тоншає\n        private const val LIFE   = 0.4f    // с\n        private const val ALPHA  = 0.9f\n    }\n\n    // ------------------------------------------------------------------------\n    // Field\n    // ------------------------------------------------------------------------\n    private val fx = effect as ProgressRingEffect\n\n    /** Скільки хвиля вже живе. LIFE і більше — актор вільний. */\n    private var time = LIFE\n\n    init {\n        fx.frac = 1f          // повне кільце: заповнення тут ні до чого\n        isVisible = false\n    }\n\n    // ------------------------------------------------------------------------\n    // Lifecycle\n    // ------------------------------------------------------------------------\n\n    /** Запустити хвилю з нуля. Позицію ставить викликач ДО цього. */\n    fun fire() {\n        time = 0f\n        isVisible = true\n        toFront()\n        apply(0f)\n    }\n\n    override fun act(delta: Float) {\n        super.act(delta)\n        if (!isVisible) return\n\n        // Реальний час: світ на 30 мс завмирає (RunEngine.hitStopT), а хвиля —\n        // ні. Саме через це вона й розходиться із застиглого кадру.\n        time += delta\n        if (time >= LIFE) { isVisible = false; return }\n        apply(time / LIFE)\n    }\n\n    // ------------------------------------------------------------------------\n    // Draw\n    // ------------------------------------------------------------------------\n\n    /** [f] — прогрес 0..1. Радіус ease-out quad, решта — лінійно, як у прототипі. */\n    private fun apply(f: Float) {\n        val ease = 1f - (1f - f) * (1f - f)\n        fx.radius    = R_FROM + (R_TO - R_FROM) * ease\n        fx.thickness = W_FROM * (1f - f) + W_MIN\n        color.a      = (1f - f) * ALPHA\n    }\n}", "id": "3.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/fx/ABurst.kt", "note": "НОВИЙ. П'ять крапок, власний draw, адитивно.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.actors.objects.fx\n\nimport com.badlogic.gdx.graphics.GL20\nimport com.badlogic.gdx.graphics.g2d.Batch\nimport com.badlogic.gdx.math.MathUtils\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedGroup\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen\nimport com.lewydo.orbitdash.game.utils.gdxGame\nimport kotlin.math.pow\n\n// ═════════════════════════════════════════════════════════════════════════════\n//  ABurst — розліт білих крапок у точці події. Порт burst() з прототипу.\n//\n//  ЧОМУ НЕ libGDX ParticleEffect: у проєкті він є (ParticleEffectManager,\n//  AParticleEffectPool, particles.atlas), але жоден ігровий код його не кличе,\n//  і не дарма. Партикл-емітер — це свій атлас (ще 386 КБ і ЩЕ ОДНА текстура в\n//  батчі, тобто зайвий draw call поверх msdf), свій .p-файл, який правиться в\n//  десктопному редакторі, і купа параметрів, з яких нам потрібні п'ять чисел.\n//  Тут п'ять крапок із ТОЇ САМОЇ msdf-текстури, що й іскра: батч не рветься,\n//  числа стоять у коді поруч із прототипом, редактор не потрібен.\n//\n//  ЧОМУ ВЛАСНИЙ draw(), А НЕ П'ЯТЬ АКТОРІВ: рівно та сама причина, що в AComet\n//  («актор малює ~14 квадів рівно тоді, коли летить») — п'ять Image'ів довелося\n//  б створювати, класти в лейаут і скидати позиції, а тут два масиви float і\n//  жодної алокації в кадрі.\n//\n//  ЧИСЛА — З ПРОТОТИПУ, ПОДІЛЕНІ НАВПІЛ (поле 640 px → 320 юнітів поля):\n//  швидкість 60..420 → 30..210, розмір 3 + 5·life → 1.5 + 2.5·life радіуса.\n//  Кут — рівномірно 0..360: розліт НЕ залежить від напряму руху, бо іскра\n//  «лопається» на місці, а не бризкає за м'ячем.\n// ═════════════════════════════════════════════════════════════════════════════\nclass ABurst(override val screen: AdvancedScreen) : AdvancedGroup() {\n\n    companion object {\n        /** Стеля крапок в одному бурсті. Іскрі треба 5, решта — запас під інші події. */\n        private const val MAX = 8\n\n        private const val SPEED_MIN = 30f     // 60 engine\n        private const val SPEED_MAX = 210f    // 420 engine\n        private const val LIFE_MIN  = 0.4f\n        private const val LIFE_MAX  = 0.9f\n\n        /** Діаметр крапки = DOT_BASE + DOT_LIFE·life: гасне і стискається разом. */\n        private const val DOT_BASE = 3f       // 6 engine\n        private const val DOT_LIFE = 5f       // 10 engine\n\n        /** Ореол навколо крапки — та сама пропорція, що в ASpark (18 на 6). */\n        private const val GLOW_K = 3f\n        private const val GLOW_A = 0.55f\n\n        /**\n         * Тертя прототипу — 0.98 ЗА КАДР, тобто прив'язане до FPS. Переводимо\n         * в за-секунду через його ж 60 FPS: на 60 виходить один в один, на 120\n         * крапки більше не летять удвічі далі.\n         */\n        private const val DRAG_PER_FRAME = 0.98f\n    }\n\n    // ------------------------------------------------------------------------\n    // Field\n    // ------------------------------------------------------------------------\n    //\n    //  Масиви, а не список об'єктів: бурст спалахує в найгарячіший момент\n    //  кадру, і алокація тут — те саме GC-смикання, від якого пули.\n    //\n    private val px   = FloatArray(MAX)\n    private val py   = FloatArray(MAX)\n    private val vx   = FloatArray(MAX)\n    private val vy   = FloatArray(MAX)\n    private val life = FloatArray(MAX)\n\n    private var count = 0\n\n    /** Регіони беремо ЖИВІ, не копії: після втрати GL-контексту VfxTexture\n     *  перестворює текстуру під тим самим region-об'єктом (див. docs/vfx.md). */\n    private val dot  get() = gdxGame.assetsMsdf.circle\n    private val glow get() = gdxGame.assetsMsdf.glow\n\n    init { isVisible = false }\n\n    // ------------------------------------------------------------------------\n    // Lifecycle\n    // ------------------------------------------------------------------------\n\n    /** Дітей немає — усе малює draw(). */\n    override fun addActorsOnGroup() = Unit\n\n    /** Розсипати [n] крапок із центру актора. Позицію ставить викликач ДО цього. */\n    fun fire(n: Int = 5) {\n        count = n.coerceIn(1, MAX)\n        for (i in 0 until count) {\n            val a  = MathUtils.random(0f, MathUtils.PI2)\n            val sp = MathUtils.random(SPEED_MIN, SPEED_MAX)\n            px[i] = 0f\n            py[i] = 0f\n            vx[i] = MathUtils.cos(a) * sp\n            vy[i] = MathUtils.sin(a) * sp\n            life[i] = MathUtils.random(LIFE_MIN, LIFE_MAX)\n        }\n        isVisible = true\n        toFront()\n    }\n\n    override fun act(delta: Float) {\n        super.act(delta)\n        if (!isVisible) return\n\n        // Реальний час, як і хвиля: мікрофриз зупиняє світ, не ефекти\n        val drag = DRAG_PER_FRAME.pow(delta * 60f)\n        var alive = 0\n\n        for (i in 0 until count) {\n            if (life[i] \u003c= 0f) continue\n            life[i] -= delta\n            if (life[i] \u003c= 0f) continue\n\n            px[i] += vx[i] * delta\n            py[i] += vy[i] * delta\n            vx[i] *= drag\n            vy[i] *= drag\n            alive++\n        }\n\n        if (alive == 0) { count = 0; isVisible = false }\n    }\n\n    // ------------------------------------------------------------------------\n    // Draw\n    // ------------------------------------------------------------------------\n    override fun draw(batch: Batch?, parentAlpha: Float) {\n        super.draw(batch, parentAlpha)\n        if (batch == null || count == 0) return\n\n        val a = color.a * parentAlpha\n        if (a \u003c= 0.004f) return\n\n        // Центр актора — точка події; крапки летять за його межі, як glow у\n        // решті об'єктів поля. Координати — батьківські, тому x/y додаємо.\n        val cx = x + width * 0.5f\n        val cy = y + height * 0.5f\n\n        val prev = batch.packedColor\n        // Адитивне змішування — «lighter» прототипу: крапки складаються зі\n        // світінням шипа, а не перекривають його. Той самий прийом, що в AComet.\n        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE)\n\n        for (i in 0 until count) {\n            val l = life[i]\n            if (l \u003c= 0f) continue\n\n            val d  = DOT_BASE + DOT_LIFE * l\n            val al = a * l.coerceAtMost(1f)\n            val sx = cx + px[i]\n            val sy = cy + py[i]\n\n            val g = d * GLOW_K\n            batch.setColor(1f, 1f, 1f, al * GLOW_A)\n            batch.draw(glow, sx - g * 0.5f, sy - g * 0.5f, g, g)\n\n            batch.setColor(1f, 1f, 1f, al)\n            batch.draw(dot, sx - d * 0.5f, sy - d * 0.5f, d, d)\n        }\n\n        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)\n        batch.packedColor = prev\n    }\n}", "id": "4.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt", "note": "Пули ефектів, showSparkFx, виклик з onNearMiss.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 19", "old": "import com.lewydo.orbitdash.game.actors.objects.ASpark\nimport com.lewydo.orbitdash.game.actors.objects.ASpike\nimport com.lewydo.orbitdash.game.actors.orbit.AOrbitField\nimport com.lewydo.orbitdash.game.actors.label.AMsdfLabel", "new": "import com.lewydo.orbitdash.game.actors.objects.ASpark\nimport com.lewydo.orbitdash.game.actors.objects.ASpike\nimport com.lewydo.orbitdash.game.actors.objects.fx.ABurst\nimport com.lewydo.orbitdash.game.actors.objects.fx.AWave\nimport com.lewydo.orbitdash.game.actors.orbit.AOrbitField\nimport com.lewydo.orbitdash.game.actors.label.AMsdfLabel", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 0, 0], "id": "5.1"}, {"verb": "add", "where": "біля рядка 83", "old": "        private const val FLOAT_LIFE  = 1.11f  // с\n        private const val FLOAT_RISE  = 28f    // юнітів за все життя (25/с × 1.11)\n    }\n", "new": "        private const val FLOAT_LIFE  = 1.11f  // с\n        private const val FLOAT_RISE  = 28f    // юнітів за все життя (25/с × 1.11)\n\n        // ── спалах у точці спійманої іскри (хвиля + крапки) ──\n        //  Обидва живуть менше за напис (0.4 і до 0.9 с проти 1.11), тому їх\n        //  треба менше: три комбо поспіль за 0.4 с — це вже не гра, а EZ COMBO.\n        private const val POOL_WAVES  = 3\n        private const val POOL_BURSTS = 3\n        /** Квад бурста — точка: крапки малюються за межами, як glow в об'єктах. */\n        private const val BURST_SIZE  = 8f\n    }\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.2"}, {"verb": "add", "where": "біля рядка 98", "old": "    // Спливні написи над полем («COMBO x3»). Не пул із поверненням: мітка сама\n    // гасне після 1.11 с, а isVisible каже, що її можна взяти під наступну подію.\n    private val styleFloat by lazy { MsdfStyle(gdxGame.msdfManager, gdxGame.msdfManager.fontInter_Bold, FLOAT_SIZE) }\n    private val aFloats    by lazy {", "new": "    // Спливні написи над полем («COMBO x3»). Не пул із поверненням: мітка сама\n    // гасне після 1.11 с, а isVisible каже, що її можна взяти під наступну подію.\n    // Спалах іскри: хвиля й розліт крапок. Той самий «пул без повернення», що\n    // й написи, — актор сам гасне і сам стає вільним (isVisible == false).\n    private val aWaves  by lazy { List(POOL_WAVES)  { AWave(this)  } }\n    private val aBursts by lazy { List(POOL_BURSTS) { ABurst(this) } }\n\n    private val styleFloat by lazy { MsdfStyle(gdxGame.msdfManager, gdxGame.msdfManager.fontInter_Bold, FLOAT_SIZE) }\n    private val aFloats    by lazy {", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 0, 0], "id": "5.3"}, {"verb": "replace", "where": "біля рядка 308", "old": "        aOrbitField.addActor(aBall)\n\n        // Написи — діти поля: позиція рахується в його ж координатах\n        for (f in aFloats) aOrbitField.addActor(f)\n    }", "new": "        aOrbitField.addActor(aBall)\n\n        // Ефекти й написи — діти поля: позиція рахується в його ж координатах.\n        // Спершу спалах, потім написи: напис має лишатись поверх крапок.\n        for (w in aWaves)  { w.setSize(AWave.QUAD, AWave.QUAD); aOrbitField.addActor(w) }\n        for (b in aBursts) { b.setSize(BURST_SIZE, BURST_SIZE); aOrbitField.addActor(b) }\n        for (f in aFloats) aOrbitField.addActor(f)\n    }", "oldMarks": [0, 0, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "5.4"}, {"verb": "replace", "where": "біля рядка 394", "old": "        override fun onOrbit3Online() { log(\"ORBIT III ONLINE\") }\n        override fun onNearMiss(e: RunEngine.Entity, sparkAngle: Float, bonus: Int) {\n            // Напис стає в точці ІСКРИ, не шипа — саме за цим рушій і віддає кут\n            showFloat(\"COMBO x${engine.multiplier}\", e.rr * RunEngine.TO_FIELD, -sparkAngle)\n            log(\"COMBO! +$bonus\")\n        }", "new": "        override fun onOrbit3Online() { log(\"ORBIT III ONLINE\") }\n        override fun onNearMiss(e: RunEngine.Entity, sparkAngle: Float, bonus: Int) {\n            // Усе — в точці ІСКРИ, не шипа: саме за цим рушій і віддає кут\n            val r = e.rr * RunEngine.TO_FIELD\n            showSparkFx(r, -sparkAngle)\n            showFloat(\"COMBO x${engine.multiplier}\", r, -sparkAngle)\n            log(\"COMBO! +$bonus\")\n        }", "oldMarks": [0, 0, 1, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "5.5"}, {"verb": "add", "where": "біля рядка 490", "old": "    }\n\n    /** HUD читає рушій сам: рахунок, геми рану, комбо, щит. */\n    private fun syncHud() {", "new": "    }\n\n    /**\n     * Спалах на місці спійманої іскри: кільцева хвиля + розліт крапок. Світ у\n     * цю мить стоїть (RunEngine.HIT_STOP_NEAR), тож перші два кадри ефект\n     * розходиться із застиглої картинки — це й читається як удар.\n     *\n     * Немає вільного актора — ефект просто пропускаємо, як і напис: обірвати\n     * чужий спалах на півдорозі гірше, ніж не показати цей.\n     */\n    private fun showSparkFx(radiusDesign: Float, angleDeg: Float) {\n        aWaves.firstOrNull { !it.isVisible }?.let {\n            aOrbitField.positionAt(it, radiusDesign, angleDeg)\n            it.fire()\n        }\n        aBursts.firstOrNull { !it.isVisible }?.let {\n            aOrbitField.positionAt(it, radiusDesign, angleDeg)\n            it.fire()\n        }\n    }\n\n    /** HUD читає рушій сам: рахунок, геми рану, комбо, щит. */\n    private fun syncHud() {", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.6"}, {"verb": "replace", "where": "біля рядка 550", "old": "    /** Новий ран — усі актори назад у пул, id старого рану більше не існують. */\n    private fun releaseAllActors() {\n        // Написи минулого рану дограли б поверх нового поля\n        for (f in aFloats) { f.clearActions(); f.isVisible = false }\n\n        seenIds.clear()", "new": "    /** Новий ран — усі актори назад у пул, id старого рану більше не існують. */\n    private fun releaseAllActors() {\n        // Написи й спалахи минулого рану дограли б поверх нового поля\n        for (f in aFloats) { f.clearActions(); f.isVisible = false }\n        for (w in aWaves)  w.isVisible = false\n        for (b in aBursts) b.isVisible = false\n\n        seenIds.clear()", "oldMarks": [0, 0, 1, 0, 0, 0], "newMarks": [0, 0, 1, 0, 1, 1, 0, 0], "id": "5.7"}]}, {"path": "CLAUDE.md", "note": "Абзац «ще не перенесено» → що тепер є і як воно влаштоване.", "lang": "markdown", "hunks": [{"verb": "replace", "where": "біля рядка 322", "old": "Окремий актор-ореол розглянуто й відкинуто — `docs/decisions.md` §8.\n\nЩе не перенесено з прототипу: хвиля й партикли в точці іскри (зараз там лише напис) і\nмікрофриз 30 мс.\n\n## Перед релізом", "new": "Окремий актор-ореол розглянуто й відкинуто — `docs/decisions.md` §8.\n\n**Спалах у точці іскри** (патч 53) — три речі разом, усі числа з прототипу, поділені навпіл\n(поле 640 px → 320 юнітів): кільцева хвиля `AWave` (r 5→32, 0.4 с, той самий\n`ProgressRingEffect`, що й кільця м'яча), розліт п'яти крапок `ABurst` (власний `draw`,\nадитивно, msdf-крапка й ореол — як в `AComet`) і **мікрофриз 30 мс**.\n\nМікрофриз — `RunEngine.hitStopT`: поки він > 0, `ts = 0`, тобто стоїть **світ** (кут, радіус,\nспавн, сутності), а таймери на `dt` (комбо, бусти, `invuln`) і актори виду живуть далі. Саме\nтому хвиля й крапки встигають розійтись із застиглого кадру — це й читається як удар.\nУ прототипі фриз зупиняв і ефекти теж (вони «примерзали» на два кадри); ми свідомо цього не\nповторюємо — `docs/decisions.md` §8.\n\nПартикли — **не** libGDX `ParticleEffect`: чому саме, там же.\n\nЩе не перенесено з прототипу: звук (`beep` на висоті від комбо) і вібро (`buzz(12)`).\n\n## Перед релізом", "oldMarks": [0, 0, 1, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "6.1"}]}, {"path": "docs/decisions.md", "note": "§8: чому не ParticleEffect і чому фриз не морозить ефекти.", "lang": "markdown", "hunks": [{"verb": "add", "where": "біля рядка 530", "old": "Не перенесено (наступний крок): супутники навколо м'яча при комбо і дуга таймера комбо.\n\n### Кільця й супутники комбо — в `ABall`, а не окремим актором (18 вересня 2026, патч 51)\n", "new": "Не перенесено (наступний крок): супутники навколо м'яча при комбо і дуга таймера комбо.\n\n### Спалах іскри: хвиля, крапки, мікрофриз (19 вересня 2026, патч 53)\n\nОстання незроблена частина комбо з прототипу. Там уся реакція на спіймання — п'ять рядків:\n`freeze = 0.03`, `wave(x, y, 10, 64, 0.4, \"#ffffff\", 3)`, `burst(x, y, \"#ffffff\", 5)`, попап і\nзвук. Перенесено перші три, числа поділені навпіл (у прототипу поле 640 px, у нас 320 юнітів).\n\n**libGDX `ParticleEffect` — ВІДКИНУТО.** У проєкті він є цілим конвеєром (`ParticleEffectManager`,\n`AParticleEffectPool`, `AParticleEffectActor`, `assets/particle/confetti.p`, атлас\n`particles.png` 386 КБ), і жоден ігровий код його не кличе — це спадок шаблону. Для п'яти\nкрапок він коштує: **другу текстуру в батчі** (атлас партиклів ≠ msdf-атлас, тобто зайвий\ndraw call і bind поверх усього поля), `.p`-файл, який правиться в десктопному редакторі\nзамість коду, і шар пулу з «губернатором» поверх нашого власного пулу акторів. Натомість\n`ABurst` малює крапки **тією самою** `msdf.circle` / `msdf.glow`, що й іскра: батч не рветься,\nчисла стоять поруч із прототипом у коментарях, редактор не потрібен. Емітер має сенс там, де\nпартиклів сотні й потрібні криві життя, — це не наш випадок і не стане ним скоро.\n\n**П'ять акторів на бурст — теж відкинуто**, з тієї ж причини, що в `AComet` («актор малює\n~14 квадів рівно тоді, коли летить»): власний `draw()` по двох `FloatArray` не робить жодної\nалокації в кадр, а п'ять `Image` довелося б створювати, класти в лейаут і скидати позиції.\n\n**Тертя прототипу — 0.98 за КАДР**, тобто прив'язане до FPS: на 120 Гц крапки долітали б\nудвічі далі. Переведено в за-секунду через його ж 60 (`0.98^(dt·60)`) — на 60 Гц один в один.\n\n**Мікрофриз зупиняє світ, але не ефекти — свідоме відхилення від прототипу.** Там головний\nцикл під час `freeze` не кличе ні `update`, ні `updateFx`, тож хвиля й крапки народжуються і\n**примерзають** на два кадри. У нас рушій уже розділяє світовий час (`wdt`) і реальний (`dt`),\nтож фриз — це `ts = 0` в одному рядку, де народжується `wdt`: кут, радіус, спавн і сутності\nстоять, а `comboT`, бусти й актори сцени йдуть далі. Повторювати «примерзання» довелося б\nглушінням `stage.act()` — тобто ефект тягнув би руку в рендер екрана заради двох кадрів.\nВигляд від цього кращий: спалах розходиться **із застиглої** картинки, а не разом із нею.\n\nЩо НЕ робили і чому:\n\n- **Свій шейдер під хвилю** — `ProgressRingEffect` із `frac = 1` це вже воно: та сама обводка\n  кола, що в кільці комбо й щиті. Новий `.glsl` дав би третій однаковий шейдер у батчі.\n- **Адитивний блендинг для хвилі** — у прототипі `lighter` на обох ефектах. Крапки малюються\n  власним `draw()`, тож там це безкоштовно (як в `AComet`); хвиля ж іде через `VfxImage`, і\n  перемикання блендингу рвало б батч заради одного тонкого кільця. Біле по темному — різниця\n  на око не читається.\n- **Тримати `bleed`/`density`** — хвиля не має post-ефектів, це чиста обводка в кваді 72.\n\nЗаміряно на пристрої (Redmi 220333QNY, 2 px/юніт, хвиля застигнута на `f = 0.5`): радіус\n50.5 px = **25.25 юн** проти розрахункових 25.25, товщина 3.1 px = 1.53 юн проти 1.5,\nкільце суцільне — 36 напрямків із 36.\n\n### Кільця й супутники комбо — в `ABall`, а не окремим актором (18 вересня 2026, патч 51)\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "7.1"}]}], "state": {"submitted": "2026-09-19T08:57:50.031Z", "hunks": {"1.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "1.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "1.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "1.4": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "1.5": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "2.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "3.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "створено"}}, "4.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "створено"}}, "5.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "5.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "5.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "5.4": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "5.5": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "5.6": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "5.7": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "6.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}, "7.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-19T09:02:08Z", "note": "вставлено"}}}, "result": {"ok": true, "at": "2026-09-19T09:02:08Z", "note": "17 змін «авто» вставлено; assembleDebug пройшов, :engine:test 17/17 (з фриз-тестом); код збігається з лабораторією до байта"}}}</script>
+<script id="app">
+(function () {
+  "use strict";
+
+  const data = JSON.parse(document.getElementById("patch-data").textContent);
+  const state = data.state || (data.state = {});
+  state.hunks = state.hunks || {};
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const fmtTime = (iso) => {
+    try { return new Date(iso).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso || ""; }
+  };
+
+  const allHunks = [];
+  data.files.forEach((f) => f.hunks.forEach((h) => allHunks.push(h)));
+
+  const submitted = () => !!state.submitted;
+  const hasResults = () => allHunks.some((h) => state.hunks[h.id] && state.hunks[h.id].result);
+
+  // Чернетка вибору до «Готово» — лише в цьому браузері; не вдалось — не страшно
+  const DRAFT_KEY = "patch-draft-" + data.id;
+  function loadDraft() {
+    if (submitted()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+      Object.keys(d).forEach((id) => {
+        if (allHunks.some((h) => h.id === id)) state.hunks[id] = { choice: d[id] };
+      });
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try {
+      const d = {};
+      Object.keys(state.hunks).forEach((id) => { if (state.hunks[id].choice) d[id] = state.hunks[id].choice; });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) { /* немає сховища */ }
+  }
+
+  // ── підсвітка: блок цілком (коментарі на кілька рядків), потім різання на рядки ──
+  function highlight(text, lang) {
+    const hl = window.hljs;
+    if (!hl || !lang || !hl.getLanguage(lang)) return null;
+    try { return hl.highlight(text, { language: lang, ignoreIllegals: true }).value; }
+    catch (e) { return null; }
+  }
+  function splitHtmlLines(htmlText) {
+    const lines = [];
+    let cur = "";
+    const open = [];
+    const re = /(<span[^>]*>)|(<\/span>)|(\n)|([^<\n]+|<(?!\/?span)[^>]*>)/g;
+    let m;
+    while ((m = re.exec(htmlText))) {
+      if (m[1]) { open.push(m[1]); cur += m[1]; }
+      else if (m[2]) { open.pop(); cur += m[2]; }
+      else if (m[3]) { cur += "</span>".repeat(open.length); lines.push(cur); cur = open.join(""); }
+      else cur += m[4];
+    }
+    lines.push(cur);
+    return lines;
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function codeBlock(kind, label, text, marks, lang) {
+    const box = el("div", "code " + kind);
+    const head = el("div", "code-label");
+    head.appendChild(el("span", null, label));
+    const btn = el("button", "copy", "Копіювати");
+    btn.type = "button";
+    btn.addEventListener("click", async () => {
+      const ok = await copyText(text);
+      btn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => { btn.textContent = "Копіювати"; }, 1600);
+    });
+    head.appendChild(btn);
+    box.appendChild(head);
+
+    const pre = el("pre");
+    const code = el("code");
+    const hl = highlight(text, lang);
+    const lines = hl != null ? splitHtmlLines(hl) : text.split("\n").map(escapeHtml);
+    code.innerHTML = lines.map((l, i) => {
+      const cls = marks ? (marks[i] ? "ln chg" : "ln ctx") : "ln";
+      return '<span class="' + cls + '">' + (l || "") + "</span>";
+    }).join("");
+    pre.appendChild(code);
+    box.appendChild(pre);
+    return box;
+  }
+
+  const VERB = { replace: "ЗАМІНИТИ", add: "ДОДАТИ", remove: "ВИДАЛИТИ", create: "НОВИЙ ФАЙЛ", delete: "ВИДАЛИТИ ФАЙЛ" };
+
+  function hunkStatus(h) {
+    const s = state.hunks[h.id];
+    if (!s || !s.choice) return el("span", "pill new", "не обрано");
+    if (s.result) {
+      const p = el("span", "pill " + (s.result.ok ? "done" : "fail"), s.result.note || (s.result.ok ? "готово" : "не вийшло"));
+      return p;
+    }
+    if (submitted()) return el("span", "pill pending", s.choice === "auto" ? "Claude вставляє" : "Claude перевіряє");
+    return null;
+  }
+
+  function setChoice(id, choice) {
+    if (submitted()) return;
+    const s = state.hunks[id] || (state.hunks[id] = {});
+    s.choice = s.choice === choice ? null : choice;
+    saveDraft();
+    render();
+  }
+
+  function renderPage() {
+    const root = $("root");
+    const scrollY = window.scrollY;
+    root.textContent = "";
+
+    const head = el("header", "head");
+    const eyebrow = el("div", "eyebrow");
+    eyebrow.appendChild(el("span", "num", "патч " + data.id));
+    if (data.date) eyebrow.appendChild(el("span", null, data.date));
+    head.appendChild(eyebrow);
+    head.appendChild(el("h1", null, data.title));
+    root.appendChild(head);
+
+    // summaryHtml генерує Claude з власного .md — довірений вміст
+    const summary = el("section", "summary");
+    summary.innerHTML = data.summaryHtml || "";
+    root.appendChild(summary);
+
+    const steps = el("section", "steps");
+    const t = el("div", "steps-title");
+    t.appendChild(el("h2", null, "Зміни"));
+    t.appendChild(el("p", null, (data.order ? data.order + " " : "") +
+      "Біля кожної зміни обери, хто її вставляє, потім «Готово» внизу."));
+    steps.appendChild(t);
+
+    const locked = submitted();
+    data.files.forEach((f, fi) => {
+      const card = el("article", "file");
+      const fh = el("div", "file-head");
+      const fid = el("div", "file-id");
+      fid.appendChild(el("span", "idx", String(fi + 1)));
+      fid.appendChild(el("span", "path", f.path));
+      fh.appendChild(fid);
+      if (f.hunks.length > 1) {
+        const all = el("div", "file-all");
+        all.appendChild(el("span", null, "увесь файл:"));
+        [["self", "сам"], ["auto", "авто"]].forEach(([c, label]) => {
+          const b = el("button", "link", label);
+          b.type = "button";
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            f.hunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = c === "self" ? "manual" : "auto"; });
+            saveDraft(); render();
+          });
+          all.appendChild(b);
+        });
+        fh.appendChild(all);
+      }
+      card.appendChild(fh);
+      if (f.note) card.appendChild(el("p", "file-note", f.note));
+
+      f.hunks.forEach((h) => {
+        const hb = el("div", "hunk");
+        const top = el("div", "hunk-top");
+        const ht = el("div", "hunk-title");
+        ht.appendChild(el("span", "hid", h.id));
+        ht.appendChild(el("span", "verb " + h.verb, VERB[h.verb] || h.verb));
+        if (h.where) ht.appendChild(el("span", "where", h.where));
+        const st = hunkStatus(h);
+        if (st && (locked || !state.hunks[h.id] || !state.hunks[h.id].choice)) ht.appendChild(st);
+        top.appendChild(ht);
+
+        const choice = el("div", "choice");
+        choice.setAttribute("role", "group");
+        choice.setAttribute("aria-label", "Хто вставляє зміну " + h.id);
+        const cur = (state.hunks[h.id] || {}).choice;
+        [["manual", "self", "Вставив сам"], ["auto", "auto", "Вставити автоматично"]].forEach(([val, cls, label]) => {
+          const b = el("button", cls, label);
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(cur === val));
+          b.disabled = locked;
+          b.addEventListener("click", () => setChoice(h.id, val));
+          choice.appendChild(b);
+        });
+        top.appendChild(choice);
+        hb.appendChild(top);
+
+        const lang = h.lang || f.lang;
+        if (h.old != null) hb.appendChild(codeBlock("old", h.verb === "add" ? "Знайти (вже є у файлі)" : "Було", h.old, h.oldMarks, lang));
+        if (h.new != null) hb.appendChild(codeBlock("new", h.verb === "create" ? "Файл цілком" : "Стало", h.new, h.newMarks, lang));
+        card.appendChild(hb);
+      });
+      steps.appendChild(card);
+    });
+    root.appendChild(steps);
+    window.scrollTo(0, scrollY);
+  }
+
+  // ── панель ───────────────────────────────────────────────────────────
+  let artifactApi = null;
+  let busy = false;
+
+  function counts() {
+    let self = 0, auto = 0, none = 0;
+    allHunks.forEach((h) => {
+      const c = (state.hunks[h.id] || {}).choice;
+      if (c === "manual") self++; else if (c === "auto") auto++; else none++;
+    });
+    return { self, auto, none };
+  }
+
+  function renderBar() {
+    const status = $("status"), bulk = $("bulk"), send = $("send");
+    status.textContent = ""; bulk.textContent = "";
+    const c = counts();
+
+    if (state.result) {
+      status.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Готово" : "Є проблеми"));
+      status.appendChild(el("span", null, fmtTime(state.result.at)));
+      if (state.result.note) status.appendChild(el("span", "note", state.result.note));
+      send.hidden = true;
+      return;
+    }
+
+    const tally = el("span", "tally", "сам " + c.self + " · авто " + c.auto + (c.none ? " · не обрано " + c.none : ""));
+    status.appendChild(tally);
+
+    if (submitted()) {
+      status.appendChild(el("span", "pill pending", "Надіслано"));
+      status.appendChild(el("span", "note", fmtTime(state.submitted) + " — Claude вставить «авто», перевірить «сам» і збере проєкт"));
+      send.hidden = hasResults();
+      send.className = "send ghost";
+      send.textContent = "Змінити вибір";
+      send.disabled = !artifactApi || busy;
+      return;
+    }
+
+    if (!artifactApi) status.appendChild(el("span", "note", "надіслати можна на claude.ai; інакше напиши в чат"));
+    else if (c.none) status.appendChild(el("span", "note", "обери для кожної зміни"));
+
+    bulk.appendChild(el("span", null, "усе одразу:"));
+    [["manual", "усе сам"], ["auto", "усе автоматично"], [null, "очистити"]].forEach(([val, label]) => {
+      const b = el("button", "link", label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        allHunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = val; });
+        saveDraft(); render();
+      });
+      bulk.appendChild(b);
+    });
+
+    send.hidden = false;
+    send.className = "send";
+    send.textContent = c.none ? "Готово — ще " + c.none + " без вибору" : "Готово — надіслати Claude";
+    send.disabled = !artifactApi || busy || c.none > 0;
+  }
+
+  function render() { renderPage(); renderBar(); }
+
+  // Документ = незмінні частини + новий стан; живий DOM не серіалізуємо
+  const HEAD_EXTRA =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"><\/script>';
+  const BAR =
+    '<div class="bar" id="bar"><div class="bar-inner">' +
+    '<div class="status" id="status"></div><div class="bulk" id="bulk"></div>' +
+    '<button class="send" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app = document.getElementById("app").textContent;
+    const json = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main>" + BAR +
+      "<script id=\"patch-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", "note", code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+
+  $("send").addEventListener("click", () => {
+    if (!artifactApi || busy) return;
+    if (submitted()) {           // «Змінити вибір» — поки Claude не почав
+      if (hasResults()) return;
+      state.submitted = null;
+    } else {
+      if (counts().none > 0) return;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  });
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script>

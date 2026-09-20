@@ -63,6 +63,14 @@ class RunEngine(
         const val ORB_OFF  = 52f
         const val ORB_PICK = 32f
 
+        /**
+         * МІКРОФРИЗ: світ стоїть стільки секунд у момент спійманої іскри.
+         * 30 мс = два кадри при 60 FPS — рівно стільки, щоб удар відчувся
+         * важким, і замало, щоб здатись лагом. Число з прототипу; там же
+         * удар шипом 0.04 і смерть 0.08 — обидва ще не перенесені.
+         */
+        const val HIT_STOP_NEAR = 0.03f
+
         // ── debug-розстановка ──
         /**
          * Мінімальна дуга між debug-сутностями, engine units. 80 = 40 design поля
@@ -267,6 +275,7 @@ class RunEngine(
     var waveT     = 0f;     private set   // PULSE-хвиля, виду
     var announceT = 0f;     private set   // «ORBIT III ONLINE», виду
     var shake     = 0f;     private set   // сила трясіння камери, виду
+    var hitStopT  = 0f;     private set   // мікрофриз: поки > 0, світ стоїть
 
     private val durMul = 1f + 0.1f * config.upBdur
     private var spawnT = 0.8f
@@ -350,7 +359,12 @@ class RunEngine(
 
         // SLOW-MO уповільнює СВІТ (wdt), але не таймери ефектів (dt) —
         // інакше буст тривав би довше просто тому, що він активний.
-        val ts  = if (slowT > 0f) 0.6f else 1f
+        //
+        // МІКРОФРИЗ — той самий важіль, але до нуля: на 30 мс кут, радіус,
+        // спавн і сутності стоять, а таймери (комбо, бусти, invuln) і актори
+        // виду живуть далі. Тому хвиля й партикли встигають розійтись, поки
+        // світ завмер, — саме це й читається як удар.
+        val ts  = if (hitStopT > 0f) 0f else if (slowT > 0f) 0.6f else 1f
         val wdt = dt * ts
 
         time += wdt
@@ -374,6 +388,9 @@ class RunEngine(
         waveT     = max(0f, waveT - dt)
         announceT = max(0f, announceT - dt)
         shake     = max(0f, shake - dt * 1.6f)
+        // Списуємо ПІСЛЯ того, як порахований ts: інакше перший же кадр з'їв
+        // би 16 мс із 30 ще до фризу, і замість двох кадрів вийшов би один.
+        hitStopT  = max(0f, hitStopT - dt)
 
         // ORBIT III вмикається з 30-ї секунди — посеред рану, звідси й лерп.
         // Debug-перемикач забирає це рішення собі до кінця рану
@@ -631,7 +648,16 @@ class RunEngine(
         nearCount++
         val b = (5f * comboMult()).toInt()
         bonus += b
+        hitStop(HIT_STOP_NEAR)
         listener?.onNearMiss(e, sparkA, b)
+    }
+
+    /**
+     * Зупинити світ на [sec]. Довший активний фриз не вкорочуємо — дві події
+     * в один кадр (іскра і щит) мають дати довшу з двох пауз, а не останню.
+     */
+    private fun hitStop(sec: Float) {
+        hitStopT = max(hitStopT, sec)
     }
 
     private fun updateEntities(dt: Float, wdt: Float) {

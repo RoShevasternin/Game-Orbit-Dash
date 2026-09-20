@@ -1,0 +1,23 @@
+{
+  "id": "54",
+  "short": "Без партиклів",
+  "title": "Видалити ParticleEffect і все пов'язане з партиклами",
+  "date": "19.09.2026",
+  "order": "1 → 11. Компілюється після 2; 3–9 — видалення файлів; 10–11 — документація.",
+  "summary_md": "pages/54.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/0a8649ff-3aba-4c69-9408-072177bfb13a/scratchpad/lab54/",
+  "files": [
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/GDXGame.kt", "note": "Два імпорти, particleEffectAll, менеджер і його створення."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/LoaderScreen.kt", "note": "Імпорт, закоментований блок, load() і init()."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/ParticleEffectManager.kt", "note": "ВИДАЛИТИ файл."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/util/ParticleEffectUtil.kt", "note": "ВИДАЛИТИ файл."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/particleEffect/AParticleEffectActor.kt", "note": "ВИДАЛИТИ файл; тека particleEffect/ стане порожньою — прибрати й її."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/particleEffect/AParticleEffectPool.kt", "note": "ВИДАЛИТИ файл."},
+    {"path": "app/src/main/assets/particle/confetti/confetti.p", "note": "ВИДАЛИТИ разом із текою assets/particle/."},
+    {"path": "app/src/main/assets/atlas/particles.atlas", "note": "ВИДАЛИТИ."},
+    {"path": "app/src/main/assets/atlas/particles.png", "note": "ВИДАЛИТИ — 386 КБ, ~5 МБ VRAM."},
+    {"path": "CLAUDE.md", "note": "Новий розділ «Ефекти» перед «Втрата GL-контексту»."},
+    {"path": "docs/decisions.md", "note": "§9 «Ефекти» у кінець файлу."}
+  ]
+}

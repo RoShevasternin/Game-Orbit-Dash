@@ -8,11 +8,9 @@ import com.lewydo.orbitdash.BuildConfig
 import com.lewydo.orbitdash.MainActivity
 import com.lewydo.orbitdash.game.manager.MusicManager
 import com.lewydo.orbitdash.game.manager.NavigationManager
-import com.lewydo.orbitdash.game.manager.ParticleEffectManager
 import com.lewydo.orbitdash.game.manager.SoundManager
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.manager.util.MusicUtil
-import com.lewydo.orbitdash.game.manager.util.ParticleEffectUtil
 import com.lewydo.orbitdash.game.manager.util.SoundUtil
 import com.lewydo.orbitdash.game.manager.util.SpriteUtil
 import com.lewydo.orbitdash.game.manager.util.VibroUtil
@@ -55,9 +53,6 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     val assetsAll    by lazy { SpriteUtil.All() }
     val assetsMsdf   by lazy { SpriteUtil.Msdf() }     // MSDF-фігури; ТІЛЬКИ після initAssets()
 
-    //val particleEffectLoader by lazy { ParticleEffectUtil.Loader() }
-    val particleEffectAll by lazy { ParticleEffectUtil.All() }
-
     // ------------------------------------------------------------------------
     // Audio
     // ------------------------------------------------------------------------
@@ -75,7 +70,6 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     lateinit var spriteManager        : SpriteManager         private set
     lateinit var musicManager         : MusicManager          private set
     lateinit var soundManager         : SoundManager          private set
-    lateinit var particleEffectManager: ParticleEffectManager private set
     lateinit var msdfManager          : MsdfManager           private set
 
     // ------------------------------------------------------------------------
@@ -122,7 +116,6 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         spriteManager         = SpriteManager(assetManager)
         musicManager          = MusicManager(assetManager)
         soundManager          = SoundManager(assetManager)
-        particleEffectManager = ParticleEffectManager(assetManager)
         msdfManager           = MsdfManager()
         navigationManager     = NavigationManager(this)
 

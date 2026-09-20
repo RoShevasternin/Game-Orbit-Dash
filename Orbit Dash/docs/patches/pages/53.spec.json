@@ -1,0 +1,19 @@
+{
+  "id": "53",
+  "short": "Спалах іскри",
+  "title": "Хвиля, крапки й мікрофриз у точці спійманої іскри",
+  "date": "19.09.2026",
+  "order": "1 → 7. Компілюється після 5; 6–7 — документація.",
+  "summary_md": "pages/53.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/0a8649ff-3aba-4c69-9408-072177bfb13a/scratchpad/lab/",
+  "files": [
+    {"path": "engine/src/main/kotlin/com/lewydo/orbitdash/engine/RunEngine.kt", "note": "Мікрофриз: константа, поле, ts = 0, списання таймера, виклик у nearMiss."},
+    {"path": "engine/src/test/kotlin/com/lewydo/orbitdash/engine/RunEngineTest.kt", "note": "Тест: світ стоїть два кадри, таймер комбо — ні."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/fx/AWave.kt", "note": "НОВИЙ. Кільцева хвиля на ProgressRingEffect."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/fx/ABurst.kt", "note": "НОВИЙ. П'ять крапок, власний draw, адитивно."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt", "note": "Пули ефектів, showSparkFx, виклик з onNearMiss."},
+    {"path": "CLAUDE.md", "note": "Абзац «ще не перенесено» → що тепер є і як воно влаштоване."},
+    {"path": "docs/decisions.md", "note": "§8: чому не ParticleEffect і чому фриз не морозить ефекти."}
+  ]
+}

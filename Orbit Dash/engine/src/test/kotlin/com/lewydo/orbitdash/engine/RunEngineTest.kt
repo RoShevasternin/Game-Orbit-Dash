@@ -278,6 +278,40 @@ class RunEngineTest {
         assertEquals(1, e.buildResult().nearMisses)
     }
 
+    /**
+     * МІКРОФРИЗ. Спіймана іскра зупиняє СВІТ на 30 мс — рівно два кадри при
+     * 60 FPS (кут і шип стоять), — але таймер комбо тікає реальним часом і в
+     * ці кадри. Якби фриз зупиняв і його, пауза мовчки дарувала б вікно комбо.
+     */
+    @Test
+    fun caughtSparkFreezesWorldButNotComboTimer() {
+        val e = RunEngine(RunEngine.Config(), seed = 1L)
+        check(e.debugSpawnSpike())
+        val spike = e.entities.single()
+
+        var t = 0f
+        while (e.buildResult().nearMisses == 0 && t < 3f) { e.update(1f / 60f); t += 1f / 60f }
+        check(e.buildResult().nearMisses == 1) { "іскру не спіймано" }
+        e.tap()                                   // геть від шипа: міряємо фриз, а не смерть
+
+        assertEquals("фриз зведено в кадрі спіймання", RunEngine.HIT_STOP_NEAR, e.hitStopT, 0f)
+
+        var frozen = 0
+        repeat(4) {
+            val angle0  = e.angle
+            val spikeA0 = spike.a
+            val comboT0 = e.comboT
+
+            e.update(1f / 60f)
+
+            if (e.angle == angle0) { frozen++; assertEquals("шип теж стоїть", spikeA0, spike.a, 0f) }
+            assertEquals("комбо тікає реальним часом", comboT0 - 1f / 60f, e.comboT, 1e-4f)
+        }
+
+        assertEquals("30 мс = два кадри по 16.7", 2, frozen)
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+    }
+
     /** DEBUG · EZ COMBO: прохід повз шип на сусідньому кільці зараховує без іскри; без прапорця — ні. */
     @Test
     fun ezComboCountsPassOnNeighbourRing() {

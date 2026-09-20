@@ -5,7 +5,6 @@ import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
 import com.lewydo.orbitdash.game.actors.loader.AMainLoader
 import com.lewydo.orbitdash.game.manager.MusicManager
-import com.lewydo.orbitdash.game.manager.ParticleEffectManager
 import com.lewydo.orbitdash.game.manager.SoundManager
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.utils.Block
@@ -124,13 +123,8 @@ class LoaderScreen : AdvancedScreen() {
             //loadableGroupList = mutableListOf(SpriteManager.EnumTextureGroup.LIGHT_C.data)
             //loadGroups()
         }
-//        with(gdxGame.particleEffectManager) {
-//            loadableParticleEffectList = mutableListOf(ParticleEffectManager.EnumParticleEffect.LOADER.data)
-//            load()
-//        }
         gdxGame.assetManager.finishLoading()
         gdxGame.spriteManager.initAll()
-//        gdxGame.particleEffectManager.init()
     }
 
     private fun loadAssets() {
@@ -150,17 +144,12 @@ class LoaderScreen : AdvancedScreen() {
             loadableSoundList = SoundManager.EnumSound.entries.map { it.data }.toMutableList()
             load()
         }
-        with(gdxGame.particleEffectManager) {
-            loadableParticleEffectList = ParticleEffectManager.EnumParticleEffect.entries.map { it.data }.toMutableList()
-            load()
-        }
     }
 
     private fun initAssets() {
         gdxGame.spriteManager.initAll()
         gdxGame.musicManager.init()
         gdxGame.soundManager.init()
-        gdxGame.particleEffectManager.init()
     }
 
     private fun loadingAssets() {
