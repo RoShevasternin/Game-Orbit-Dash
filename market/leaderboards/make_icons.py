@@ -3,7 +3,7 @@
 # Іконки лідербордів Orbit Dash, 512×512 PNG, без сторонніх бібліотек.
 #
 #   python3 make_icons.py [імена]  → best.png, combo.png, crashes.png, rich.png
-#   (combo потребує swift і market/INTER/Inter_28pt-ExtraBold.ttf — див. text_mask.swift)
+#   (combo потребує swift і market/content/tools/fonts/Inter_28pt-ExtraBold.ttf — див. text_mask.swift)
 #
 # Палітра — тема NEON з ThemeManager: фон 0E1024, кільце 2B3060, гравець 00E5FF,
 # гем FFD54A, шип FF3D68. Шип — восьмипроменева зірка з assets/msdf/svg/spike.svg

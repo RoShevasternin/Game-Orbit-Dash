@@ -1,0 +1,713 @@
+<title>Тюнер · Спалах іскри</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@700&display=swap">
+<style id="style">
+/* Лава ефектів: одна тема, темна навмисно — канвас показує поле гри, і світла рамка
+   навколо нього брехала б про контраст. Усі кольори задані явно. */
+:root {
+  --ground:  #0B1020;
+  --surface: #121A2E;
+  --sunk:    #0E1526;
+  --line:    #223052;
+  --ink:     #E6EAF5;
+  --muted:   #8B96B5;
+  --dim:     #5A6688;
+  --accent:  #22E4FF;
+  --accent-ink: #062A33;
+  --warn:    #FFC857;
+  --ok:      #5BE49B;
+  --danger:  #FF3D6E;
+  --field:   #0B1123;
+  --radius:  10px;
+  --font:    "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--ground); color: var(--ink);
+  font: 15px/1.5 var(--font);
+  padding: 0 16px; padding-block: 12px 110px;
+  -webkit-text-size-adjust: 100%;
+}
+.page { max-width: 720px; margin: 0 auto; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+h1 { font-size: 24px; line-height: 1.2; margin: 6px 0 4px; font-weight: 700; text-wrap: balance; }
+h1 + p { margin: 0 0 12px; color: var(--muted); max-width: 60ch; font-size: 14px; }
+h1 + p a { color: var(--accent); text-decoration: none; }
+
+/* Лава ПРИКЛЕЄНА до верху: повзунки їдуть під нею, ефект завжди перед очима */
+.bench {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 3;
+  background: var(--ground); padding: 6px 0 10px;
+  border-bottom: 1px solid var(--line);
+}
+.canvaswrap { position: relative; margin: 0 auto; border-radius: 8px; overflow: hidden; background: var(--field); border: 1px solid var(--line); }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.hud { position: absolute; top: 6px; left: 8px; right: 8px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; font: 500 10px/1 var(--mono); color: var(--muted); }
+.hud .freeze { color: var(--warn); opacity: 0; transition: opacity .12s; }
+.hud .freeze.on { opacity: 1; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; justify-content: center; padding-top: 8px; }
+.toolbar .chip { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--sunk); cursor: pointer; user-select: none; }
+.toolbar .chip input[type=checkbox] { accent-color: var(--accent); margin: 0; }
+.toolbar .chip input[type=range] { width: 92px; accent-color: var(--accent); margin: 0; }
+.toolbar .chip b { font: 500 12px/1 var(--mono); color: var(--ink); min-width: 4.2ch; text-align: right; }
+.tip { text-align: center; font-size: 11.5px; color: var(--dim); padding-top: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--sunk); }
+.seg button { border: 0; border-radius: 0; padding: 7px 11px; font-size: 12.5px; background: transparent; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--line); color: var(--ink); }
+
+button { font: 600 13px/1 var(--font); border: 1px solid var(--line); background: var(--sunk); color: var(--ink); padding: 8px 12px; border-radius: 999px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.primary:disabled { background: var(--line); color: var(--dim); border-color: var(--line); cursor: not-allowed; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.icon { width: 36px; height: 34px; padding: 0; font-size: 14px; }
+
+.groups { display: grid; gap: 14px; margin-top: 14px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px 6px; }
+.group h2 { margin: 0 0 2px; font: 500 13px/1.3 var(--mono); color: var(--accent); }
+.group h2 small { color: var(--dim); font-weight: 400; }
+.group p { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name value" "slider slider" "hint hint"; gap: 2px 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.row .name { grid-area: name; font: 500 13px/1.3 var(--mono); color: var(--ink); }
+.row .name b { color: var(--muted); font-weight: 400; }
+.row .value { grid-area: value; display: flex; align-items: center; justify-content: flex-end; gap: 8px; font: 500 13px/1.3 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.row .value .def { color: var(--dim); font-weight: 400; }
+.row .value .def::before { content: "53: "; }
+.row .value .reset { display: none; width: 26px; height: 26px; padding: 0; font-size: 14px; line-height: 1; border-radius: 50%; color: var(--warn); border-color: var(--warn); background: transparent; }
+.row.changed .value .reset { display: inline-flex; align-items: center; justify-content: center; }
+.row .hint { grid-area: hint; font-size: 12px; color: var(--dim); }
+.row input[type=range] { grid-area: slider; width: 100%; margin: 6px 0 2px; accent-color: var(--accent); }
+.row.bool { grid-template-areas: "name value" "hint hint"; align-items: center; }
+.row.bool input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.row.changed .name { color: var(--warn); }
+.locked .row input { pointer-events: none; opacity: .7; }
+.locked .row .reset { display: none !important; }
+
+.note { margin-top: 14px; }
+.note label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+textarea { width: 100%; min-height: 72px; resize: vertical; font: 14px/1.45 var(--font); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.bar .in { max-width: 720px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.bar .status { flex: 1 1 200px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; min-height: 20px; }
+.pill { font: 600 11px/1 var(--mono); letter-spacing: .04em; padding: 5px 8px; border-radius: 999px; background: var(--line); color: var(--ink); }
+.pill.sent { background: #1E3A5F; color: #9CD0FF; }
+.pill.done { background: #173A2A; color: var(--ok); }
+.pill.fail { background: #4A1F2A; color: var(--danger); }
+.bar .actions { display: flex; gap: 8px; margin-left: auto; }
+
+@media (max-width: 480px) {
+  h1 { font-size: 20px; }
+  .bar .actions { width: 100%; }
+  .bar .actions button { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud .freeze { transition: none; }
+}
+</style>
+
+<main class="page" id="root"></main>
+<div class="bar" id="bar"></div>
+
+<script id="tuner-data" type="application/json">{"id":"53","v":3,"title":"Спалах іскри","patch":"https://claude.ai/artifact/VnP3wYkd7AiYTcXwmVdP3h","state":{"values":{"R_TO":52,"W_FROM":2.5,"COUNT":8,"SPEED_MAX":300,"GLOW_K":4,"GLOW_A":0.8,"LIFE":0.6},"note":"","submitted":null,"result":null}}</script>
+<script id="app">
+(function () {
+  "use strict";
+  const data  = JSON.parse(document.getElementById("tuner-data").textContent);
+  const state = data.state || (data.state = {});
+  state.values = state.values || {};
+
+  // ── Константи Kotlin, які крутимо. def — те, що стоїть у патчі 53. ────────
+  //   Одиниці — юніти ПОЛЯ (320 на ширину поля; на телефоні 720 px це 2 px/юніт).
+  const PARAMS = [
+    { g: "RunEngine", key: "HIT_STOP_NEAR", label: "мікрофриз", min: 0, max: 0.12, step: 0.005, def: 0.03, unit: "с",
+      hint: "скільки стоїть світ після спіймання; 0.03 = два кадри при 60 FPS" },
+
+    { g: "AWave", key: "R_FROM", label: "радіус від", min: 0, max: 30, step: 0.5, def: 5, unit: "юн" },
+    { g: "AWave", key: "R_TO",   label: "радіус до",  min: 10, max: 100, step: 1, def: 32, unit: "юн", hint: "QUAD = 72 вміщає до ~34; більше — Claude збільшить квад" },
+    { g: "AWave", key: "W_FROM", label: "товщина на старті", min: 0.25, max: 6, step: 0.25, def: 1.5, unit: "юн" },
+    { g: "AWave", key: "W_MIN",  label: "товщина наприкінці", min: 0, max: 3, step: 0.25, def: 0.75, unit: "юн" },
+    { g: "AWave", key: "LIFE",   label: "життя", min: 0.1, max: 1.5, step: 0.05, def: 0.4, unit: "с" },
+    { g: "AWave", key: "ALPHA",  label: "альфа на старті", min: 0, max: 1, step: 0.05, def: 0.9, unit: "" },
+    { g: "AWave", key: "ADDITIVE", type: "bool", label: "адитивно (lighter)", def: false,
+      hint: "як у прототипі; у грі це окрема зміна — перемикання блендингу навколо кільця" },
+
+    { g: "ABurst", key: "COUNT",     label: "крапок", min: 1, max: 8, step: 1, def: 5, unit: "", hint: "аргумент fire(n) у GameScreen.showSparkFx; стеля MAX = 8" },
+    { g: "ABurst", key: "SPEED_MIN", label: "швидкість від", min: 0, max: 300, step: 5, def: 30, unit: "юн/с" },
+    { g: "ABurst", key: "SPEED_MAX", label: "швидкість до",  min: 0, max: 500, step: 5, def: 210, unit: "юн/с" },
+    { g: "ABurst", key: "LIFE_MIN",  label: "життя від", min: 0.1, max: 2, step: 0.05, def: 0.4, unit: "с" },
+    { g: "ABurst", key: "LIFE_MAX",  label: "життя до",  min: 0.1, max: 2, step: 0.05, def: 0.9, unit: "с" },
+    { g: "ABurst", key: "DOT_BASE",  label: "діаметр крапки, база", min: 0, max: 10, step: 0.25, def: 3, unit: "юн", hint: "діаметр = DOT_BASE + DOT_LIFE · life" },
+    { g: "ABurst", key: "DOT_LIFE",  label: "діаметр крапки, ×life", min: 0, max: 15, step: 0.25, def: 5, unit: "юн" },
+    { g: "ABurst", key: "GLOW_K",    label: "ореол, × діаметра", min: 1, max: 6, step: 0.25, def: 3, unit: "" },
+    { g: "ABurst", key: "GLOW_A",    label: "ореол, альфа", min: 0, max: 1, step: 0.05, def: 0.55, unit: "" },
+    { g: "ABurst", key: "DRAG_PER_FRAME", label: "тертя за кадр", min: 0.9, max: 1, step: 0.005, def: 0.98, unit: "",
+      hint: "0.98 = як у прототипі при 60 FPS; 1.0 — без тертя" },
+  ];
+  const GROUPS = {
+    RunEngine: { title: "RunEngine", sub: "engine/…/RunEngine.kt", desc: "Мікрофриз: кут, радіус, спавн і шипи стоять; хвиля, крапки й таймер комбо — ні." },
+    AWave:     { title: "AWave",     sub: "actors/objects/fx/AWave.kt", desc: "Кільцева хвиля. Радіус — ease-out, альфа й товщина — лінійно, як wave() у прототипі." },
+    ABurst:    { title: "ABurst",    sub: "actors/objects/fx/ABurst.kt", desc: "Розліт крапок із ореолом. Кут 0..360, швидкість і життя — випадкові в межах." },
+  };
+  const P = {};
+  PARAMS.forEach((p) => { P[p.key] = p; });
+
+  const locked   = () => !!state.submitted;
+  const valOf    = (k) => (k in state.values ? state.values[k] : P[k].def);
+  const isDef    = (k) => valOf(k) === P[k].def;
+  const decimals = (p) => { const s = String(p.step); return s.includes(".") ? s.split(".")[1].length : 0; };
+  const fmt      = (p, v) => (p.type === "bool" ? (v ? "так" : "ні") : Number(v).toFixed(decimals(p)) + (p.unit ? " " + p.unit : ""));
+
+  // ── Чернетка: незбережені повзунки живуть у браузері до «Готово» ──────────
+  const DRAFT_KEY = "tuner-draft-" + data.id;
+  function loadDraft() {
+    if (locked()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      if (!d) return;
+      if (d.values) Object.keys(d.values).forEach((k) => { if (P[k]) state.values[k] = d.values[k]; });
+      if (typeof d.note === "string") state.note = d.note;
+    } catch (e) { /* немає сховища */ }
+  }
+  let draftTimer = 0;
+  function saveDraft() {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ values: state.values, note: state.note || "" })); } catch (e) { /* немає сховища */ }
+    }, 250);
+  }
+
+  // ── DOM ────────────────────────────────────────────────────────────────────
+  const $  = (id) => document.getElementById(id);
+  function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+
+  const reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  function render() {
+    const root = $("root"); root.innerHTML = "";
+    root.appendChild(el("div", "eyebrow", "Тюнер · патч " + data.id));
+    root.appendChild(el("h1", null, data.title));
+    const intro = el("p");
+    intro.append("Повзунки — константи в Kotlin. Те, що обереш, стане числами в ");
+    const a = el("a", null, "патчі " + data.id); a.href = data.patch; a.target = "_blank"; a.rel = "noopener";
+    intro.append(a, ". «Готово» → напиши в чат — Claude перенесе значення один в один.");
+    root.appendChild(intro);
+
+    // лава — приклеєна
+    const bench = el("section", "bench");
+    const wrap = el("div", "canvaswrap"); wrap.id = "wrap";
+    const cv = el("canvas"); cv.id = "cv"; cv.setAttribute("aria-label", "Поле гри: м'яч ловить іскру біля шипа, спалах");
+    wrap.appendChild(cv);
+    const hud = el("div", "hud");
+    const hudL = el("span", null, ""); hudL.id = "hudL";
+    const hudR = el("span", "freeze", "◼ світ стоїть"); hudR.id = "hudR";
+    hud.append(hudL, hudR); wrap.appendChild(hud);
+    bench.appendChild(wrap);
+
+    const tb = el("div", "toolbar");
+    const play = el("button", "icon", "⏸"); play.id = "play"; play.type = "button"; play.title = "Пауза / далі"; play.setAttribute("aria-label", "Пауза");
+    const again = el("button", null, "Ще раз"); again.id = "again"; again.type = "button";
+    const seg = el("div", "seg"); seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Вигляд");
+    [["zoom", "Зум"], ["phone", "Телефон"]].forEach(([m, label]) => {
+      const b = el("button", null, label); b.type = "button"; b.dataset.mode = m; b.setAttribute("aria-pressed", String(mode === m));
+      b.addEventListener("click", () => setMode(m)); seg.appendChild(b);
+    });
+    const spdChip = el("label", "chip"); spdChip.append("швидкість ");
+    const spd = el("input"); spd.type = "range"; spd.id = "spd"; spd.min = 0.05; spd.max = 2; spd.step = 0.05; spd.value = speed;
+    const spdV = el("b", null, "×" + speed.toFixed(2)); spdV.id = "spdV";
+    spd.addEventListener("input", () => { speed = Number(spd.value); spdV.textContent = "×" + speed.toFixed(2); });
+    spdChip.append(spd, spdV);
+    const x1 = el("button", null, "×1"); x1.type = "button"; x1.addEventListener("click", () => { speed = 1; spd.value = 1; spdV.textContent = "×1.00"; });
+    const zChip = el("label", "chip"); zChip.append("зум ");
+    const zIn = el("input"); zIn.type = "range"; zIn.id = "zoomIn"; zIn.min = 1; zIn.max = ZMAX; zIn.step = 0.1; zIn.value = zoom;
+    const zV = el("b", null, "×" + zoom.toFixed(1)); zV.id = "zoomV";
+    zIn.addEventListener("input", () => setZoom(Number(zIn.value)));
+    zChip.append(zIn, zV);
+    const auto = el("label", "chip"); const autoI = el("input"); autoI.type = "checkbox"; autoI.id = "auto"; autoI.checked = !reduced; auto.append(autoI, "повторювати");
+    tb.append(play, again, seg, spdChip, x1, zChip, auto);
+    bench.appendChild(tb);
+    bench.appendChild(el("div", "tip", "Тап по полю — спалах у цій точці · тягни — пересунути · щипок або «зум» — наблизити"));
+    root.appendChild(bench);
+
+    // групи повзунків
+    const groups = el("div", "groups" + (locked() ? " locked" : ""));
+    Object.keys(GROUPS).forEach((g) => {
+      const G = GROUPS[g];
+      const sec = el("section", "group");
+      const h = el("h2", null, G.title + " "); h.appendChild(el("small", null, "· " + G.sub)); sec.appendChild(h);
+      sec.appendChild(el("p", null, G.desc));
+      PARAMS.filter((p) => p.g === g).forEach((p) => sec.appendChild(rowFor(p)));
+      groups.appendChild(sec);
+    });
+    root.appendChild(groups);
+
+    // коментар
+    const note = el("div", "note");
+    const nl = el("label", null, "Коментар для Claude — що не вдалось передати повзунками (необов'язково)"); nl.htmlFor = "note";
+    const ta = el("textarea"); ta.id = "note"; ta.value = state.note || ""; ta.disabled = locked();
+    ta.addEventListener("input", () => { state.note = ta.value; saveDraft(); });
+    note.append(nl, ta); root.appendChild(note);
+
+    renderBar();
+    bindBench();
+  }
+
+  function rowFor(p) {
+    const row = el("div", "row" + (p.type === "bool" ? " bool" : "") + (isDef(p.key) ? "" : " changed"));
+    row.id = "row-" + p.key;
+    const name = el("div", "name"); name.append(p.g + "." + p.key + " "); name.appendChild(el("b", null, "— " + p.label));
+    row.appendChild(name);
+
+    const v = el("div", "value"); v.id = "val-" + p.key; row.appendChild(v);
+    if (p.type === "bool") {
+      const cb = el("input"); cb.type = "checkbox"; cb.id = "in-" + p.key; cb.checked = !!valOf(p.key); cb.disabled = locked();
+      cb.addEventListener("change", () => setVal(p.key, cb.checked));
+      v.appendChild(cb);
+    } else {
+      const inp = el("input"); inp.type = "range"; inp.id = "in-" + p.key;
+      inp.min = p.min; inp.max = p.max; inp.step = p.step; inp.value = valOf(p.key); inp.disabled = locked();
+      inp.addEventListener("input", () => setVal(p.key, Number(inp.value)));
+      row.appendChild(inp);
+    }
+    if (p.hint) row.appendChild(el("div", "hint", p.hint));
+    updateValue(p);
+    return row;
+  }
+  // Значення + дефолт патча + кнопка «↺» — повернути одну константу без тягання повзунка
+  function updateValue(p) {
+    const row = $("row-" + p.key); if (row) row.classList.toggle("changed", !isDef(p.key));
+    const v = $("val-" + p.key); if (!v) return;
+    const keep = v.querySelector("input[type=checkbox]");
+    v.innerHTML = "";
+    if (p.type === "bool") {
+      if (!isDef(p.key)) v.appendChild(el("span", "def", fmt(p, p.def)));
+      if (keep) { keep.checked = !!valOf(p.key); v.appendChild(keep); }
+    } else {
+      v.appendChild(el("span", null, fmt(p, valOf(p.key))));
+      if (!isDef(p.key)) v.appendChild(el("span", "def", fmt(p, p.def)));
+    }
+    const r = el("button", "reset", "↺"); r.type = "button"; r.title = "Повернути значення патча 53"; r.setAttribute("aria-label", "Повернути " + p.key + " до " + fmt(p, p.def));
+    r.addEventListener("click", () => {
+      setVal(p.key, p.def);
+      const inp = $("in-" + p.key); if (inp) { if (p.type === "bool") inp.checked = !!p.def; else inp.value = p.def; }
+    });
+    v.appendChild(r);
+  }
+  function setVal(key, v) {
+    if (locked()) return;
+    if (v === P[key].def) delete state.values[key]; else state.values[key] = v;
+    updateValue(P[key]);
+    saveDraft();
+    renderBar();
+  }
+  function resetAll() {
+    if (locked()) return;
+    state.values = {};
+    PARAMS.forEach((p) => {
+      const inp = $("in-" + p.key); if (inp) { if (p.type === "bool") inp.checked = !!p.def; else inp.value = p.def; }
+      updateValue(p);
+    });
+    saveDraft(); renderBar();
+  }
+
+  // ── Нижня панель ──────────────────────────────────────────────────────────
+  let artifactApi = null, busy = false;
+  const BAR =
+    '<div class="in"><div class="status" id="status"></div><div class="actions">' +
+    '<button id="reset" type="button">Скинути все до 53</button>' +
+    '<button class="primary" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+  function renderBar() {
+    const bar = $("bar");
+    if (!bar.firstChild) {
+      bar.innerHTML = BAR;
+      $("reset").addEventListener("click", resetAll);
+      $("send").addEventListener("click", onSend);
+    }
+    const st = $("status"); st.innerHTML = "";
+    const changed = PARAMS.filter((p) => !isDef(p.key)).length;
+    if (state.result) {
+      st.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Перенесено в патч" : "Є проблеми"));
+      if (state.result.note) st.appendChild(el("span", null, state.result.note));
+    } else if (locked()) {
+      st.appendChild(el("span", "pill sent", "Надіслано"));
+      st.appendChild(el("span", null, fmtTime(state.submitted) + " — напиши в чат, і Claude забере числа"));
+    } else {
+      st.appendChild(el("span", null, changed ? "змінено " + changed + " з " + PARAMS.length : "усе як у патчі 53"));
+      if (!artifactApi) st.appendChild(el("span", null, "· надсилання доступне лише на claude.ai"));
+    }
+    const send = $("send");
+    send.textContent = state.result ? "Перенесено" : locked() ? "Змінити" : "Готово — надіслати Claude";
+    send.disabled = busy || !artifactApi || !!state.result;
+    $("reset").disabled = busy || locked();
+  }
+  function fmtTime(iso) { try { const d = new Date(iso); return d.toLocaleString("uk-UA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } }
+
+  const HEAD_EXTRA =
+    '<meta name="color-scheme" content="dark">' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@700&display=swap">';
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app   = document.getElementById("app").textContent;
+    const json  = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main><div class=\"bar\" id=\"bar\"></div>" +
+      "<script id=\"tuner-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", null, code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+  function onSend() {
+    if (!artifactApi || busy || state.result) return;
+    if (locked()) { state.submitted = null; }          // «Змінити» — поки Claude не забрав
+    else {
+      // фіксуємо ПОВНИЙ набір: і змінені, і дефолтні — Claude читає одну мапу
+      const full = {}; PARAMS.forEach((p) => { full[p.key] = valOf(p.key); });
+      state.values = full;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  }
+
+  // ── Лава: та сама математика, що в RunEngine / AWave / ABurst ─────────────
+  //   Світові координати — юніти ПОЛЯ, початок у центрі поля, Y угору.
+  const RING = 95, RING_OUT = 160;  // радіуси кілець, юн (LAYOUT_2 · 0.5)
+  const ORB_OFF = 26;               // 52 engine · 0.5 — іскра попереду шипа по дузі
+  const OMEGA = 160 * Math.PI / 180;// кутова швидкість м'яча, рад/с
+  const COMBO_WIN = 4;              // comboWin без апгрейдів
+  const FLOAT_LIFE = 1.11, FLOAT_RISE = 28, FLOAT_SIZE = 13;
+  const BALL_D = 22, COMBO_R = 22, COMBO_W = 2.2, SAT_R = 16, SAT_D = 3.3;
+  const SPARK_D = 4, SPARK_GLOW = 12, SPIKE_S = 25, GEM_S = 18;
+
+  // Екран телефона: 360 юн завширшки, 825 заввишки (720×1650 при 2 px/юн);
+  // HUD 70 з полем 17, поле 320 через 36 → центр поля на 283 від верху.
+  const SCREEN_W = 360, SCREEN_H = 825, FIELD_CX = 180, FIELD_CY = 283;
+  const MODES = { zoom: { w: 200, h: 200 }, phone: { w: SCREEN_W, h: SCREEN_H } };
+  let mode = "zoom";
+  let speed = 1, paused = false;
+  const ZMAX = 4;
+  let zoom = 1;                       // ×1 — увесь режим; більше — наближення до іскри
+  const pan = { x: 0, y: 0 };         // зсув камери пальцем, юн
+
+  const thS = Math.PI / 2;                // іскра — на 12-й годині кільця
+  const thK = thS - ORB_OFF / RING;       // шип — за нею по ходу руху
+  const ENTER = thS + 1.25, EXIT = thS - 1.25;
+  const thGem = thS + 0.45;               // гем на зовнішньому кільці — просто для картинки
+
+  // світ
+  let theta = ENTER, orb = true, pause = 0, spikeRot = 0, sparkT = 0, gemRot = 0;
+  let hitStopT = 0, comboT = 0, combo = 0, satSpin = 0, elapsed = 0, worldT = 0;
+  const waves = [], parts = [], floats = [];
+
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const mult = () => Math.min(5, 1 + combo);
+  const onRing = (r, th) => ({ x: r * Math.cos(th), y: r * Math.sin(th) });
+  const sparkP = onRing(RING, thS), spikeP = onRing(RING, thK), gemP = onRing(RING_OUT, thGem);
+
+  // зорі — сталі, у світових координатах (як AStarField, що не рухається)
+  const STARS = (() => { let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; const a = [];
+    for (let i = 0; i < 90; i++) a.push({ x: -180 + r() * 360, y: FIELD_CY - SCREEN_H + r() * SCREEN_H, d: 0.6 + r() * 1.1, a: 0.25 + r() * 0.6 }); return a; })();
+
+  // Реакція на спіймання — у точці (x, y): іскра або тап по полю
+  function fireAt(x, y) {
+    combo = Math.min(8, combo + 1);
+    comboT = COMBO_WIN;
+    hitStopT = Math.max(hitStopT, valOf("HIT_STOP_NEAR"));          // RunEngine.hitStop()
+    waves.push({ t: 0, x, y });                                     // AWave.fire()
+    const n = valOf("COUNT");                                       // ABurst.fire(n)
+    for (let i = 0; i < n; i++) {
+      const a = rnd(0, Math.PI * 2), sp = rnd(valOf("SPEED_MIN"), valOf("SPEED_MAX"));
+      parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rnd(valOf("LIFE_MIN"), valOf("LIFE_MAX")) });
+    }
+    floats.push({ t: 0, text: "COMBO x" + mult(), x, y });          // GameScreen.showFloat()
+  }
+  function catchSpark() { orb = false; fireAt(sparkP.x, sparkP.y); }
+
+  function step(dt) {
+    // Порядок як у RunEngine.update(): спершу ts, потім таймери, потім світ
+    const ts = hitStopT > 0 ? 0 : 1;
+    const wdt = dt * ts;
+    comboT -= dt; if (comboT <= 0) { comboT = 0; combo = 0; }
+    hitStopT = Math.max(0, hitStopT - dt);
+
+    if (pause > 0) { pause -= dt; if (pause <= 0) { theta = ENTER; orb = true; } }
+    else {
+      let prev = theta;
+      theta -= OMEGA * wdt;
+      if (theta < thS - Math.PI * 2) { theta += Math.PI * 2; prev += Math.PI * 2; }   // повне коло
+      if (orb && prev > thS && theta <= thS) catchSpark();
+      if (mode === "zoom") {
+        if (theta < EXIT) pause = $("auto") && $("auto").checked ? 0.5 : Infinity;
+      } else if (!orb && theta < thS - Math.PI) orb = true;            // на тому боці — іскра знову є
+    }
+    spikeRot -= 40 * Math.PI / 180 * wdt;
+    gemRot   -= 120 * Math.PI / 180 * wdt;
+    satSpin  -= 90 * Math.PI / 180 * dt;
+    sparkT += dt; elapsed += dt; worldT += wdt;
+
+    // ефекти — реальним часом
+    const LIFE = valOf("LIFE");
+    for (let i = waves.length - 1; i >= 0; i--) { waves[i].t += dt; if (waves[i].t >= LIFE) waves.splice(i, 1); }
+    const drag = Math.pow(valOf("DRAG_PER_FRAME"), dt * 60);
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i]; p.life -= dt;
+      if (p.life <= 0) { parts.splice(i, 1); continue; }
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= drag; p.vy *= drag;
+    }
+    for (let i = floats.length - 1; i >= 0; i--) { floats[i].t += dt; if (floats[i].t >= FLOAT_LIFE) floats.splice(i, 1); }
+  }
+
+  // ореол = msdf.circle (40) під Layer Blur 22 у фреймі 84: диск r 0.238 і σ 0.112 ширини
+  let glowSprite = null;
+  function makeGlow() {
+    const S = 128, c = document.createElement("canvas"); c.width = S; c.height = S;
+    const g = c.getContext("2d"), img = g.createImageData(S, S), d = img.data;
+    const R0 = 0.238 * S, sig = 0.112 * S;
+    const erfc = (x) => { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? 1 - y : 1 + y; };
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const r = Math.hypot(x + 0.5 - S / 2, y + 0.5 - S / 2);
+      const a = 0.5 * erfc((r - R0) / (sig * Math.SQRT2));
+      const o = (y * S + x) * 4; d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.round(a * 255);
+    }
+    g.putImageData(img, 0, 0);
+    return c;
+  }
+
+  // ── Камера: зум (200 юн навколо іскри) або телефон (весь екран) ───────────
+  let ctx = null, k = 1, W = 0, H = 0;
+  const cam = { cx: 0, cy: 0, w: 200 };
+  function layoutCanvas() {
+    const wrap = $("wrap"); if (!wrap) return;
+    const m = MODES[mode], ar = m.w / m.h;
+    const avail = wrap.parentElement.clientWidth || 360;
+    const maxH = Math.min(window.innerHeight * (mode === "phone" ? 0.52 : 0.44), 460);
+    const w = Math.min(avail, maxH * ar);
+    wrap.style.width = w + "px"; wrap.style.height = (w / ar) + "px";
+    const cv = $("cv");
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    W = w; H = w / ar;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    updateCamera();
+  }
+  // Камера: базовий центр режиму → при зумі їде до іскри (там ефект), плюс зсув пальцем
+  function updateCamera() {
+    const m = MODES[mode];
+    k = W / m.w * zoom;
+    const bx = mode === "phone" ? 0 : sparkP.x, by = mode === "phone" ? FIELD_CY - SCREEN_H / 2 : sparkP.y;
+    const t = (zoom - 1) / (ZMAX - 1);
+    cam.cx = bx + (sparkP.x - bx) * t + pan.x;
+    cam.cy = by + (sparkP.y - by) * t + pan.y;
+    const l = $("hudL"); if (l) l.textContent = (mode === "phone" ? "телефон 360×825 юн" : "вікно 200×200 юн") +
+      " · ×" + zoom.toFixed(1) + " · " + k.toFixed(2) + " px/юн (на пристрої 2)";
+  }
+  function setZoom(z) {
+    zoom = Math.min(ZMAX, Math.max(1, Math.round(z * 10) / 10));
+    if (zoom === 1) { pan.x = 0; pan.y = 0; }
+    const zi = $("zoomIn"); if (zi && Number(zi.value) !== zoom) zi.value = zoom;
+    const zv = $("zoomV"); if (zv) zv.textContent = "×" + zoom.toFixed(1);
+    updateCamera();
+  }
+  function setMode(m) {
+    if (!MODES[m]) return;
+    mode = m; pan.x = 0; pan.y = 0;
+    document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+    if (pause === Infinity) pause = 0.2;
+    layoutCanvas();
+  }
+  const sx = (x) => W / 2 + (x - cam.cx) * k, sy = (y) => H / 2 - (y - cam.cy) * k;
+  const scr = (xs, ys) => ({ x: xs - FIELD_CX, y: FIELD_CY - ys });   // екранні юн (Y вниз) → світові
+
+  function glowAt(x, y, size, alpha) {
+    if (!glowSprite) glowSprite = makeGlow();
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(glowSprite, sx(x) - size * k / 2, sy(y) - size * k / 2, size * k, size * k);
+    ctx.globalAlpha = 1;
+  }
+  function disc(x, y, d, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(sx(x), sy(y), d * k / 2, 0, Math.PI * 2); ctx.fill(); }
+  function ring(x, y, r, width, color, dash) {
+    ctx.strokeStyle = color; ctx.lineWidth = width * k;
+    if (dash) { ctx.setLineDash([dash * k, dash * k]); ctx.lineDashOffset = -worldT * 18 * k; } else ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(sx(x), sy(y), r * k, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  function text(str, x, y, size, color, weight) {
+    ctx.font = (weight || 700) + " " + (size * k) + "px Inter, 'IBM Plex Sans', system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = color;
+    ctx.fillText(str, sx(x), sy(y));
+  }
+
+  function draw() {
+    if (!ctx) return;
+    ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+    ctx.fillStyle = "#0B1123"; ctx.fillRect(0, 0, W, H);
+
+    // зорі й halo поля (aHaloImg, alpha 0.05)
+    STARS.forEach((s) => disc(s.x, s.y, s.d, "rgba(220,228,255," + s.a.toFixed(2) + ")"));
+    disc(0, 0, RING_OUT * 2, "rgba(255,255,255,0.035)");
+
+    // кільця: зовнішнє тихе, внутрішнє активне — з пунктиром зовні (OrbitRingEffect)
+    ring(0, 0, RING_OUT, 10, "rgba(108,99,255,0.10)"); ring(0, 0, RING_OUT, 2.5, "rgba(108,99,255,0.45)");
+    ring(0, 0, RING, 10, "rgba(108,99,255,0.16)");     ring(0, 0, RING, 3, "rgba(108,99,255,0.7)");
+    ring(0, 0, RING + 6, 1.4, "rgba(34,228,255,0.6)", 5);
+
+    // гем на зовнішньому кільці — просто щоб картинка була як у грі
+    glowAt(gemP.x, gemP.y, GEM_S * 2.2, 0.28); ctx.fillStyle = "#FFD23F";
+    ctx.save(); ctx.translate(sx(gemP.x), sy(gemP.y)); ctx.rotate(gemRot);
+    ctx.fillRect(-GEM_S * 0.36 * k, -GEM_S * 0.36 * k, GEM_S * 0.72 * k, GEM_S * 0.72 * k); ctx.restore();
+    disc(gemP.x, gemP.y, 4, "#FFFFFF");
+
+    // шип
+    ctx.fillStyle = "rgba(255,61,110,0.28)"; ctx.beginPath(); ctx.arc(sx(spikeP.x), sy(spikeP.y), SPIKE_S * 0.8 * k, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#FF3D6E"; ctx.beginPath();
+    for (let i = 0; i < 16; i++) {
+      const r = (i % 2 === 0 ? SPIKE_S / 2 : SPIKE_S * 0.22) * k, a = spikeRot + i * Math.PI / 8;
+      const px = sx(spikeP.x) + Math.cos(a) * r, py = sy(spikeP.y) - Math.sin(a) * r;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    disc(spikeP.x, spikeP.y, 4, "#0B1123");
+
+    // іскра — пульс ASpark: стеля = макет, PULSE_MIN 0.74, 6 рад/с
+    if (orb) {
+      const pk = 0.74 + 0.26 * (0.5 + 0.5 * Math.sin(sparkT * 6));
+      glowAt(sparkP.x, sparkP.y, SPARK_GLOW * pk, 0.9);
+      disc(sparkP.x, sparkP.y, SPARK_D * pk, "#FFFFFF");
+    }
+
+    // м'яч + стани комбо (ABall)
+    if (pause < Infinity) {
+      const b = onRing(RING, theta);
+      const bg = ctx.createRadialGradient(sx(b.x), sy(b.y), BALL_D * 0.4 * k, sx(b.x), sy(b.y), BALL_D * 1.1 * k);
+      bg.addColorStop(0, "rgba(34,228,255,0.45)"); bg.addColorStop(1, "rgba(34,228,255,0)");
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(sx(b.x), sy(b.y), BALL_D * 1.1 * k, 0, Math.PI * 2); ctx.fill();
+      disc(b.x, b.y, BALL_D, "#22E4FF");
+      const hx = Math.sin(theta), hy = -Math.cos(theta);           // напрям руху (θ спадає)
+      disc(b.x + hx * 4, b.y + hy * 4, 5, "#FFFFFF");
+      if (combo > 0) {
+        const frac = comboT / COMBO_WIN;
+        ring(b.x, b.y, COMBO_R, COMBO_W, "rgba(255,255,255,0.25)");
+        ctx.strokeStyle = "#FFFFFF"; ctx.lineWidth = COMBO_W * k; ctx.beginPath();
+        ctx.arc(sx(b.x), sy(b.y), COMBO_R * k, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2, false); ctx.stroke();
+        const n = mult() - 1;
+        for (let i = 0; i < n; i++) { const a = satSpin + i * Math.PI * 2 / n; disc(b.x + Math.cos(a) * SAT_R, b.y + Math.sin(a) * SAT_R, SAT_D, "#FFFFFF"); }
+      }
+    }
+
+    // хвиля (AWave)
+    const LIFE = valOf("LIFE"), R0 = valOf("R_FROM"), R1 = valOf("R_TO"), W0 = valOf("W_FROM"), W1 = valOf("W_MIN"), A0 = valOf("ALPHA");
+    ctx.globalCompositeOperation = valOf("ADDITIVE") ? "lighter" : "source-over";
+    waves.forEach((wv) => {
+      const f = wv.t / LIFE, ease = 1 - (1 - f) * (1 - f);
+      ring(wv.x, wv.y, R0 + (R1 - R0) * ease, W0 * (1 - f) + W1, "rgba(255,255,255," + ((1 - f) * A0).toFixed(3) + ")");
+    });
+
+    // крапки (ABurst) — адитивно, як в AComet
+    ctx.globalCompositeOperation = "lighter";
+    const DB = valOf("DOT_BASE"), DL = valOf("DOT_LIFE"), GK = valOf("GLOW_K"), GA = valOf("GLOW_A");
+    parts.forEach((p) => {
+      const d = DB + DL * p.life, al = Math.min(1, p.life);
+      glowAt(p.x, p.y, d * GK, al * GA);
+      disc(p.x, p.y, d, "rgba(255,255,255," + al.toFixed(3) + ")");
+    });
+    ctx.globalCompositeOperation = "source-over";
+
+    // напис (GameScreen.showFloat)
+    floats.forEach((fl) => {
+      const f = fl.t / FLOAT_LIFE;
+      text(fl.text, fl.x, fl.y + FLOAT_RISE * f, FLOAT_SIZE, "rgba(255,255,255," + (1 - f).toFixed(3) + ")");
+    });
+
+    // HUD — лише в режимі телефона (APanelGameHud: геми, рахунок, COMBO xN)
+    if (mode === "phone") {
+      const s1 = scr(FIELD_CX, 62), s2 = scr(36, 62), s3 = scr(FIELD_CX, 102);
+      text(String(Math.floor(worldT * 12)), s1.x, s1.y, 30, "#FFFFFF");
+      text("◆ 0", s2.x + 6, s2.y, 12, "#FFC93C");
+      if (combo > 0) text("COMBO x" + mult(), s3.x, s3.y, 13, "#22E4FF");
+    }
+
+    const fz = $("hudR"); if (fz) fz.classList.toggle("on", hitStopT > 0);
+  }
+
+  let last = 0, raf = 0;
+  function frame(t) {
+    const raw = Math.min(0.05, (t - last) / 1000 || 1 / 60); last = t;
+    if (!paused) step(raw * speed);
+    draw();
+    raf = requestAnimationFrame(frame);
+  }
+  function bindBench() {
+    layoutCanvas();
+    $("play").addEventListener("click", () => { paused = !paused; $("play").textContent = paused ? "▶" : "⏸"; $("play").setAttribute("aria-label", paused ? "Далі" : "Пауза"); });
+    $("again").addEventListener("click", () => { theta = ENTER; orb = true; pause = 0; paused = false; $("play").textContent = "⏸"; });
+    $("auto").addEventListener("change", () => { if ($("auto").checked && pause === Infinity) pause = 0.2; });
+
+    const cv = $("cv"), ptrs = new Map();
+    let down = null, pinch0 = null;
+    const toWorld = (px, py) => ({ x: cam.cx + (px - W / 2) / k, y: cam.cy - (py - H / 2) / k });
+    cv.addEventListener("pointerdown", (e) => {
+      cv.setPointerCapture(e.pointerId);
+      ptrs.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
+      if (ptrs.size === 1) down = { x: e.offsetX, y: e.offsetY, t: performance.now(), moved: false };
+      if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: zoom }; down = null; }
+      e.preventDefault();
+    });
+    cv.addEventListener("pointermove", (e) => {
+      const p = ptrs.get(e.pointerId); if (!p) return;
+      const dx = e.offsetX - p.x, dy = e.offsetY - p.y;
+      p.x = e.offsetX; p.y = e.offsetY;
+      if (ptrs.size === 2 && pinch0) {
+        const [a, b] = [...ptrs.values()];
+        setZoom(pinch0.z * Math.hypot(a.x - b.x, a.y - b.y) / pinch0.d);
+      } else if (ptrs.size === 1 && down) {
+        if (Math.hypot(e.offsetX - down.x, e.offsetY - down.y) > 6) down.moved = true;
+        if (down.moved) { pan.x -= dx / k; pan.y += dy / k; updateCamera(); }
+      }
+    });
+    const up = (e) => {
+      if (down && !down.moved && ptrs.size === 1 && performance.now() - down.t < 400) {
+        const w = toWorld(e.offsetX, e.offsetY); fireAt(w.x, w.y);          // тап — спалах у точці
+      }
+      ptrs.delete(e.pointerId);
+      if (ptrs.size < 2) pinch0 = null;
+      if (ptrs.size === 0) down = null;
+    };
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+    if (raf) cancelAnimationFrame(raf);
+    last = 0; raf = requestAnimationFrame(frame);
+  }
+  window.addEventListener("resize", layoutCanvas);
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script>

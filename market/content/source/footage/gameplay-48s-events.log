@@ -1,0 +1,37 @@
+--------- beginning of main
+         1789829589.215 28510 28510 I OD_LAB  : REC3_MARK
+         1789829589.857 27914 28017 I OD_LAB  : cfg={autopilot=1, orbit3=0}
+         1789829591.829 27914 28017 I OD_LAB  : SPARK combo=2
+         1789829591.830 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829596.660 27914 28017 I OD_LAB  : SPARK combo=3
+         1789829596.661 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829598.477 27914 28017 I OD_LAB  : SPARK combo=4
+         1789829598.478 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829602.377 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829602.378 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829603.310 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829603.310 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829615.312 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829615.313 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829615.977 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829615.978 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829620.727 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829620.728 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829622.193 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829622.194 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829626.211 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829626.212 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829628.360 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829628.361 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829630.327 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829630.328 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829631.461 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829631.462 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829632.644 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829632.644 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829633.311 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829633.311 27914 28017 I OD_LAB  : TAP after spark -> ring 1
+         1789829634.462 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829634.462 27914 28017 I OD_LAB  : TAP after spark -> ring 0
+         1789829635.636 27914 28017 I OD_LAB  : SPARK combo=5
+         1789829635.636 27914 28017 I OD_LAB  : TAP after spark -> ring 1

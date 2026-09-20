@@ -18,7 +18,7 @@ let outPath  = args[5]
 
 let N = 512
 let fontURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    .appendingPathComponent("../INTER/Inter_28pt-ExtraBold.ttf").standardized
+    .appendingPathComponent("../content/tools/fonts/Inter_28pt-ExtraBold.ttf").standardized
 var err: Unmanaged<CFError>?
 CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &err)
 
