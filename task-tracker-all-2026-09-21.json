@@ -1,7 +1,7 @@
 {
   "type": "all-projects",
   "version": "2.0",
-  "exportDate": "2026-09-17T15:58:57.077Z",
+  "exportDate": "2026-09-21T07:53:40.607Z",
   "projects": [
     {
       "id": "proj-imc-seed",
@@ -262,6 +262,12 @@
           "title": "📋 Основа",
           "subtitle": "MVP",
           "icon": "📋"
+        },
+        {
+          "id": 1,
+          "title": "Claude Tuner Particle",
+          "subtitle": "Тепер партікл ЕФФЕКТИ створюємо в Claude Tuner",
+          "icon": "💥"
         }
       ],
       "tasks": [
@@ -307,8 +313,28 @@
         },
         {
           "categoryId": 0,
-          "title": "Liderboard",
+          "title": "Liderboards",
           "details": "<h2>🏆 Лідери</h2>\n\n<ol>\n  <li>\n    <strong>🥇 Лідер за очками</strong><br>\n    Гравець із найбільшою кількістю набраних очок.\n  </li>\n\n  <li>\n    <strong>⚡ Лідер за майстерністю</strong><br>\n    Гравець, який найбільше разів ухилився від шипа на близькій відстані.\n    Рейтинг визначається за загальною кількістю комбо за всі зіграні рани.\n  </li>\n\n  <li>\n    <strong>💀 Антилідер за програшами</strong><br>\n    Гравець із найбільшою кількістю програних ранів.\n    Тут першими опиняються користувачі, які програють найчастіше.\n  </li>\n\n  <li>\n    <strong>💎 Найбагатший гравець</strong><br>\n    Гравець із найбільшою кількістю гемів.\n  </li>\n</ol>"
+        },
+        {
+          "categoryId": 0,
+          "title": "COMBO - ASpark",
+          "details": "Реалізувати механіку комбо як в JSX де біля шипа комбо обєкт який треба взяти і ухилитись бо воно небезпечно близько до шипа, так і отримаєш комбо."
+        },
+        {
+          "categoryId": 0,
+          "title": "COMBO ABall",
+          "details": "реалізувати комбо рогрес і комбо іскри над мячем"
+        },
+        {
+          "categoryId": 0,
+          "title": "Result Panel",
+          "details": "Реалізувати панель результату після смерті."
+        },
+        {
+          "categoryId": 1,
+          "title": "Effect - combo",
+          "details": "Combo Particle Effect реалізувати коли мяч ловить іскру."
         }
       ],
       "completedTasks": {
@@ -319,10 +345,16 @@
         "0-4": true,
         "0-5": true,
         "0-6": true,
-        "0-7": true
+        "0-7": true,
+        "0-8": true,
+        "0-9": true,
+        "0-10": true,
+        "0-11": false,
+        "1-0": true
       },
       "collapsedCategories": {
-        "0": false
+        "0": false,
+        "1": false
       }
     },
     {
@@ -348,6 +380,11 @@
           "categoryId": 0,
           "title": "Пройти Closed Test в Play Market",
           "details": "Викласти закритий тест в маркет\nназбирати 12 тестерів\nпочекати 14 днів"
+        },
+        {
+          "categoryId": 0,
+          "title": "Figma Design",
+          "details": "Згенеруй дизайн в Figma"
         }
       ],
       "completedTasks": {},
