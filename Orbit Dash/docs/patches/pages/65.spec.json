@@ -1,0 +1,68 @@
+{
+ "id": "65",
+ "short": "ARingProgress",
+ "title": "ARingProgress / RingProgressEffect — кільце в родину прогресів",
+ "date": "21.09.2026",
+ "order": "Спершу нові файли (1–3), потім посилання на них (4–8), видалення старих — наприкінці. Компілюється після 10.",
+ "summary_md": "pages/65.summary.md",
+ "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+ "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/f35209ce-b2fd-4288-b833-6381c380d550/scratchpad/lab65/",
+ "files": [
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/progress/RingProgressEffect.kt",
+   "note": "НОВИЙ ФАЙЛ: клас перейменовано з ProgressRingEffect, новий пакет і новий шлях шейдера. Математика не змінена."
+  },
+  {
+   "path": "app/src/main/assets/shader/base/progress/ringProgressFS.glsl",
+   "note": "НОВИЙ ФАЙЛ (був shader/orbit/progressRingFS.glsl). GLSL один в один, змінено лише заголовок-коментар."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/progress/ARingProgress.kt",
+   "note": "НОВИЙ ФАЙЛ: актор-обгортка, пара до ABarProgress. open — бо AWave його успадковує."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ABall.kt",
+   "note": "Два кільця на новому акторі: імпорти, секція Actors, keepScaled, setCombo, шапка."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/fx/AWave.kt",
+   "note": "Успадковує ARingProgress; власне поле fx і effect as більше не потрібні."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/boost/APanelBooster.kt",
+   "note": "Один рядок коментаря — нове ім'я."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/progress/BarProgressEffect.kt",
+   "note": "Один рядок коментаря — нове ім'я двійника."
+  },
+  {
+   "path": "app/src/main/assets/shader/base/progress/barProgressFS.glsl",
+   "note": "Один рядок коментаря — нове ім'я двійника."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/ProgressRingEffect.kt",
+   "note": "ВИДАЛИТИ (переїхав у progress/)."
+  },
+  {
+   "path": "app/src/main/assets/shader/orbit/progressRingFS.glsl",
+   "note": "ВИДАЛИТИ (переїхав у base/progress/). OrbitRingEffect і orbitRingFS.glsl лишаються тут."
+  },
+  {
+   "path": "CLAUDE.md",
+   "note": "Чотири згадки класу."
+  },
+  {
+   "path": "docs/progress.md",
+   "note": "Новий розділ про ARingProgress, таблиці, абзац-виняток прибрано."
+  },
+  {
+   "path": "docs/decisions.md",
+   "note": "Лише імена класів у двох рядках; рішення не переписані."
+  },
+  {
+   "path": "docs/figma-workflow.md",
+   "note": "Тека дизайну: assets/design/ → design/ у корені репозиторію."
+  }
+ ]
+}

@@ -170,6 +170,13 @@ abstract class VfxEffect {
          * u_uvMin, u_uvMax — UV bounds регіону (VfxImage передає автоматично).
          * Для повної текстури: (0,0)..(1,1) → v_localUV = v_texCoords.
          * Для atlas region: нормалізовано до 0..1 в межах регіону.
+         *
+         * ПЕРЕВЕРНУТІ РЕГІОНИ. У VfxTexture.region v > v2 (вміст FBO лежить
+         * догори дном, тому region.flip(false, true)). Діапазон тоді НЕГАТИВНИЙ,
+         * і перевірка «range > 0» відкидала б його на запасний шлях — сирі UV
+         * замість нормалізованих, тобто v_localUV.y = 1 угорі замість 0. Ділення
+         * на негативний діапазон працює саме по собі, тож перевіряємо лише
+         * ВИРОДЖЕНИЙ випадок (range == 0) через abs().
          */
         val BATCH_VERT = """
             #ifdef GL_ES
@@ -193,7 +200,7 @@ abstract class VfxEffect {
                 v_texCoords = a_texCoord0;
                 
                 vec2 uvRange = u_uvMax - u_uvMin;
-                v_localUV    = (uvRange.x > 0.0 && uvRange.y > 0.0) ? (a_texCoord0 - u_uvMin) / uvRange : a_texCoord0;
+                v_localUV    = (abs(uvRange.x) > 0.0 && abs(uvRange.y) > 0.0) ? (a_texCoord0 - u_uvMin) / uvRange : a_texCoord0;
                     
                 gl_Position = u_projTrans * a_position;
             }

@@ -109,13 +109,13 @@ class SpriteUtil {
         //val bg_test    = SpriteManager.EnumTexture.bg_test.data.texture
 
         // ALL
-        val LIGHT    = TextureEmpty //SpriteManager.EnumTexture.LIGHT.data.texture
+        val test_progress = SpriteManager.EnumTexture.test_progress.data.texture
 
         // All | panel
         //val STAR = SpriteManager.EnumTexture.star.data.texture
 
         // All | dialog
-        val DIALOG_CLEAR_GRID = LIGHT
+        val DIALOG_CLEAR_GRID = test_progress
     }
 
 }

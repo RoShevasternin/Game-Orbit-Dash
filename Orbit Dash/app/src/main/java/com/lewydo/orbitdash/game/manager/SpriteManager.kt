@@ -94,7 +94,7 @@ class SpriteManager(var assetManager: AssetManager) {
         //ORBIT_GLOW(TextureData("textures/loader/orbit_glow.png")),
 
 //        // All
-//        LIGHT    (TextureData("textures/all/LIGHT.png")),
+        test_progress(TextureData("textures/test_progress.png")),
 //
 //        // All | panel
 //        PANEL_TOP           (TextureData("textures/all/panel/panel_top.png")),

@@ -42,7 +42,9 @@ float roundedBox(vec2 p, vec2 halfSize, float r) {
 
 void main() {
     vec2 p = (v_localUV - 0.5) * u_size;
-    float d = roundedBox(p, u_size * 0.5, u_radius);
+    // Клемп як у Figma: радіус не більший за половину меншої сторони, інакше
+    // SDF «з'їдає» середини коротких сторін і фігура тоншає замість капсули
+    float d = roundedBox(p, u_size * 0.5, min(u_radius, min(u_size.x, u_size.y) * 0.5));
 
     // Спільний зовнішній контур: 1 усередині, 0 на краю квада.
     // Той самий для заливки й обводки — тому кант заливки неможливий.

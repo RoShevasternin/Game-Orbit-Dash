@@ -6,6 +6,7 @@ import com.lewydo.orbitdash.game.actors.label.AMsdfLabel
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
 import com.lewydo.orbitdash.game.actors.panel.boost.APanelShield
 import com.lewydo.orbitdash.engine.RunEngine
+import com.lewydo.orbitdash.game.actors.panel.boost.APanelBooster
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.font.msdf.MsdfStyle
@@ -50,7 +51,8 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
     private val aGemLbl   = AMsdfLabel("◆ 0", styleBold, 14f, theme.gem)
     private val aComboLbl = AMsdfLabel("", styleBold, 14f, theme.player)
 
-    private val aPanelShield = APanelShield(screen)
+    private val aPanelShield  = APanelShield(screen)
+    private val aPanelBooster = APanelBooster(screen)
 
     // ------------------------------------------------------------------------
     // Lifecycle
@@ -61,6 +63,7 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
         addComboLbl()
 
         addPanelShield()
+        addPanelBooster()
 
         themeSync.sync()
     }
@@ -103,6 +106,7 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
         }
 
         aPanelShield.syncFrom(engine.shieldMax, engine.shield)
+        aPanelBooster.syncFrom(engine)
     }
 
     /** Новий ран — скидаємо кеш, інакше перший кадр покаже старі числа. */
@@ -111,6 +115,8 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
         lastGems  = -1
         lastMult  = -1
         aComboLbl.isVisible = false
+
+        aPanelBooster.reset()
     }
 
     // ------------------------------------------------------------------------
@@ -142,6 +148,12 @@ class APanelGameHud(override val screen: AdvancedScreen) : AConstraintLayout(scr
     private fun addPanelShield() {
         aPanelShield.setSize(64f, 10f)
         add(aPanelShield) { endToEnd(); topToTop(margin = 15f) }
+    }
+
+    /** Під капсулами щита, тим самим правим краєм: обидва — «що зараз на мені». */
+    private fun addPanelBooster() {
+        aPanelBooster.setSize(64f, 31f)
+        add(aPanelBooster) { endToEnd(); topToBottom(aPanelShield, margin = 14f) }
     }
 
     // ------------------------------------------------------------------------

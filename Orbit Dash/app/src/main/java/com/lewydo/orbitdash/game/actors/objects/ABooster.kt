@@ -1,10 +1,10 @@
 package com.lewydo.orbitdash.game.actors.objects
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.engine.RunEngine
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
+import com.lewydo.orbitdash.game.actors.ui.ABoostHex
 import com.lewydo.orbitdash.game.content.info
 import com.lewydo.orbitdash.game.utils.SizeScaler
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
@@ -17,6 +17,11 @@ import kotlin.math.sin
 //  ABooster — підбираний буст. На відміну від гема й спайка, колір НЕ з теми:
 //  кожен тип має власний, і це навмисно — гравець мусить упізнавати буст за
 //  кольором ще до того, як прочитає назву, у будь-якій палітрі.
+//
+//  Сама фігура — ABoostHex, та сама цеглинка, що й у HUD (APanelBooster):
+//  предмет на полі й індикатор нагорі мусять бути впізнавано одним і тим же.
+//  Тут до неї додаються два ореоли з пульсом — це деталь ПОЛЯ, у HUD вона
+//  була б шумом.
 // ─────────────────────────────────────────────────────────────────────────────
 class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
@@ -42,10 +47,9 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
     // ------------------------------------------------------------------------
     // Actors
     // ------------------------------------------------------------------------
-    private val aGlow1 = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_1_ALPHA }
-    private val aGlow2 = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_2_ALPHA }
-    private val aHex = Image(gdxGame.assetsMsdf.boost_hex)
-    private val aIcon = Image(RunEngine.Boost.MAGNET.info.icon)
+    private val aGlow1    = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_1_ALPHA }
+    private val aGlow2    = Image(gdxGame.assetsMsdf.circle).apply { color.a = GLOW_2_ALPHA }
+    private val aBoostHex = ABoostHex(screen)
 
     // ------------------------------------------------------------------------
     // Field
@@ -64,8 +68,7 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
     // ------------------------------------------------------------------------
     override fun addActorsOnGroup() {
         addGlow()
-        addHex()
-        addIcon()
+        addBoostHex()
 
         applyInfo()
     }
@@ -90,30 +93,22 @@ class ABooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) 
         aGlow2.setOrigin(Align.center)
     }
 
-    private fun addHex() {
-        add(aHex) { fillParent() }
-        aHex.setOrigin(Align.center)
-    }
-
-    private fun addIcon() {
-        add(aIcon) { fillParent() }
-        aIcon.setOrigin(Align.center)
+    private fun addBoostHex() {
+        add(aBoostHex) { fillParent() }
     }
 
     // ------------------------------------------------------------------------
     // Apply
     // ------------------------------------------------------------------------
 
-    /** Один запит до каталогу: колір і іконка приходять разом, одним записом. */
+    /** Ореоли — тут, фігура з іконкою — у цеглинці: один запит до каталогу на двох. */
     private fun applyInfo() {
-        val info = boost.info
+        val color = boost.info.color
 
-        aGlow1.setColorRGB(info.color)
-        aGlow2.setColorRGB(info.color)
-        aHex.setColorRGB(info.color)
-        aIcon.setColorRGB(info.color)
+        aGlow1.setColorRGB(color)
+        aGlow2.setColorRGB(color)
 
-        aIcon.drawable = TextureRegionDrawable(info.icon)
+        aBoostHex.boost = boost
     }
 
     /**

@@ -1,0 +1,14 @@
+{
+  "id": "55",
+  "short": "Кольори кілець м'яча",
+  "title": "Кільце комбо — колір м'яча з теми, кільце щита — колір бустера SHIELD",
+  "date": "20.09.2026",
+  "order": "1 → 2. Компілюється після 1; 2 — лише коментар.",
+  "summary_md": "pages/55.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/1149b5e6-2ae5-4818-8a8a-9bbfeaf5b408/scratchpad/lab55/",
+  "files": [
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ABall.kt", "note": "Два імпорти, шапка, константа SHIELD_A, колір щита в addShield(), тема в syncTheme()."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ASpark.kt", "note": "Лише коментар шапки: ореол супутника більше не білий."}
+  ]
+}

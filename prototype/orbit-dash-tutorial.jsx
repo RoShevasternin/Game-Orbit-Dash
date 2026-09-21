@@ -100,6 +100,77 @@ const getGlow = (color) => {
 
 // ================================================================ КОМПОНЕНТ
 
+// DEV: перетягувана панелька поверх канваса. Живе на рівні модуля навмисно:
+// оголошена всередині OrbitDash вона перестворювалась би щорендеру і губила позицію.
+//
+// Позиція зберігається в window.storage під власним ключем — окремо від сейва
+// гравця, щоб дебаг-дані не змішувались із прогресом і не їхали в реліз.
+function DragPanel({ title, x0, y0, children }) {
+  const [pos, setPos] = useState({ x: x0, y: y0 });
+  const drag = useRef(null);
+  const key = "dev-panel:" + title;
+
+  // Прочитати збережену позицію один раз на монтуванні
+  useEffect(() => {
+    let dead = false;
+    (async () => {
+      try {
+        if (!(window.storage && window.storage.get)) return;
+        const r = await window.storage.get(key);
+        if (dead || !r || !r.value) return;
+        const p = JSON.parse(r.value);
+        if (typeof p.x === "number" && typeof p.y === "number") {
+          // Клямп: якщо вікно стало меншим, панелька не має лишитись за екраном
+          setPos({ x: Math.max(0, Math.min(p.x, window.innerWidth - 60)), y: Math.max(0, Math.min(p.y, window.innerHeight - 40)) });
+        }
+      } catch {}
+    })();
+    return () => { dead = true; };
+  }, [key]);
+
+  const save = (p) => { try { window.storage && window.storage.set && window.storage.set(key, JSON.stringify(p)); } catch {} };
+
+  return (
+    <div
+      className="absolute z-30 rounded-xl select-none"
+      style={{ left: pos.x, top: pos.y, background: "rgba(8,10,22,0.86)", border: "1px solid rgba(255,255,255,0.14)", padding: 6, touchAction: "none", backdropFilter: "blur(6px)" }}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div
+        className="font-mono font-bold cursor-move px-1 pb-1"
+        style={{ fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,0.55)" }}
+        onPointerDown={(e) => { drag.current = { sx: e.clientX, sy: e.clientY, px: pos.x, py: pos.y, last: pos }; e.currentTarget.setPointerCapture(e.pointerId); }}
+        onPointerMove={(e) => { const d = drag.current; if (!d) return; const np = { x: d.px + (e.clientX - d.sx), y: d.py + (e.clientY - d.sy) }; d.last = np; setPos(np); }}
+        onPointerUp={() => { const d = drag.current; drag.current = null; if (d) save(d.last); }}
+        onPointerCancel={() => { drag.current = null; }}
+      >
+        ⋮⋮ {title}
+      </div>
+      <div className="flex gap-1 flex-wrap">{children}</div>
+    </div>
+  );
+}
+
+// DEV: квадратна кнопка для панельок
+function DevBtn({ onClick, color, active, children, title }) {
+  return (
+    <button
+      title={title}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={onClick}
+      className="font-mono font-bold rounded-lg"
+      style={{
+        minWidth: 34, height: 34, padding: "0 8px", fontSize: 12,
+        background: active ? color || "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.08)",
+        color: active ? "#0b0d1a" : color || "rgba(255,255,255,0.85)",
+        border: `1px solid ${color || "rgba(255,255,255,0.25)"}`,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function OrbitDash() {
   const [save, setSave] = useState(DEFAULT_SAVE);
   const [screen, setScreen] = useState("menu"); // menu | game | shop | missions | ranks
@@ -115,14 +186,49 @@ export default function OrbitDash() {
   const [storageOk, setStorageOk] = useState(true);
   const [dev, setDev] = useState(false);
   const [devArm, setDevArm] = useState(false);
-  // DEV: EZ COMBO — комбо за будь-яке ухиляння поруч із шипом (чисто тест).
-  // Реф, а не стейт у рушії: переживає рестарти ранів, рушій читає напряму.
-  const ezRef = useRef(false);
-  const [ezDev, setEzDev] = useState(false);
   // DEV: примусова третя орбіта. null = як у грі, true = увімкнена з першої
   // секунди, false = вимкнена й НЕ вмикається на 30-й секунді.
   const o3Ref = useRef(null);
   const [o3Dev, setO3Dev] = useState(null);
+  // DEV: панельки в рані. dbgRef читає рушій щокадру (time — масштаб часу,
+  // hold — м'яч стоїть, а світ живе); dbg — те саме для підписів кнопок.
+  const dbgRef = useRef({ time: 1, hold: false });
+  const [dbg, setDbg] = useState({ time: 1, hold: false });
+  const [devHud, setDevHud] = useState(false);
+  const setDbgBoth = (patch) => { Object.assign(dbgRef.current, patch); setDbg({ ...dbgRef.current }); };
+
+  // DEV: вибір у дебаг-панелях переживає перезапуск. Один запис під власним
+  // ключем — окремо від сейва гравця, як і позиції панельок.
+  const devLoaded = useRef(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        if (window.storage && window.storage.get) {
+          const r = await window.storage.get("dev-settings");
+          if (r && r.value) {
+            const p = JSON.parse(r.value);
+            if (typeof p.devHud === "boolean") setDevHud(p.devHud);
+            // o3: null = AUTO, true/false = примус. Ref рушій читає при старті рану.
+            if (p.o3 === true || p.o3 === false || p.o3 === null) { o3Ref.current = p.o3; setO3Dev(p.o3); }
+            const patch = {};
+            if (p.time === 1 || p.time === 0.25) patch.time = p.time;
+            if (typeof p.hold === "boolean") patch.hold = p.hold;
+            setDbgBoth(patch);
+          }
+        }
+      } catch {}
+      // Лише тепер дозволяємо запис — інакше перший рендер затер би
+      // збережене дефолтами, ще до того як воно встигло прочитатись.
+      devLoaded.current = true;
+    })();
+  }, []);
+  useEffect(() => {
+    if (!devLoaded.current) return;
+    try {
+      window.storage && window.storage.set &&
+        window.storage.set("dev-settings", JSON.stringify({ devHud, o3: o3Dev, time: dbg.time, hold: dbg.hold }));
+    } catch {}
+  }, [devHud, o3Dev, dbg]);
   const [lb, setLb] = useState({ loading: false, rows: null, err: null });
   const [lbBump, setLbBump] = useState(0);
   const [nameDraft, setNameDraft] = useState("");
@@ -636,7 +742,11 @@ export default function OrbitDash() {
         v = st.tutV;
       }
       st.v = v;
-      st.angle = norm(st.angle + v * wdt);
+      // DEV: PAUSE — кут не росте, тож ніщо не наближається; анімації, бусти,
+      // магніт і пульсації працюють як завжди. Спавн теж стоїть, інакше за
+      // хвилину попереду назбирався б частокіл.
+      const hold = dbgRef.current.hold;
+      if (!hold) st.angle = norm(st.angle + v * wdt);
       st.radius += (st.ringR[st.ringIndex] - st.radius) * Math.min(1, 14 * wdt);
       st.invuln = Math.max(0, st.invuln - dt);
       st.squash = Math.max(0, st.squash - dt);
@@ -676,14 +786,14 @@ export default function OrbitDash() {
       st.trail.push({ x: px, y: py });
       if (st.trail.length > 24) st.trail.shift();
 
-      if (!st.tut || st.tutPhase === 4) { // [TUTORIAL] фаза-гра: спавни як у грі, шипи вже з іскрами
+      if (!hold && (!st.tut || st.tutPhase === 4)) { // [TUTORIAL] фаза-гра: спавни як у грі, шипи вже з іскрами
         st.spawnT -= wdt * (st.frenzyT > 0 ? 1.5 : 1);
         if (st.spawnT <= 0) {
           spawn(st.tut && st.tutT4 < 4.5); // одразу після першого комбо — лише геми, щоб відчути x2
           st.spawnT = st.tut ? 0.9 : Math.max(0.5, 1.05 - st.time * 0.011);
         }
       }
-      if (!st.tut) {
+      if (!hold && !st.tut) {
         st.boostT -= wdt;
         if (st.boostT <= 0) { spawnBoost(); st.boostT = Math.max(7, rnd(12, 18) - up.bfreq); }
       }
@@ -722,11 +832,6 @@ export default function OrbitDash() {
             const [nx, ny] = exy(e);
             pop(nx, ny, "CLEAN!", "#ffffff");
             st.ents.splice(i, 1); continue;
-          } else if (!st.tut && ezRef.current && e.orb && Math.abs(st.radius - e.rr) < 145) {
-            // DEV · EZ COMBO: будь-яке ухиляння поруч зараховує комбо (чисто тест)
-            e.orb = false;
-            const [nx, ny] = exy(e);
-            nearMiss(nx, ny);
           }
         }
         e.prevRel = rel;
@@ -1140,6 +1245,87 @@ export default function OrbitDash() {
       ctx.fillStyle = vig;
       ctx.fillRect(0, 0, W, H);
 
+      // ------------------------------------------------ ВІНЬЄТКА БУСТЕРА
+      // Периферійний сигнал: гравець дивиться на м'яч, а стан бустера відчуває
+      // краєм ока. Одночасно активний лише ОДИН тимчасовий бустер (applyBoost
+      // обнуляє всі три таймери), тож кольори ніколи не накладаються.
+      //
+      // Огинаюча спільна для всіх:
+      //   вхід   — сплеск у перші 0.45 с: помітно, що бустер щойно спрацював
+      //   робота — у кожного свій характер анімації
+      //   кінець — в останні 1.6 с блимає, і тим частіше, чим ближче кінець
+      const vb = st.magnetT > 0 ? ["magnet", st.magnetT] : st.frenzyT > 0 ? ["frenzy", st.frenzyT] : st.slowT > 0 ? ["slow", st.slowT] : null;
+      if (vb && (st.state === "run" || st.state === "tutpause")) {
+        const [vbt, vt] = vb;
+        const el    = st.boostTot - vt;                                   // скільки вже діє, с
+        const kin   = Math.min(1, el / 0.12);                             // різкий, але не миттєвий вхід
+        const punch = 1 + 0.8 * Math.max(0, 1 - el / 0.45);               // сплеск на старті
+        const warn  = vt < 1.6 ? 0.35 + 0.65 * Math.abs(Math.cos(st.time * (5 + (1.6 - vt) * 9))) : 1;
+        const kout  = Math.min(1, vt / 0.25);                             // м'яко гасне в останні 0.25 с
+        const I     = kin * punch * warn * kout;
+
+        const edge = (col, a, r0) => {
+          const g = ctx.createRadialGradient(CX, CY, r0, CX, CY, 800);
+          g.addColorStop(0,    rgba(col, 0));
+          g.addColorStop(0.55, rgba(col, a * 0.3));
+          g.addColorStop(1,    rgba(col, a));
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, W, H);
+        };
+
+        if (vbt === "magnet") {
+          // МАГНІТ: кільця стягуються з-за країв екрана до поля — видно, як тягне
+          edge("#c07bff", 0.34 * I, 330);
+          ctx.globalCompositeOperation = "lighter";
+          for (let k = 0; k < 3; k++) {
+            const ph = (st.time * 0.55 + k / 3) % 1;                      // 0 = край, 1 = біля поля
+            ctx.strokeStyle = rgba("#c07bff", Math.sin(ph * Math.PI) * 0.24 * I);
+            ctx.lineWidth = 8 + 22 * (1 - ph);                            // тоншає, наближаючись
+            ctx.beginPath(); ctx.arc(CX, CY, 820 - ph * 400, 0, Math.PI * 2); ctx.stroke();
+          }
+          ctx.globalCompositeOperation = "source-over";
+        } else if (vbt === "frenzy") {
+          // GEM x2: золотий край мерехтить, по периметру спалахують іскорки
+          edge("#ffd54a", 0.26 * I * (0.82 + 0.18 * Math.sin(st.time * 7)), 340);
+          ctx.globalCompositeOperation = "lighter";
+          const m = 26, P = 2 * (W + H - 4 * m);
+          for (let k = 0; k < 16; k++) {
+            const cyc = st.time * 1.2 + k * 0.618;                        // золотий перетин — рівномірні фази
+            const n = Math.floor(cyc), f = cyc - n;
+            // нова точка периметра на кожен цикл — псевдовипадково, без Math.random у кадрі
+            const h = Math.abs(Math.sin((n + 1) * 78.233 + k * 12.9898) * 43758.5453) % 1;
+            let d = h * P, sx, sy;
+            if (d < W - 2 * m) { sx = m + d; sy = m; }
+            else if ((d -= W - 2 * m) < H - 2 * m) { sx = W - m; sy = m + d; }
+            else if ((d -= H - 2 * m) < W - 2 * m) { sx = W - m - d; sy = H - m; }
+            else { d -= W - 2 * m; sx = m; sy = H - m - d; }
+            const a = Math.pow(Math.sin(f * Math.PI), 2) * I;
+            if (a < 0.02) continue;
+            glow(sx, sy, 34, "#ffd54a", a * 0.7);
+            const s = 5 + 7 * a;                                          // чотирипроменева зірочка
+            ctx.strokeStyle = rgba("#fff6d0", a);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sx - s, sy); ctx.lineTo(sx + s, sy);
+            ctx.moveTo(sx, sy - s); ctx.lineTo(sx, sy + s);
+            ctx.stroke();
+          }
+          ctx.globalCompositeOperation = "source-over";
+        } else if (vbt === "slow") {
+          // SLOW-MO: холодний край важко дихає, від поля назовні повільно
+          // розходяться хвилі. st.time сам сповільнений, тож хвилі теж тягнуться.
+          edge("#a0d2ff", 0.34 * I * (0.8 + 0.2 * Math.sin(st.time * 1.6)), 300);
+          ctx.globalCompositeOperation = "lighter";
+          for (let k = 0; k < 2; k++) {
+            const ph = (st.time * 0.28 + k / 2) % 1;                      // 0 = біля поля, 1 = край
+            ctx.strokeStyle = rgba("#dff0ff", (1 - ph) * Math.sin(ph * Math.PI) * 0.22 * I);
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(CX, CY, 330 + ph * 480, 0, Math.PI * 2); ctx.stroke();
+          }
+          ctx.globalCompositeOperation = "source-over";
+        }
+      }
+
       // ------------------------------------------------ HUD
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillStyle = "#ffffff";
@@ -1187,20 +1373,6 @@ export default function OrbitDash() {
         ctx.fillRect(600, 148, 108 * Math.max(0, t / st.boostTot), 5);
       }
 
-      if (st.slowT > 0) {
-        const vg2 = ctx.createRadialGradient(CX, CY, 320, CX, CY, 780);
-        vg2.addColorStop(0, "rgba(160,210,255,0)");
-        vg2.addColorStop(1, "rgba(160,210,255,0.26)");
-        ctx.fillStyle = vg2;
-        ctx.fillRect(0, 0, W, H);
-      }
-      if (st.frenzyT > 0) {
-        const vg3 = ctx.createRadialGradient(CX, CY, 340, CX, CY, 790);
-        vg3.addColorStop(0, "rgba(255,213,74,0)");
-        vg3.addColorStop(1, "rgba(255,213,74,0.16)");
-        ctx.fillStyle = vg3;
-        ctx.fillRect(0, 0, W, H);
-      }
       if (st.flashT > 0) {
         ctx.fillStyle = `rgba(255,255,255,${(st.flashT * 1.6).toFixed(2)})`;
         ctx.fillRect(0, 0, W, H);
@@ -1250,7 +1422,8 @@ export default function OrbitDash() {
 
     let raf, last = 0;
     const frame = (t) => {
-      const dt = Math.min(0.033, (t - last) / 1000 || 0.016);
+      // DEV: TIME ×0.25 масштабує весь кадр — і рушій, і ефекти, і смерть
+      const dt = Math.min(0.033, (t - last) / 1000 || 0.016) * dbgRef.current.time;
       last = t;
       if (st.freeze > 0) {
         st.freeze -= dt;
@@ -1292,6 +1465,8 @@ export default function OrbitDash() {
       tutResume: () => { // [TUTORIAL] після діалогу м'ячик сам ловить іскру
         if (st.state === "tutpause") { st.state = "run"; st.invuln = Math.max(st.invuln, 0.9); st.tutAuto = true; }
       },
+      // DEV: викликати бустер — з'являється попереду на кільці гравця, як звичайний
+      devBoost: (bt) => { if (st.state === "run") spawnBoost(bt); },
       // DEV: перемкнути третю орбіту прямо в рані
       setOrbit3: (on) => {
         if (on) {
@@ -1654,11 +1829,38 @@ export default function OrbitDash() {
           />
         )}
 
-        {/* DEV: нагадування, що ввімкнено тестовий режим комбо */}
-        {screen === "game" && ezDev && !tutActive && (
-          <div className="absolute font-mono font-bold pointer-events-none" style={{ top: 12, left: 12, fontSize: 11, letterSpacing: 2, color: pal.gem, opacity: 0.8 }}>
-            EZ COMBO
-          </div>
+        {/* DEV: панельки в рані — перетягуються за заголовок */}
+        {screen === "game" && devHud && !tutActive && (
+          <>
+            <DragPanel title="BOOST" x0={12} y0={40}>
+              {Object.entries(BOOSTS).map(([key, b]) => (
+                <DevBtn key={key} color={b.color} title={b.label}
+                  onClick={() => { engineRef.current && engineRef.current.devBoost(key); beep(640, 0.06, "sine", 0.06, 120); }}>
+                  {b.ch}
+                </DevBtn>
+              ))}
+            </DragPanel>
+
+            <DragPanel title="DEBUG" x0={12} y0={110}>
+              <DevBtn active={o3Dev === true} title="Третя орбіта"
+                onClick={() => {
+                  const on = o3Ref.current !== true;
+                  o3Ref.current = on; setO3Dev(on);
+                  engineRef.current && engineRef.current.setOrbit3(on);
+                  beep(on ? 760 : 420, 0.08, "sine", 0.08, 200);
+                }}>
+                ORBIT 3
+              </DevBtn>
+              <DevBtn active={dbg.time < 1} title="Час ×0.25"
+                onClick={() => { setDbgBoth({ time: dbgRef.current.time < 1 ? 1 : 0.25 }); beep(dbgRef.current.time < 1 ? 300 : 520, 0.08, "sine", 0.08, 120); }}>
+                ×0.25
+              </DevBtn>
+              <DevBtn active={dbg.hold} color={pal.spike} title="Зупинити м'яч, світ живе"
+                onClick={() => { setDbgBoth({ hold: !dbgRef.current.hold }); beep(dbgRef.current.hold ? 260 : 700, 0.08, "sine", 0.08, 120); }}>
+                PAUSE
+              </DevBtn>
+            </DragPanel>
+          </>
         )}
 
         {/* [TUTORIAL] вихід із туторіалу */}
@@ -1966,17 +2168,8 @@ export default function OrbitDash() {
             <div className="font-mono text-xs tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>DEV PANEL · прибрати в релізі</div>
             <div className="w-full flex flex-col gap-2" style={{ maxWidth: 280 }}>
               <Btn kind="primary" small onClick={startTutorial}>▶ TUTORIAL</Btn>
-              <Btn small onClick={() => { ezRef.current = !ezRef.current; setEzDev(ezRef.current); beep(ezRef.current ? 760 : 420, 0.1, "sine", 0.09, 200); }}>
-                EZ COMBO: {ezDev ? "ON" : "OFF"} · ухилився = комбо
-              </Btn>
-              <Btn small onClick={() => {
-                const on = o3Ref.current !== true;   // перший тап вмикає, далі перемикає
-                o3Ref.current = on;
-                setO3Dev(on);
-                engineRef.current && engineRef.current.setOrbit3 && engineRef.current.setOrbit3(on);
-                beep(on ? 760 : 420, 0.1, "sine", 0.09, 200);
-              }}>
-                ORBIT III: {o3Dev === null ? "AUTO" : o3Dev ? "ON" : "OFF"} · третє кільце
+              <Btn small onClick={() => { setDevHud((v) => !v); beep(devHud ? 420 : 760, 0.1, "sine", 0.09, 200); }}>
+                IN-GAME PANELS: {devHud ? "ON" : "OFF"} · бусти, час, пауза
               </Btn>
               <Btn kind="gem" small onClick={() => { setSave((s) => ({ ...s, gems: s.gems + 10000 })); flash("+10000"); beep(760, 0.15, "sine", 0.1, 300); }}>
                 +10 000 ◆

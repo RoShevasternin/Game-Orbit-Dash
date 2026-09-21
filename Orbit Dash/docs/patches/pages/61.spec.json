@@ -1,0 +1,13 @@
+{
+  "id": "61",
+  "short": "Перевернута маска",
+  "title": "BATCH_VERT відкидав перевернуті регіони — звідси перевернута картинка заповнення",
+  "date": "20.09.2026",
+  "order": "Один файл, дві зміни: коментар і сама умова.",
+  "summary_md": "pages/61.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/1149b5e6-2ae5-4818-8a8a-9bbfeaf5b408/scratchpad/lab61/",
+  "files": [
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/VfxEffect.kt", "note": "BATCH_VERT: умова нормалізації через abs() + пояснення в docs-коментарі."}
+  ]
+}

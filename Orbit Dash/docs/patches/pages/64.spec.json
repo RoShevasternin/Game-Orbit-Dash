@@ -1,0 +1,29 @@
+{
+  "id": "64",
+  "short": "Одна родина прогресів",
+  "title": "ABarProgress / BarProgressEffect — спільні імена й теки для прогресів",
+  "date": "20.09.2026",
+  "order": "Спершу нові файли (1–6), потім посилання (7–8), тоді видалення старих і документи.",
+  "summary_md": "pages/64.summary.md",
+  "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/1149b5e6-2ae5-4818-8a8a-9bbfeaf5b408/scratchpad/lab64/",
+  "files": [
+    {"path": "app/src/main/assets/shader/base/progress/barProgressFS.glsl", "note": "НОВИЙ ФАЙЛ (був shader/base/progressBar/progressBarFS.glsl)."},
+    {"path": "app/src/main/assets/shader/base/progress/maskProgressFS.glsl", "note": "НОВИЙ ФАЙЛ (був shader/base/maskProgress/)."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/progress/BarProgressEffect.kt", "note": "НОВИЙ ФАЙЛ: клас перейменовано з ProgressBarEffect."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/progress/MaskProgressEffect.kt", "note": "НОВИЙ ФАЙЛ: той самий клас, новий пакет."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/progress/ABarProgress.kt", "note": "НОВИЙ ФАЙЛ: клас перейменовано з AProgressBar."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/progress/AMaskProgress.kt", "note": "НОВИЙ ФАЙЛ: той самий клас, новий пакет."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/boost/APanelBooster.kt", "note": "Імпорт і тип."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/TestScreen.kt", "note": "Імпорти, тип, прибраний осиротілий import."},
+    {"path": "app/src/main/assets/shader/base/progressBar/progressBarFS.glsl", "note": "ВИДАЛИТИ (переїхав)."},
+    {"path": "app/src/main/assets/shader/base/maskProgress/maskProgressFS.glsl", "note": "ВИДАЛИТИ (переїхав)."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/ProgressBarEffect.kt", "note": "ВИДАЛИТИ (переїхав)."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/MaskProgressEffect.kt", "note": "ВИДАЛИТИ (переїхав)."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/ui/AProgressBar.kt", "note": "ВИДАЛИТИ (переїхав)."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/ui/AMaskProgress.kt", "note": "ВИДАЛИТИ (переїхав)."},
+    {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/progress/AProgress.kt", "note": "ВИДАЛИТИ — стара чернетка, закоментована цілком. Окремий крок: можеш лишити."},
+    {"path": "docs/progress.md", "note": "Нові імена + розділ «Де що лежить»."},
+    {"path": "CLAUDE.md", "note": "Два рядки з іменем актора."}
+  ]
+}

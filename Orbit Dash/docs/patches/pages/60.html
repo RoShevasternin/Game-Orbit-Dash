@@ -1,0 +1,592 @@
+<title>Патч 60 · MaskProgress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script>
+<style id="style">
+:root {
+  --ground:  #F6F7F9;
+  --surface: #FFFFFF;
+  --sunk:    #F6F8FA;
+  --line:    #E1E4E8;
+  --text:    #1F2328;
+  --muted:   #59636E;
+  --faint:   #A1A9B3;
+  --accent:  #1F6FEB;
+  --accent-ink: #FFFFFF;
+  --gem:     #9A6700;
+  --gem-bg:  #FFF8C5;
+  --spike:   #CF222E;
+  --spike-bg:#FFEBE9;
+  --good:    #1A7F37;
+  --good-bg: #E6FFEC;
+  --shadow:  0 -4px 16px rgba(31, 35, 40, .08);
+  /* підсвітка коду */
+  --syn-kw:   #CF222E;
+  --syn-type: #953800;
+  --syn-fn:   #8250DF;
+  --syn-str:  #0A3069;
+  --syn-num:  #0550AE;
+  --syn-com:  #6E7781;
+  --syn-meta: #953800;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0D1117;
+    --surface: #151B23;
+    --sunk:    #0D1117;
+    --line:    #30363D;
+    --text:    #E6EDF3;
+    --muted:   #9198A1;
+    --faint:   #5C646E;
+    --accent:  #4493F8;
+    --accent-ink: #FFFFFF;
+    --gem:     #D29922;
+    --gem-bg:  rgba(187, 128, 9, .15);
+    --spike:   #F85149;
+    --spike-bg:rgba(248, 81, 73, .12);
+    --good:    #3FB950;
+    --good-bg: rgba(46, 160, 67, .14);
+    --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+    --syn-kw:   #FF7B72;
+    --syn-type: #FFA657;
+    --syn-fn:   #D2A8FF;
+    --syn-str:  #A5D6FF;
+    --syn-num:  #79C0FF;
+    --syn-com:  #8B949E;
+    --syn-meta: #FFA657;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0D1117;
+  --surface: #151B23;
+  --sunk:    #0D1117;
+  --line:    #30363D;
+  --text:    #E6EDF3;
+  --muted:   #9198A1;
+  --faint:   #5C646E;
+  --accent:  #4493F8;
+  --accent-ink: #FFFFFF;
+  --gem:     #D29922;
+  --gem-bg:  rgba(187, 128, 9, .15);
+  --spike:   #F85149;
+  --spike-bg:rgba(248, 81, 73, .12);
+  --good:    #3FB950;
+  --good-bg: rgba(46, 160, 67, .14);
+  --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+  --syn-kw:   #FF7B72;
+  --syn-type: #FFA657;
+  --syn-fn:   #D2A8FF;
+  --syn-str:  #A5D6FF;
+  --syn-num:  #79C0FF;
+  --syn-com:  #8B949E;
+  --syn-meta: #FFA657;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: 15px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.page { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 190px; }
+h1, h2, h3 { font-family: "IBM Plex Sans", system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code {
+  font-size: .88em; background: var(--sunk); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+/* ── шапка ─────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em; border-radius: 999px; padding: 2px 10px;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.new     { color: var(--muted); background: var(--sunk); border: 1px solid var(--line); }
+.pill.pending { color: var(--gem);   background: var(--gem-bg); }
+.pill.done    { color: var(--good);  background: var(--good-bg); }
+.pill.fail    { color: var(--spike); background: var(--spike-bg); }
+
+/* ── пояснення ─────────────────────────────────────── */
+.summary { max-width: 68ch; }
+.summary > * + * { margin-top: 12px; }
+.summary h3 { margin-top: 22px; }
+.summary ul { padding-left: 20px; margin-block: 8px; }
+.summary li + li { margin-top: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.summary table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.summary th, .summary td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.summary tr:last-child td { border-bottom: 0; }
+.summary th { font-weight: 600; background: var(--sunk); }
+
+/* ── кроки ─────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 26px; margin-top: 30px; }
+.steps-title { display: flex; flex-direction: column; gap: 4px; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.file { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.file-head {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--sunk); border-bottom: 1px solid var(--line);
+}
+.file-id { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.file-id .idx { font-family: "JetBrains Mono", monospace; color: var(--muted); font-weight: 500; flex: none; }
+.file-id .path { font-family: "JetBrains Mono", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.file-all { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px; font-size: 12px;
+}
+.link:disabled { color: var(--faint); cursor: default; text-decoration: none; }
+.file-note { padding: 10px 14px 0; margin: 0; color: var(--muted); font-size: 13px; }
+
+.hunk { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hunk + .hunk { border-top: 1px dashed var(--line); }
+.hunk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hunk-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; }
+.hid { font-family: "JetBrains Mono", monospace; color: var(--muted); }
+.verb { font-weight: 600; letter-spacing: .06em; font-size: 12px; }
+.verb.replace { color: var(--gem); }
+.verb.add, .verb.create { color: var(--good); }
+.verb.remove, .verb.delete { color: var(--spike); }
+.where { color: var(--muted); }
+
+/* вибір на зміну */
+.choice { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.choice button {
+  background: var(--surface); color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer;
+  font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; font-size: 12.5px;
+}
+.choice button + button { border-left: 1px solid var(--line); }
+.choice button[aria-pressed="true"].self { background: var(--text); color: var(--surface); }
+.choice button[aria-pressed="true"].auto { background: var(--accent); color: var(--accent-ink); }
+.choice button:disabled { cursor: default; }
+.choice button:disabled:not([aria-pressed="true"]) { opacity: .45; }
+
+/* код */
+.code { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+.code-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 4px 10px;
+}
+.code-label { color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line); }
+.code.old .code-label span:first-child::before { content: "● "; color: var(--spike); }
+.code.new .code-label span:first-child::before { content: "● "; color: var(--good); }
+.code pre {
+  margin: 0; padding: 8px 0; overflow-x: auto; background: var(--sunk);
+  font-size: 12.5px; line-height: 1.6; tab-size: 4;
+}
+.ln { display: block; white-space: pre; padding-right: 14px; min-height: 1.6em; }
+.ln::before { content: " "; display: inline-block; width: 26px; text-align: center; color: var(--faint); user-select: none; }
+.ln.ctx { opacity: .6; }
+.code.old .ln.chg { background: var(--spike-bg); }
+.code.old .ln.chg::before { content: "−"; color: var(--spike); }
+.code.new .ln.chg { background: var(--good-bg); }
+.code.new .ln.chg::before { content: "+"; color: var(--good); }
+.copy {
+  font: 500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .04em;
+  color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  padding: 4px 8px; cursor: pointer;
+}
+
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syn-kw); }
+.hljs-type, .hljs-title.class_, .hljs-class .hljs-title { color: var(--syn-type); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--syn-fn); }
+.hljs-string, .hljs-char { color: var(--syn-str); }
+.hljs-number { color: var(--syn-num); }
+.hljs-comment, .hljs-doctag, .hljs-quote { color: var(--syn-com); font-style: italic; }
+.hljs-meta, .hljs-annotation, .hljs-variable, .hljs-template-variable { color: var(--syn-meta); }
+
+/* ── панель ────────────────────────────────────────── */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.status { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.status .note { color: var(--muted); }
+.tally { font-variant-numeric: tabular-nums; }
+.bulk { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.bulk .link { font-size: 13px; }
+.send {
+  font: 600 15px/1.2 "IBM Plex Sans", system-ui, sans-serif;
+  border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.send.ghost { background: transparent; color: var(--accent); }
+.send:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 420px) { h1 { font-size: 22px; } .choice button { padding: 7px 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .send, .choice button { transition: transform .08s ease, background-color .12s ease; }
+  .send:active:not(:disabled) { transform: scale(.98); }
+}
+</style>
+
+<main class="page" id="root"></main>
+
+<div class="bar" id="bar"><div class="bar-inner">
+  <div class="status" id="status"></div>
+  <div class="bulk" id="bulk"></div>
+  <button class="send" id="send" type="button">Готово — надіслати Claude</button>
+</div></div>
+
+<script id="patch-data" type="application/json">{"id": "60", "title": "MaskProgressEffect + AMaskProgress — прогрес будь-якої форми через маску-текстуру", "date": "20.09.2026", "order": "1 → 4. Кроки 1–3 — нові файли; компілюється після 3, крок 4 — стенд.", "summaryHtml": "\u003ch3>Що і навіщо\u003c/h3>\n\u003cp>Твоя ідея: один універсальний прогрес, де \u003cstrong>маску передають картинкою\u003c/strong> — просту форму запікаємо \u003ccode>VfxTexture(RoundRectEffect)\u003c/code>, складну бере дизайнер, — а заповнення й фон теж можуть бути картинками. Так можна, і ось воно: \u003ccode>MaskProgressEffect\u003c/code> + актор \u003ccode>AMaskProgress\u003c/code>.\u003c/p>\n\u003ch3>Як це виглядає в коді\u003c/h3>\n\u003cp>```kotlin val bar = AMaskProgress(screen, mask = capsuleTex.region) bar.fill       = atlas.progress_fill    // або лишити fillColor bar.trackAlpha = 0.2f                   // фон кольором; або bar.track = atlas.progress_back bar.setSize(200f, 14f)\u003c/p>\n\u003cp>bar.frac = 0.4f                         // єдине, що рухається ```\u003c/p>\n\u003cp>Маска — це \u003cstrong>drawable самого актора\u003c/strong>, тобто вона ж задає форму. Немає маски — звичайний прямокутник. Капсула — \u003ccode>VfxTexture(200f, 14f, shape = RoundRectEffect().apply { radius = 7f })\u003c/code>, ассет не потрібен. Фігура з дірками — PNG або msdf-регіон: \u003cstrong>де в масці прозоро, там прозоро й у прогресі\u003c/strong>, а де α = 0.5 — намалюється напівпрозоро. Рівно те, що ти описував.\u003c/p>\n\u003ch3>Три картинки, усі необов'язкові\u003c/h3>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>\u003c/th>\u003cth>джерело\u003c/th>\u003cth>якщо не задано\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>маска\u003c/td>\u003ctd>drawable актора\u003c/td>\u003ctd>білий регіон → прямокутник\u003c/td>\u003c/tr>\u003ctr>\u003ctd>заповнення\u003c/td>\u003ctd>\u003ccode>fill\u003c/code>\u003c/td>\u003ctd>суцільний \u003ccode>fillColor\u003c/code>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>фон\u003c/td>\u003ctd>\u003ccode>track\u003c/code>\u003c/td>\u003ctd>\u003ccode>trackColor\u003c/code> з \u003ccode>trackAlpha\u003c/code>\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Кольори лишаються тінтом і поверх картинок: білий = картинка як є.\u003c/p>\n\u003ch3>Напрямок вільний\u003c/h3>\n\u003cp>\u003ccode>axis = X/Y\u003c/code> і \u003ccode>reversed\u003c/code> дають усі чотири: зліва направо, справа наліво, знизу вгору, згори вниз. Рахунок іде в «просторі прогресу», тому зсув картинки (\u003ccode>slides\u003c/code>, як у патчі 59) працює однаково для всіх чотирьох, а не лише для горизонталі.\u003c/p>\n\u003ch3>Чесна ціна: три семплери\u003c/h3>\n\u003cp>\u003ccode>VfxTexture\u003c/code> пече кожну картинку в \u003cstrong>свою\u003c/strong> текстуру, не в атлас, тож маска, заповнення й фон — це три різні текстури. Батч тримає свою на юніті 0, тому заповнення й фон сідають на 1 і 2, а активний юніт \u003cstrong>обов'язково повертається на 0\u003c/strong>: \u003ccode>Texture.bind(n)\u003c/code> у libGDX лишає активним саме \u003ccode>n\u003c/code>, і наступна прив'язка батча пішла б не туди. Це зроблено всередині ефекту — на місці використання про юніти думати не треба.\u003c/p>\n\u003cp>Прив'язка робиться \u003cstrong>щокадру через \u003ccode>region.texture\u003c/code>\u003c/strong>, а не закешованим об'єктом: після втрати GL-контексту \u003ccode>VfxTexture\u003c/code> створює нову текстуру під тим самим регіоном, і кеш указував би на мертву.\u003c/p>\n\u003ch3>Що лишається на ProgressBarEffect\u003c/h3>\n\u003cp>Смуга в HUD — там. Він малює капсулу математикою: ідеальний край на будь-якому розмірі, \u003cstrong>нуль текстур, один семплер\u003c/strong>. \u003ccode>MaskProgress\u003c/code> бере форму картинкою, тому масштабується гірше (растр є растр) і коштує до трьох прив'язок. Правило просте: \u003cstrong>капсула — ProgressBarEffect, усе складніше — MaskProgress.\u003c/strong>\u003c/p>\n\u003ch3>Де подивитись\u003c/h3>\n\u003cp>На \u003ccode>TestScreen\u003c/code> під наявною смугою — \u003ccode>AMaskProgress\u003c/code> з капсулою-маскою і градієнтом у заповненні. Обидві ганяються тим самим \u003ccode>barTime\u003c/code>, тож видно різницю в поведінці краю.\u003c/p>\n\u003cp>Зібрано в лабораторії: \u003ccode>assembleDebug\u003c/code> — BUILD SUCCESSFUL. Шейдер перевіряється на пристрої.\u003c/p>", "files": [{"path": "app/src/main/assets/shader/base/maskProgress/maskProgressFS.glsl", "note": "НОВИЙ ФАЙЛ. Нова тека shader/base/maskProgress/.", "lang": "glsl", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "#ifdef GL_ES\nprecision mediump float;\n#endif\n\n// ─────────────────────────────────────────────────────────────────────────────\n// MASK PROGRESS — універсальний прогрес: форму задає МАСКА-текстура.\n//\n// ProgressBarEffect малює капсулу математикою і тому обмежений капсулою. Тут\n// форма приходить картинкою: альфа маски каже, ДЕ взагалі є пікселі. Дірка в\n// масці (α = 0) лишиться діркою, навіть якщо заповнення туди дійшло; α = 0.5 дає\n// напівпрозорий піксель. Рівно поведінка «намалювати крізь маску», але без FBO.\n//\n// ТРИ КАРТИНКИ, усі необов'язкові:\n//   u_texture   — МАСКА, вона ж drawable актора: керує альфою всього;\n//   u_fillTex   — чим заповнюється (немає → u_fillColor);\n//   u_trackTex  — фон під заповненням (немає → u_trackColor + u_trackA).\n// Кольори лишаються тінтом і в текстурному режимі: білий = картинка як є.\n//\n// НАПРЯМОК вільний: u_axis (0 — уздовж X, 1 — уздовж Y знизу вгору) і\n// u_reversed (від протилежного краю). Рахунок ведеться в «просторі прогресу»,\n// тому зсув картинки (u_slide) працює однаково для всіх чотирьох напрямків.\n//\n// u_slide: 0 — картинка прибита, край її ПРОЯВЛЯЄ; 1 — картинка ЇДЕ так, що її\n// кінець тримається краю заповнення (те саме, що посунути її під маскою).\n//\n// u_soft — м'якість краю заповнення у частках довжини. 0.002 ≈ пів пікселя на\n// смузі 200 юнітів; 0 дає різкий край зі сходинками на похилих масках.\n// ─────────────────────────────────────────────────────────────────────────────\n\nvarying vec4 v_color;\nvarying vec2 v_localUV;      // 0..1 у межах регіону маски\nvarying vec2 v_texCoords;    // координати маски в атласі\n\nuniform sampler2D u_texture;    // маска\nuniform sampler2D u_fillTex;\nuniform sampler2D u_trackTex;\n\nuniform vec4  u_fillUv;         // xy = min, zw = max (межі регіону заповнення)\nuniform vec4  u_trackUv;\nuniform float u_useFillTex;     // 1 — заповнення картинкою\nuniform float u_useTrackTex;    // 1 — фон картинкою\n\nuniform vec3  u_fillColor;\nuniform vec3  u_trackColor;\nuniform float u_trackA;         // альфа фону; 0 — фону немає\nuniform float u_frac;           // 0..1\nuniform float u_axis;           // 0 — X, 1 — Y (знизу вгору)\nuniform float u_reversed;       // 1 — від протилежного краю\nuniform float u_slide;          // 1 — картинка їде за краєм\nuniform float u_soft;           // м'якість краю заповнення\n\nvoid main() {\n    // Маска — перша й головна: її альфа множить усе наприкінці\n    float m = texture2D(u_texture, v_texCoords).a;\n\n    // У «простір прогресу»: q.x — уздовж напрямку, q.y — поперек.\n    // v_localUV.y дивиться вниз, тому для осі Y беремо 1 - y (знизу вгору).\n    vec2 q = (u_axis \u003c 0.5) ? v_localUV : vec2(1.0 - v_localUV.y, v_localUV.x);\n    q.x = mix(q.x, 1.0 - q.x, u_reversed);\n\n    float f    = clamp(u_frac, 0.0, 1.0);\n    float soft = max(u_soft, 0.0001);\n\n    // 1 усередині заповнення, 0 за ним\n    float fillMask = 1.0 - smoothstep(f - soft, f + soft, q.x);\n    fillMask *= step(0.0001, f);          // нуль — лишається сам фон\n\n    // Зсув картинки заповнення рахуємо в тому ж просторі, потім назад у UV\n    vec2 qs = vec2(clamp(q.x + u_slide * (1.0 - f), 0.0, 1.0), q.y);\n    qs.x    = mix(qs.x, 1.0 - qs.x, u_reversed);\n    vec2 luv = (u_axis \u003c 0.5) ? qs : vec2(qs.y, 1.0 - qs.x);\n\n    vec4 fillTex  = texture2D(u_fillTex,  u_fillUv.xy  + luv       * (u_fillUv.zw  - u_fillUv.xy));\n    vec4 trackTex = texture2D(u_trackTex, u_trackUv.xy + v_localUV * (u_trackUv.zw - u_trackUv.xy));\n\n    vec3  fRGB = u_fillColor  * mix(vec3(1.0), fillTex.rgb,  u_useFillTex);\n    float fA   = fillMask     * mix(1.0,       fillTex.a,    u_useFillTex);\n\n    vec3  tRGB = u_trackColor * mix(vec3(1.0), trackTex.rgb, u_useTrackTex);\n    float tA   = u_trackA     * mix(1.0,       trackTex.a,   u_useTrackTex);\n\n    // Заповнення НАД фоном (alpha over) — у премультиплікованому просторі,\n    // як у roundRectFS: інакше на межі був би кант не того відтінку\n    float over = tA * (1.0 - fA);\n    float a    = fA + over;\n\n    vec3 rgb = (fRGB * fA + tRGB * over) / max(a, 0.0001);\n\n    gl_FragColor = vec4(rgb, a * m) * v_color;\n}", "id": "1.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/MaskProgressEffect.kt", "note": "НОВИЙ ФАЙЛ. Поруч з ProgressBarEffect; тут же прив'язка текстурних юнітів.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.utils.vfx.effects.base\n\nimport com.badlogic.gdx.Gdx\nimport com.badlogic.gdx.graphics.Color\nimport com.badlogic.gdx.graphics.GL20\nimport com.badlogic.gdx.graphics.g2d.TextureRegion\nimport com.badlogic.gdx.graphics.glutils.ShaderProgram\nimport com.lewydo.orbitdash.game.utils.vfx.VfxContext\n\n// ─────────────────────────────────────────────────────────────────────────────\n// MaskProgressEffect — універсальний прогрес: форму задає МАСКА-текстура.\n//\n// ЧИМ ВІДРІЗНЯЄТЬСЯ ВІД ProgressBarEffect. Той малює капсулу математикою:\n// ідеальний край на будь-якому розмірі, нуль текстур, один семплер — і тому\n// нічого, крім капсули. Цей бере форму картинкою, тож уміє будь-що: зірку,\n// кільце, підкову, форму з дірками. Ціна — до трьох текстур замість нуля.\n// Смуга в HUD лишається на ProgressBarEffect; сюди йде все складніше.\n//\n// ТРИ КАРТИНКИ, і всі необов'язкові:\n//   маска  — drawable САМОГО АКТОРА (як завжди в VfxImage). Її альфа каже, де\n//            взагалі є пікселі: дірка лишається діркою, півпрозоре лишається\n//            півпрозорим. Проста форма — запекти VfxTexture(RoundRectEffect),\n//            складна — PNG від дизайнера. Немає маски (білий регіон) — прямокутник.\n//   fill   — чим заповнюється. Немає → [fillColor].\n//   track  — фон під заповненням. Немає → [trackColor] з [trackAlpha].\n// Кольори працюють тінтом і поверх картинок: білий = картинка як є.\n//\n// ЧОМУ ЦЕ НЕ AMask І НЕ FBO. VfxGroup із маскою рендерить піддерево в буфер і\n// перемальовує його, щойно діти зрушили, — у прогресі це кожен кадр. Тут маска\n// читається прямо в шейдері: один draw, нуль render target'ів.\n//\n// ТЕКСТУРНІ ЮНІТИ. Батч тримає свою текстуру на юніті 0, тому fill і track\n// сідають на 1 і 2, а активний юніт ОБОВ'ЯЗКОВО повертається на 0: libGDX\n// Texture.bind(n) лишає активним саме n, і наступна прив'язка батча пішла б не\n// туди. Невикористаний семплер дивиться на юніт 0 — щоб не читати з нічого.\n// ─────────────────────────────────────────────────────────────────────────────\nclass MaskProgressEffect : VfxEffect() {\n\n    override val fragmentShader = \"shader/base/maskProgress/maskProgressFS.glsl\"\n\n    /** Уздовж чого росте заповнення. */\n    enum class Axis { X, Y }\n\n    /** Картинка заповнення. null — суцільний [fillColor]. */\n    var fill: TextureRegion? = null\n\n    /** Картинка фону. null — суцільний [trackColor] з [trackAlpha]. */\n    var track: TextureRegion? = null\n\n    /** Заповнення 0..1. */\n    var frac = 1f\n\n    /** Напрямок: X — зліва направо, Y — знизу вгору. */\n    var axis = Axis.X\n\n    /** true — від протилежного краю (справа наліво / згори вниз). */\n    var reversed = false\n\n    /**\n     * false — картинка заповнення прибита, край її проявляє (шторка);\n     * true  — картинка їде так, що її кінець тримається краю заповнення.\n     */\n    var slides = false\n\n    /** М'якість краю заповнення в частках довжини. 0.002 ≈ пів пікселя на 200 юнітах. */\n    var softEdge = 0.002f\n\n    /** Альфа фону. 0 — фону немає взагалі. */\n    var trackAlpha = 0.2f\n\n    /** Тінт заповнення. Білий = «картинка як є» або чистий колір. */\n    val fillColor = Color(Color.WHITE)\n\n    /** Тінт фону. */\n    val trackColor = Color(Color.WHITE)\n\n    override fun setUniforms(shader: ShaderProgram, ctx: VfxContext) {\n        val f = fill\n        val t = track\n\n        // Прив'язуємо ЩОКАДРУ через region.texture: після втрати GL-контексту\n        // VfxTexture створює нову текстуру під тим самим регіоном, і закешований\n        // тут об'єкт указував би на мертву.\n        if (f != null) f.texture.bind(1)\n        if (t != null) t.texture.bind(2)\n        Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0)\n\n        shader.setUniformi(\"u_fillTex\",  if (f != null) 1 else 0)\n        shader.setUniformi(\"u_trackTex\", if (t != null) 2 else 0)\n\n        shader.setUniformf(\"u_fillUv\",  f?.u ?: 0f, f?.v ?: 0f, f?.u2 ?: 1f, f?.v2 ?: 1f)\n        shader.setUniformf(\"u_trackUv\", t?.u ?: 0f, t?.v ?: 0f, t?.u2 ?: 1f, t?.v2 ?: 1f)\n        shader.setUniformf(\"u_useFillTex\",  if (f != null) 1f else 0f)\n        shader.setUniformf(\"u_useTrackTex\", if (t != null) 1f else 0f)\n\n        shader.setUniformf(\"u_fillColor\",  fillColor.r,  fillColor.g,  fillColor.b)\n        shader.setUniformf(\"u_trackColor\", trackColor.r, trackColor.g, trackColor.b)\n        shader.setUniformf(\"u_trackA\", trackAlpha)\n        shader.setUniformf(\"u_frac\", frac.coerceIn(0f, 1f))\n        shader.setUniformf(\"u_axis\", if (axis == Axis.Y) 1f else 0f)\n        shader.setUniformf(\"u_reversed\", if (reversed) 1f else 0f)\n        shader.setUniformf(\"u_slide\", if (slides) 1f else 0f)\n        shader.setUniformf(\"u_soft\", softEdge)\n    }\n\n    override fun stateKey(): Long {\n        var k = 57L\n        k = k * 31 + frac.toRawBits()\n        k = k * 31 + trackAlpha.toRawBits()\n        k = k * 31 + softEdge.toRawBits()\n        k = k * 31 + fillColor.toIntBits().toLong()\n        k = k * 31 + trackColor.toIntBits().toLong()\n        k = k * 31 + (if (axis == Axis.Y) 1L else 0L)\n        k = k * 31 + (if (reversed) 2L else 0L)\n        k = k * 31 + (if (slides) 4L else 0L)\n        k = k * 31 + (fill?.let { System.identityHashCode(it) } ?: 0).toLong()\n        k = k * 31 + (track?.let { System.identityHashCode(it) } ?: 0).toLong()\n        return k\n    }\n}", "id": "2.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/ui/AMaskProgress.kt", "note": "НОВИЙ ФАЙЛ. Актор-обгортка, як ARoundRect над RoundRectEffect.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.actors.ui\n\nimport com.badlogic.gdx.graphics.g2d.TextureRegion\nimport com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen\nimport com.lewydo.orbitdash.game.utils.vfx.VfxImage\nimport com.lewydo.orbitdash.game.utils.vfx.effects.base.MaskProgressEffect\n\n// ─────────────────────────────────────────────────────────────────────────────\n// AMaskProgress — прогрес будь-якої форми як готовий актор.\n//\n//   val bar = AMaskProgress(screen, mask = maskTex.region)\n//   bar.fill = atlas.progress_fill        // або лишити колір\n//   bar.setSize(200f, 12f)\n//   ...\n//   bar.frac = 0.4f                       // єдине, що рухається\n//\n// Маска — це drawable актора, тому вона ж задає форму: прямокутник (білий\n// регіон за замовчуванням), капсула з VfxTexture(RoundRectEffect), фігура з\n// msdf-атласу або PNG з дірками від дизайнера.\n//\n// Загортає пару «VfxImage + ефект» так само, як ARoundRect загортає\n// RoundRectEffect: щоб на місці використання було видно смугу, а не механіку.\n// Потрібен доступ до рідкісних полів (axis, reversed, slides) — вони на [fx].\n// ─────────────────────────────────────────────────────────────────────────────\nclass AMaskProgress(\n    override val screen: AdvancedScreen,\n    mask: TextureRegion? = null,\n) : VfxImage(screen) {\n\n    /** Налаштування ефекту: напрямок, м'якість краю, кольори. */\n    val fx = MaskProgressEffect()\n\n    init {\n        drawable = TextureRegionDrawable(mask ?: screen.drawerUtil.getRegion())\n        effect   = fx\n    }\n\n    /** Форма. Її альфа керує всім: дірка лишається діркою. */\n    var mask: TextureRegion\n        get()      = (drawable as TextureRegionDrawable).region\n        set(value) { drawable = TextureRegionDrawable(value) }\n\n    /** Заповнення 0..1. */\n    var frac: Float\n        get()      = fx.frac\n        set(value) { fx.frac = value }\n\n    /** Картинка заповнення; null — колір [fillColor]. */\n    var fill: TextureRegion?\n        get()      = fx.fill\n        set(value) { fx.fill = value }\n\n    /** Картинка фону; null — колір [trackColor] з [trackAlpha]. */\n    var track: TextureRegion?\n        get()      = fx.track\n        set(value) { fx.track = value }\n\n    val fillColor  get() = fx.fillColor\n    val trackColor get() = fx.trackColor\n\n    var trackAlpha: Float\n        get()      = fx.trackAlpha\n        set(value) { fx.trackAlpha = value }\n}", "id": "3.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/TestScreen.kt", "note": "Маска-капсула через VfxTexture + стенд AMaskProgress.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 16", "old": "import com.lewydo.orbitdash.game.actors.debug.addDebugHud\nimport com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout\nimport com.lewydo.orbitdash.game.actors.vfx.ABlurBack\nimport com.lewydo.orbitdash.game.utils.Block", "new": "import com.lewydo.orbitdash.game.actors.debug.addDebugHud\nimport com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout\nimport com.lewydo.orbitdash.game.actors.ui.AMaskProgress\nimport com.lewydo.orbitdash.game.actors.vfx.ABlurBack\nimport com.lewydo.orbitdash.game.utils.Block", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "4.1"}, {"verb": "add", "where": "біля рядка 41", "old": "    private var barTime = 0f\n\n    // ------------------------------------------------------------------------\n    // Lifecycle", "new": "    private var barTime = 0f\n\n    /** Маска для AMaskProgress: проста форма — печеться шейдером, ассет не потрібен. */\n    private val capsuleTex = VfxTexture(200f, 14f, shape = RoundRectEffect().apply { radius = 7f })\n\n    // ------------------------------------------------------------------------\n    // Lifecycle", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 0, 0], "id": "4.2"}, {"verb": "add", "where": "біля рядка 47", "old": "        super.show()\n        animShowScreen()\n    }\n", "new": "        super.show()\n        animShowScreen()\n\n        disposableSet.add(capsuleTex)\n    }\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 0, 0], "id": "4.3"}, {"verb": "add", "where": "біля рядка 82", "old": "    private fun AConstraintLayout.addMsdfSandbox() {\n        addProgressStand()\n    }\n", "new": "    private fun AConstraintLayout.addMsdfSandbox() {\n        addProgressStand()\n        addMaskProgressStand()\n    }\n\n    // ── AMaskProgress: прогрес будь-якої форми (ТИМЧАСОВЕ) ──────────────────\n    //\n    // Те саме, що смуга вище, але форму задає МАСКА, а не математика. Маска —\n    // звичайна текстура: тут капсула, запечена VfxTexture(RoundRectEffect), тож\n    // ассет не потрібен. Замість неї може бути будь-що, хоч фігура з дірками:\n    // де в масці прозоро — там прозоро й у прогресі.\n    private fun AConstraintLayout.addMaskProgressStand() {\n        val bar = AMaskProgress(this@TestScreen, mask = capsuleTex.region)\n\n        bar.fill       = TextureRegion(makeGradient())   // картинка заповнення\n        bar.trackAlpha = 0.2f                            // фон — колір, не картинка\n        bar.setSize(200f, 14f)\n        add(bar) { centerX(); topToTop(margin = 460f) }\n\n        // Той самий цикл, що й у смуги: рухається лише frac\n        bar.addAction(Actions.forever(Actions.run { bar.frac = barTime / 6f }))\n    }\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "4.4"}]}], "state": {"submitted": "2026-09-20T16:17:16.808Z", "hunks": {"1.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "2.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "4.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "4.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "4.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "4.4": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}}, "result": {"ok": true, "by": "claude", "at": "2026-09-20T16:24:00.000Z", "note": "усі 7 вставлено, код = лабораторія байт у байт; assembleDebug OK. Три семплери й прив'язка юнітів перевіряються лише на пристрої"}}}</script>
+<script id="app">
+(function () {
+  "use strict";
+
+  const data = JSON.parse(document.getElementById("patch-data").textContent);
+  const state = data.state || (data.state = {});
+  state.hunks = state.hunks || {};
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const fmtTime = (iso) => {
+    try { return new Date(iso).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso || ""; }
+  };
+
+  const allHunks = [];
+  data.files.forEach((f) => f.hunks.forEach((h) => allHunks.push(h)));
+
+  const submitted = () => !!state.submitted;
+  const hasResults = () => allHunks.some((h) => state.hunks[h.id] && state.hunks[h.id].result);
+
+  // Чернетка вибору до «Готово» — лише в цьому браузері; не вдалось — не страшно
+  const DRAFT_KEY = "patch-draft-" + data.id;
+  function loadDraft() {
+    if (submitted()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+      Object.keys(d).forEach((id) => {
+        if (allHunks.some((h) => h.id === id)) state.hunks[id] = { choice: d[id] };
+      });
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try {
+      const d = {};
+      Object.keys(state.hunks).forEach((id) => { if (state.hunks[id].choice) d[id] = state.hunks[id].choice; });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) { /* немає сховища */ }
+  }
+
+  // ── підсвітка: блок цілком (коментарі на кілька рядків), потім різання на рядки ──
+  function highlight(text, lang) {
+    const hl = window.hljs;
+    if (!hl || !lang || !hl.getLanguage(lang)) return null;
+    try { return hl.highlight(text, { language: lang, ignoreIllegals: true }).value; }
+    catch (e) { return null; }
+  }
+  function splitHtmlLines(htmlText) {
+    const lines = [];
+    let cur = "";
+    const open = [];
+    const re = /(<span[^>]*>)|(<\/span>)|(\n)|([^<\n]+|<(?!\/?span)[^>]*>)/g;
+    let m;
+    while ((m = re.exec(htmlText))) {
+      if (m[1]) { open.push(m[1]); cur += m[1]; }
+      else if (m[2]) { open.pop(); cur += m[2]; }
+      else if (m[3]) { cur += "</span>".repeat(open.length); lines.push(cur); cur = open.join(""); }
+      else cur += m[4];
+    }
+    lines.push(cur);
+    return lines;
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function codeBlock(kind, label, text, marks, lang) {
+    const box = el("div", "code " + kind);
+    const head = el("div", "code-label");
+    head.appendChild(el("span", null, label));
+    const btn = el("button", "copy", "Копіювати");
+    btn.type = "button";
+    btn.addEventListener("click", async () => {
+      const ok = await copyText(text);
+      btn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => { btn.textContent = "Копіювати"; }, 1600);
+    });
+    head.appendChild(btn);
+    box.appendChild(head);
+
+    const pre = el("pre");
+    const code = el("code");
+    const hl = highlight(text, lang);
+    const lines = hl != null ? splitHtmlLines(hl) : text.split("\n").map(escapeHtml);
+    code.innerHTML = lines.map((l, i) => {
+      const cls = marks ? (marks[i] ? "ln chg" : "ln ctx") : "ln";
+      return '<span class="' + cls + '">' + (l || "") + "</span>";
+    }).join("");
+    pre.appendChild(code);
+    box.appendChild(pre);
+    return box;
+  }
+
+  const VERB = { replace: "ЗАМІНИТИ", add: "ДОДАТИ", remove: "ВИДАЛИТИ", create: "НОВИЙ ФАЙЛ", delete: "ВИДАЛИТИ ФАЙЛ" };
+
+  function hunkStatus(h) {
+    const s = state.hunks[h.id];
+    if (!s || !s.choice) return el("span", "pill new", "не обрано");
+    if (s.result) {
+      const p = el("span", "pill " + (s.result.ok ? "done" : "fail"), s.result.note || (s.result.ok ? "готово" : "не вийшло"));
+      return p;
+    }
+    if (submitted()) return el("span", "pill pending", s.choice === "auto" ? "Claude вставляє" : "Claude перевіряє");
+    return null;
+  }
+
+  function setChoice(id, choice) {
+    if (submitted()) return;
+    const s = state.hunks[id] || (state.hunks[id] = {});
+    s.choice = s.choice === choice ? null : choice;
+    saveDraft();
+    render();
+  }
+
+  function renderPage() {
+    const root = $("root");
+    const scrollY = window.scrollY;
+    root.textContent = "";
+
+    const head = el("header", "head");
+    const eyebrow = el("div", "eyebrow");
+    eyebrow.appendChild(el("span", "num", "патч " + data.id));
+    if (data.date) eyebrow.appendChild(el("span", null, data.date));
+    head.appendChild(eyebrow);
+    head.appendChild(el("h1", null, data.title));
+    root.appendChild(head);
+
+    // summaryHtml генерує Claude з власного .md — довірений вміст
+    const summary = el("section", "summary");
+    summary.innerHTML = data.summaryHtml || "";
+    root.appendChild(summary);
+
+    const steps = el("section", "steps");
+    const t = el("div", "steps-title");
+    t.appendChild(el("h2", null, "Зміни"));
+    t.appendChild(el("p", null, (data.order ? data.order + " " : "") +
+      "Біля кожної зміни обери, хто її вставляє, потім «Готово» внизу."));
+    steps.appendChild(t);
+
+    const locked = submitted();
+    data.files.forEach((f, fi) => {
+      const card = el("article", "file");
+      const fh = el("div", "file-head");
+      const fid = el("div", "file-id");
+      fid.appendChild(el("span", "idx", String(fi + 1)));
+      fid.appendChild(el("span", "path", f.path));
+      fh.appendChild(fid);
+      if (f.hunks.length > 1) {
+        const all = el("div", "file-all");
+        all.appendChild(el("span", null, "увесь файл:"));
+        [["self", "сам"], ["auto", "авто"]].forEach(([c, label]) => {
+          const b = el("button", "link", label);
+          b.type = "button";
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            f.hunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = c === "self" ? "manual" : "auto"; });
+            saveDraft(); render();
+          });
+          all.appendChild(b);
+        });
+        fh.appendChild(all);
+      }
+      card.appendChild(fh);
+      if (f.note) card.appendChild(el("p", "file-note", f.note));
+
+      f.hunks.forEach((h) => {
+        const hb = el("div", "hunk");
+        const top = el("div", "hunk-top");
+        const ht = el("div", "hunk-title");
+        ht.appendChild(el("span", "hid", h.id));
+        ht.appendChild(el("span", "verb " + h.verb, VERB[h.verb] || h.verb));
+        if (h.where) ht.appendChild(el("span", "where", h.where));
+        const st = hunkStatus(h);
+        if (st && (locked || !state.hunks[h.id] || !state.hunks[h.id].choice)) ht.appendChild(st);
+        top.appendChild(ht);
+
+        const choice = el("div", "choice");
+        choice.setAttribute("role", "group");
+        choice.setAttribute("aria-label", "Хто вставляє зміну " + h.id);
+        const cur = (state.hunks[h.id] || {}).choice;
+        [["manual", "self", "Вставив сам"], ["auto", "auto", "Вставити автоматично"]].forEach(([val, cls, label]) => {
+          const b = el("button", cls, label);
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(cur === val));
+          b.disabled = locked;
+          b.addEventListener("click", () => setChoice(h.id, val));
+          choice.appendChild(b);
+        });
+        top.appendChild(choice);
+        hb.appendChild(top);
+
+        const lang = h.lang || f.lang;
+        if (h.old != null) hb.appendChild(codeBlock("old", h.verb === "add" ? "Знайти (вже є у файлі)" : "Було", h.old, h.oldMarks, lang));
+        if (h.new != null) hb.appendChild(codeBlock("new", h.verb === "create" ? "Файл цілком" : "Стало", h.new, h.newMarks, lang));
+        card.appendChild(hb);
+      });
+      steps.appendChild(card);
+    });
+    root.appendChild(steps);
+    window.scrollTo(0, scrollY);
+  }
+
+  // ── панель ───────────────────────────────────────────────────────────
+  let artifactApi = null;
+  let busy = false;
+
+  function counts() {
+    let self = 0, auto = 0, none = 0;
+    allHunks.forEach((h) => {
+      const c = (state.hunks[h.id] || {}).choice;
+      if (c === "manual") self++; else if (c === "auto") auto++; else none++;
+    });
+    return { self, auto, none };
+  }
+
+  function renderBar() {
+    const status = $("status"), bulk = $("bulk"), send = $("send");
+    status.textContent = ""; bulk.textContent = "";
+    const c = counts();
+
+    if (state.result) {
+      status.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Готово" : "Є проблеми"));
+      status.appendChild(el("span", null, fmtTime(state.result.at)));
+      if (state.result.note) status.appendChild(el("span", "note", state.result.note));
+      send.hidden = true;
+      return;
+    }
+
+    const tally = el("span", "tally", "сам " + c.self + " · авто " + c.auto + (c.none ? " · не обрано " + c.none : ""));
+    status.appendChild(tally);
+
+    if (submitted()) {
+      status.appendChild(el("span", "pill pending", "Надіслано"));
+      status.appendChild(el("span", "note", fmtTime(state.submitted) + " — Claude вставить «авто», перевірить «сам» і збере проєкт"));
+      send.hidden = hasResults();
+      send.className = "send ghost";
+      send.textContent = "Змінити вибір";
+      send.disabled = !artifactApi || busy;
+      return;
+    }
+
+    if (!artifactApi) status.appendChild(el("span", "note", "надіслати можна на claude.ai; інакше напиши в чат"));
+    else if (c.none) status.appendChild(el("span", "note", "обери для кожної зміни"));
+
+    bulk.appendChild(el("span", null, "усе одразу:"));
+    [["manual", "усе сам"], ["auto", "усе автоматично"], [null, "очистити"]].forEach(([val, label]) => {
+      const b = el("button", "link", label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        allHunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = val; });
+        saveDraft(); render();
+      });
+      bulk.appendChild(b);
+    });
+
+    send.hidden = false;
+    send.className = "send";
+    send.textContent = c.none ? "Готово — ще " + c.none + " без вибору" : "Готово — надіслати Claude";
+    send.disabled = !artifactApi || busy || c.none > 0;
+  }
+
+  function render() { renderPage(); renderBar(); }
+
+  // Документ = незмінні частини + новий стан; живий DOM не серіалізуємо
+  const HEAD_EXTRA =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"><\/script>';
+  const BAR =
+    '<div class="bar" id="bar"><div class="bar-inner">' +
+    '<div class="status" id="status"></div><div class="bulk" id="bulk"></div>' +
+    '<button class="send" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app = document.getElementById("app").textContent;
+    const json = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main>" + BAR +
+      "<script id=\"patch-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", "note", code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+
+  $("send").addEventListener("click", () => {
+    if (!artifactApi || busy) return;
+    if (submitted()) {           // «Змінити вибір» — поки Claude не почав
+      if (hasResults()) return;
+      state.submitted = null;
+    } else {
+      if (counts().none > 0) return;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  });
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script>

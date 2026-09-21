@@ -272,6 +272,36 @@ class RunEngine(
     var frenzyT   = 0f;       private set
     var slowT     = 0f;       private set
     var boostTot  = 1f;      private set   // тривалість останнього буста — для прогрес-дуги HUD
+
+    /**
+     * Активний таймерний буст або null. Три таймери взаємовиключні (див.
+     * applyBoost), тож горить щонайбільше один — і вирішує це рушій, а не
+     * HUD: інакше «який буст зараз діє» жило б у двох місцях і розійшлося б
+     * при першому ж новому бусті.
+     *
+     * SHIELD і PULSE сюди не потрапляють ніколи: у них dur = 0, вони не
+     * тривають, а спрацьовують. Щит видно по капсулах, PULSE — по хвилі.
+     */
+    val activeBoost: Boost?
+        get() = when {
+            magnetT > 0f -> Boost.MAGNET
+            frenzyT > 0f -> Boost.FRENZY
+            slowT   > 0f -> Boost.SLOW
+            else         -> null
+        }
+
+    /** Скільки лишилось від активного буста: 1 → 0. Без буста — 0. */
+    val boostFrac: Float
+        get() {
+            val left = when (activeBoost) {
+                Boost.MAGNET -> magnetT
+                Boost.FRENZY -> frenzyT
+                Boost.SLOW   -> slowT
+                else         -> return 0f
+            }
+            return min(1f, left / max(1e-4f, boostTot))
+        }
+
     var waveT     = 0f;     private set   // PULSE-хвиля, виду
     var announceT = 0f;     private set   // «ORBIT III ONLINE», виду
     var shake     = 0f;     private set   // сила трясіння камери, виду

@@ -1,0 +1,58 @@
+# Патч 62 — AProgressBar і правила вибору прогресів
+
+20.09.2026 · 1 → 5. Сторінка: https://claude.ai/artifact/CNAT2AZqtC8xT7qcpXsVtX
+
+## Що і навіщо
+
+Ти помітив асиметрію: у `MaskProgressEffect` є актор `AMaskProgress`, а в
+`ProgressBarEffect` — ні. Причина була не принципова: я зробив обгортку там, де новий
+ефект вимагав пояснення, і не зробив там, де «і так зрозуміло». Виправляю.
+
+### AProgressBar
+
+```kotlin
+val bar = AProgressBar(screen).apply {
+    radius     = 1.5f
+    trackAlpha = 0.2f
+    fillColor.set(boost.info.color)
+}
+bar.setSize(64f, 3f)
+bar.frac = engine.boostFrac
+```
+
+Загортає пару «VfxImage + ефект» так само, як `ARoundRect` загортає `RoundRectEffect`.
+Рідкісні поля (`textureSlides`, `texturedTrackAlpha`, `aaWidth`) лишаються на `bar.fx` —
+щоб часте було коротким, а рідкісне не заважало.
+
+**Картинка замість кольору — один рядок**, бо саме це плуталось найбільше:
+
+```kotlin
+bar.picture = atlas.progress_fill     // текстурний режим вмикається сам
+```
+
+`APanelBooster` і стенд на `TestScreen` переведено на нього: у панелі зникла пара
+`fxBar`/`aBar`, у стенді — ручне вмикання `textured`.
+
+### docs/progress.md — головна частина патча
+
+Інструментів стало п'ять, і вони не взаємозамінні. Документ відповідає на «що коли»:
+
+| що треба | чим | текстур | ціна |
+|---|---|---|---|
+| смуга-капсула (HUD, шкала, XP) | `AProgressBar` | 0 | 1 актор, 1 draw |
+| кільце, що тане (комбо, щит) | `ProgressRingEffect` у `VfxImage` | 0 | те саме по колу |
+| довільна форма, дірки | `AMaskProgress` | 1–3 | 1 draw, растрова форма |
+| багато однакових статичних масок | `VfxTexture(post = [MaskEffect])` → `Image` | 1 на всіх | N копій = 1 draw call |
+| маска над ЖИВИМ піддеревом | `AMask` (`VfxGroup`) | FBO | перемальовка щокадру |
+
+Правило в рядок: **капсула — `AProgressBar`, інша форма — `AMaskProgress`, піддерево —
+`AMask`.** Останнє береться лише коли справді треба маскувати групу акторів.
+
+Там же три пастки, на яких ми вже обпеклись: розмір усередині групи зі скейлером
+(`setSizeScaled` + `keepScaled` для радіуса), `Texture` з `Pixmap` не переживає фон, і
+перевернуті регіони `VfxTexture` (патч 61). І чесна ціна: `VfxImage` — два флаші батча
+на актор, тож сто масок роблять запіканням або одним актором із власним `draw()`.
+
+`CLAUDE.md` отримує покажчик на документ і рядок у таблиці «чим малювати».
+
+Зібрано в лабораторії: `assembleDebug` — BUILD SUCCESSFUL.

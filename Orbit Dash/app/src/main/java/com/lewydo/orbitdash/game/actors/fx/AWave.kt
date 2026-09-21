@@ -1,17 +1,16 @@
 package com.lewydo.orbitdash.game.actors.fx
 
+import com.lewydo.orbitdash.game.actors.progress.ARingProgress
 import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
-import com.lewydo.orbitdash.game.utils.vfx.VfxImage
-import com.lewydo.orbitdash.game.utils.vfx.effects.ProgressRingEffect
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AWave — кільцева хвиля в точці події. Порт wave() з прототипу:
 //  радіус росте ease-out, альфа й товщина падають лінійно, життя 0.4 с.
 //
-//  ЧОМУ ProgressRingEffect, А НЕ НОВИЙ ШЕЙДЕР: хвиля — це та сама обводка кола,
+//  ЧОМУ ARingProgress, А НЕ НОВИЙ ШЕЙДЕР: хвиля — це та сама обводка кола,
 //  що вже малює кільце комбо й щит у ABall, лише з frac = 1 і радіусом, який
 //  їде. Новий .glsl додав би третій однаковий шейдер і ще один перемикач у
-//  батчі; тут же — ті самі юніформи, той самий білий 4×4 регіон під ними.
+//  батчі; тут же — той самий актор, ті самі юніформи, той самий білий регіон.
 //
 //  ЧИСЛА — З ПРОТОТИПУ, ПОДІЛЕНІ НАВПІЛ: у нього поле 640 px, у нас 320 юнітів
 //  поля (TO_FIELD = 0.5). wave(10, 64, 0.4, 3) → r 5..32, товщина 1.5 → 0.75.
@@ -19,11 +18,7 @@ import com.lewydo.orbitdash.game.utils.vfx.effects.ProgressRingEffect
 //  Межі актора = КВАД під максимальний радіус (як RING_QUAD у ABall): шейдер
 //  малює всередині квада, тож він мусить умістити r 32 + півтовщини + AA.
 // ─────────────────────────────────────────────────────────────────────────────
-class AWave(screen: AdvancedScreen) : VfxImage(
-    screen,
-    screen.drawerUtil.getRegion(),
-    ProgressRingEffect(),
-) {
+class AWave(screen: AdvancedScreen) : ARingProgress(screen) {
 
     companion object {
         /** Квад під хвилю: 2×(R_TO + W_FROM/2 + AA 1.5) з запасом. */
@@ -40,13 +35,11 @@ class AWave(screen: AdvancedScreen) : VfxImage(
     // ------------------------------------------------------------------------
     // Field
     // ------------------------------------------------------------------------
-    private val fx = effect as ProgressRingEffect
-
     /** Скільки хвиля вже живе. LIFE і більше — актор вільний. */
     private var time = LIFE
 
     init {
-        fx.frac = 1f          // повне кільце: заповнення тут ні до чого
+        frac = 1f             // повне кільце: заповнення тут ні до чого
         isVisible = false
     }
 
@@ -80,8 +73,8 @@ class AWave(screen: AdvancedScreen) : VfxImage(
     /** [f] — прогрес 0..1. Радіус ease-out quad, решта — лінійно, як у прототипі. */
     private fun apply(f: Float) {
         val ease = 1f - (1f - f) * (1f - f)
-        fx.radius    = R_FROM + (R_TO - R_FROM) * ease
-        fx.thickness = W_FROM * (1f - f) + W_MIN
-        color.a      = (1f - f) * ALPHA
+        radius    = R_FROM + (R_TO - R_FROM) * ease
+        thickness = W_FROM * (1f - f) + W_MIN
+        color.a   = (1f - f) * ALPHA
     }
 }

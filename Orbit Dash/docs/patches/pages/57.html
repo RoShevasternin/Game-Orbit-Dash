@@ -1,0 +1,592 @@
+<title>Патч 57 · Смуга одним шейдером</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script>
+<style id="style">
+:root {
+  --ground:  #F6F7F9;
+  --surface: #FFFFFF;
+  --sunk:    #F6F8FA;
+  --line:    #E1E4E8;
+  --text:    #1F2328;
+  --muted:   #59636E;
+  --faint:   #A1A9B3;
+  --accent:  #1F6FEB;
+  --accent-ink: #FFFFFF;
+  --gem:     #9A6700;
+  --gem-bg:  #FFF8C5;
+  --spike:   #CF222E;
+  --spike-bg:#FFEBE9;
+  --good:    #1A7F37;
+  --good-bg: #E6FFEC;
+  --shadow:  0 -4px 16px rgba(31, 35, 40, .08);
+  /* підсвітка коду */
+  --syn-kw:   #CF222E;
+  --syn-type: #953800;
+  --syn-fn:   #8250DF;
+  --syn-str:  #0A3069;
+  --syn-num:  #0550AE;
+  --syn-com:  #6E7781;
+  --syn-meta: #953800;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0D1117;
+    --surface: #151B23;
+    --sunk:    #0D1117;
+    --line:    #30363D;
+    --text:    #E6EDF3;
+    --muted:   #9198A1;
+    --faint:   #5C646E;
+    --accent:  #4493F8;
+    --accent-ink: #FFFFFF;
+    --gem:     #D29922;
+    --gem-bg:  rgba(187, 128, 9, .15);
+    --spike:   #F85149;
+    --spike-bg:rgba(248, 81, 73, .12);
+    --good:    #3FB950;
+    --good-bg: rgba(46, 160, 67, .14);
+    --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+    --syn-kw:   #FF7B72;
+    --syn-type: #FFA657;
+    --syn-fn:   #D2A8FF;
+    --syn-str:  #A5D6FF;
+    --syn-num:  #79C0FF;
+    --syn-com:  #8B949E;
+    --syn-meta: #FFA657;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0D1117;
+  --surface: #151B23;
+  --sunk:    #0D1117;
+  --line:    #30363D;
+  --text:    #E6EDF3;
+  --muted:   #9198A1;
+  --faint:   #5C646E;
+  --accent:  #4493F8;
+  --accent-ink: #FFFFFF;
+  --gem:     #D29922;
+  --gem-bg:  rgba(187, 128, 9, .15);
+  --spike:   #F85149;
+  --spike-bg:rgba(248, 81, 73, .12);
+  --good:    #3FB950;
+  --good-bg: rgba(46, 160, 67, .14);
+  --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+  --syn-kw:   #FF7B72;
+  --syn-type: #FFA657;
+  --syn-fn:   #D2A8FF;
+  --syn-str:  #A5D6FF;
+  --syn-num:  #79C0FF;
+  --syn-com:  #8B949E;
+  --syn-meta: #FFA657;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: 15px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.page { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 190px; }
+h1, h2, h3 { font-family: "IBM Plex Sans", system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code {
+  font-size: .88em; background: var(--sunk); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+/* ── шапка ─────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em; border-radius: 999px; padding: 2px 10px;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.new     { color: var(--muted); background: var(--sunk); border: 1px solid var(--line); }
+.pill.pending { color: var(--gem);   background: var(--gem-bg); }
+.pill.done    { color: var(--good);  background: var(--good-bg); }
+.pill.fail    { color: var(--spike); background: var(--spike-bg); }
+
+/* ── пояснення ─────────────────────────────────────── */
+.summary { max-width: 68ch; }
+.summary > * + * { margin-top: 12px; }
+.summary h3 { margin-top: 22px; }
+.summary ul { padding-left: 20px; margin-block: 8px; }
+.summary li + li { margin-top: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.summary table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.summary th, .summary td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.summary tr:last-child td { border-bottom: 0; }
+.summary th { font-weight: 600; background: var(--sunk); }
+
+/* ── кроки ─────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 26px; margin-top: 30px; }
+.steps-title { display: flex; flex-direction: column; gap: 4px; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.file { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.file-head {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--sunk); border-bottom: 1px solid var(--line);
+}
+.file-id { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.file-id .idx { font-family: "JetBrains Mono", monospace; color: var(--muted); font-weight: 500; flex: none; }
+.file-id .path { font-family: "JetBrains Mono", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.file-all { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px; font-size: 12px;
+}
+.link:disabled { color: var(--faint); cursor: default; text-decoration: none; }
+.file-note { padding: 10px 14px 0; margin: 0; color: var(--muted); font-size: 13px; }
+
+.hunk { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hunk + .hunk { border-top: 1px dashed var(--line); }
+.hunk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hunk-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; }
+.hid { font-family: "JetBrains Mono", monospace; color: var(--muted); }
+.verb { font-weight: 600; letter-spacing: .06em; font-size: 12px; }
+.verb.replace { color: var(--gem); }
+.verb.add, .verb.create { color: var(--good); }
+.verb.remove, .verb.delete { color: var(--spike); }
+.where { color: var(--muted); }
+
+/* вибір на зміну */
+.choice { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.choice button {
+  background: var(--surface); color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer;
+  font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; font-size: 12.5px;
+}
+.choice button + button { border-left: 1px solid var(--line); }
+.choice button[aria-pressed="true"].self { background: var(--text); color: var(--surface); }
+.choice button[aria-pressed="true"].auto { background: var(--accent); color: var(--accent-ink); }
+.choice button:disabled { cursor: default; }
+.choice button:disabled:not([aria-pressed="true"]) { opacity: .45; }
+
+/* код */
+.code { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+.code-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 4px 10px;
+}
+.code-label { color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line); }
+.code.old .code-label span:first-child::before { content: "● "; color: var(--spike); }
+.code.new .code-label span:first-child::before { content: "● "; color: var(--good); }
+.code pre {
+  margin: 0; padding: 8px 0; overflow-x: auto; background: var(--sunk);
+  font-size: 12.5px; line-height: 1.6; tab-size: 4;
+}
+.ln { display: block; white-space: pre; padding-right: 14px; min-height: 1.6em; }
+.ln::before { content: " "; display: inline-block; width: 26px; text-align: center; color: var(--faint); user-select: none; }
+.ln.ctx { opacity: .6; }
+.code.old .ln.chg { background: var(--spike-bg); }
+.code.old .ln.chg::before { content: "−"; color: var(--spike); }
+.code.new .ln.chg { background: var(--good-bg); }
+.code.new .ln.chg::before { content: "+"; color: var(--good); }
+.copy {
+  font: 500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .04em;
+  color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  padding: 4px 8px; cursor: pointer;
+}
+
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syn-kw); }
+.hljs-type, .hljs-title.class_, .hljs-class .hljs-title { color: var(--syn-type); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--syn-fn); }
+.hljs-string, .hljs-char { color: var(--syn-str); }
+.hljs-number { color: var(--syn-num); }
+.hljs-comment, .hljs-doctag, .hljs-quote { color: var(--syn-com); font-style: italic; }
+.hljs-meta, .hljs-annotation, .hljs-variable, .hljs-template-variable { color: var(--syn-meta); }
+
+/* ── панель ────────────────────────────────────────── */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.status { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.status .note { color: var(--muted); }
+.tally { font-variant-numeric: tabular-nums; }
+.bulk { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.bulk .link { font-size: 13px; }
+.send {
+  font: 600 15px/1.2 "IBM Plex Sans", system-ui, sans-serif;
+  border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.send.ghost { background: transparent; color: var(--accent); }
+.send:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 420px) { h1 { font-size: 22px; } .choice button { padding: 7px 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .send, .choice button { transition: transform .08s ease, background-color .12s ease; }
+  .send:active:not(:disabled) { transform: scale(.98); }
+}
+</style>
+
+<main class="page" id="root"></main>
+
+<div class="bar" id="bar"><div class="bar-inner">
+  <div class="status" id="status"></div>
+  <div class="bulk" id="bulk"></div>
+  <button class="send" id="send" type="button">Готово — надіслати Claude</button>
+</div></div>
+
+<script id="patch-data" type="application/json">{"id": "57", "title": "ProgressBarEffect — доріжка й заповнення однією фігурою", "date": "20.09.2026", "order": "1 → 3. Кроки 1 і 2 — нові файли, обидва до 3. Компілюється після 3.", "summaryHtml": "\u003ch3>Що і навіщо\u003c/h3>\n\u003cp>У патчі 56 смуга часу була зроблена двома \u003ccode>ARoundRect\u003c/code> — доріжка й заповнення окремими акторами. Працює, але коштує \u003cstrong>два перемикання шейдера\u003c/strong> в батчі HUD, а ширину заповнення доводиться щокадру ставити руками, поза реєстром розмірів.\u003c/p>\n\u003cp>Ти запропонував інший шлях: запекти форму в \u003ccode>VfxTexture\u003c/code> і різати маскою, як в \u003ccode>AProgress\u003c/code>. Напрямок правильний — рахувати форму щокадру справді не треба, — але \u003cstrong>саме маска тут гірша за обидва варіанти\u003c/strong>, і є третій, кращий.\u003c/p>\n\u003ch3>Чому не \u003ccode>AMask\u003c/code>\u003c/h3>\n\u003cp>\u003ccode>AMask\u003c/code> — це \u003ccode>VfxGroup\u003c/code>, тобто власний FBO з кешем, який перемальовується, \u003cstrong>коли діти рухаються\u003c/strong>. У прогресі дитина рухається щокадру: кеш злітає кожен кадр, і замість двох дешевих квадів виходить bind FBO + перемальовка 60 разів на секунду. Маска виправдана, коли під нею живий складний вміст (як у \u003ccode>ABlurBack\u003c/code>), а не одна кольорова смужка.\u003c/p>\n\u003cp>Сам \u003ccode>AProgress\u003c/code> при цьому — чернетка: рожева дебаг-текстура, ассет маски закоментований, і в грі його ніхто не використовує.\u003c/p>\n\u003ch3>Що робимо натомість\u003c/h3>\n\u003cp>\u003ccode>ProgressBarEffect\u003c/code> — \u003cstrong>лінійний двійник \u003ccode>ProgressRingEffect\u003c/code>\u003c/strong>, того самого шейдера, який уже малює кільце комбо й щит на м'ячі. Там доріжка й заповнення — одна фігура в одному квадi, а \u003ccode>frac\u003c/code> — юніформ; тут те саме, тільки по прямій.\u003c/p>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>\u003c/th>\u003cth>було (патч 56)\u003c/th>\u003cth>стало\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>акторів на смугу\u003c/td>\u003ctd>2\u003c/td>\u003ctd>1\u003c/td>\u003c/tr>\u003ctr>\u003ctd>перемикань шейдера\u003c/td>\u003ctd>2\u003c/td>\u003ctd>1\u003c/td>\u003c/tr>\u003ctr>\u003ctd>хто рухає заповнення\u003c/td>\u003ctd>код, щокадру \u003ccode>setBounds\u003c/code>\u003c/td>\u003ctd>юніформ \u003ccode>frac\u003c/code>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>правий край заповнення\u003c/td>\u003ctd>заокруглений (окрема капсула)\u003c/td>\u003ctd>заокруглений (та сама капсула, коротша)\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Коли заповнення стає вужчим за власну висоту, радіус сам стискається до половини ширини — смуга гасне в крапку, а не в пелюстку.\u003c/p>\n\u003cp>Доріжка й заповнення мають окремі кольори (\u003ccode>trackColor\u003c/code>, \u003ccode>fillColor\u003c/code>) і складаються в \u003cstrong>премультиплікованому\u003c/strong> вигляді з діленням на альфу наприкінці — як у \u003ccode>roundRectFS\u003c/code>. Без цього на межі заповнення був би кант не того відтінку: біла доріжка 0.2 під кольоровим заповненням змішалась би в пропорції, яка не знає про альфу.\u003c/p>\n\u003ch3>Де лежить\u003c/h3>\n\u003cp>Шейдер — \u003ccode>assets/shader/base/progressBar/progressBarFS.glsl\u003c/code>, поруч з \u003ccode>roundRect\u003c/code>: це базова фігура UI, не орбіта. Ефект — \u003ccode>utils/vfx/effects/base/ProgressBarEffect.kt\u003c/code>, поруч з \u003ccode>RoundRectEffect\u003c/code>. Окремого актора не заводив: панель тримає \u003ccode>VfxImage\u003c/code> з ефектом напряму, так само як \u003ccode>ABall\u003c/code> тримає свої кільця.\u003c/p>\n\u003cp>Зібрано в лабораторії: \u003ccode>assembleDebug\u003c/code> — BUILD SUCCESSFUL. Шейдер компілюється вже на пристрої, тому перша перевірка — запустити й узяти магніт: смуга має бути кольору буста і збігати рівно.\u003c/p>", "files": [{"path": "app/src/main/assets/shader/base/progressBar/progressBarFS.glsl", "note": "НОВИЙ ФАЙЛ. Нова тека shader/base/progressBar/.", "lang": "glsl", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "#ifdef GL_ES\nprecision mediump float;\n#endif\n\n// ─────────────────────────────────────────────────────────────────────────────\n// PROGRESS BAR — капсула із заповненням зліва, один прохід.\n//\n// Лінійний двійник progressRingFS: доріжка на всю довжину з альфою u_trackA і\n// заповнення на u_frac довжини. Обидві смуги — ОДНА фігура в одному квадi,\n// тому це один актор і один draw, а не «доріжка + заповнення» двома акторами.\n//\n// Заповнення — та сама капсула, лише коротша, тож правий кінець у нього\n// заокруглений, як у Figma. Коли воно вужче за власну висоту, радіус сам\n// стискається до половини ширини — смуга гасне в крапку, а не в пелюстку.\n//\n// Доріжка й заповнення мають власні кольори: у грі доріжка біла й ледь видима,\n// заповнення — кольору активного буста. Складаються в ПРЕМУЛЬТИПЛІКОВАНОМУ\n// вигляді й діляться на альфу наприкінці — як у roundRectFS, інакше на межі\n// заповнення був би кант не того відтінку.\n//\n// Розміри у world-юнітах: радіус 1.5 лишається 1.5 і на 64×3, і на 200×8.\n// ─────────────────────────────────────────────────────────────────────────────\n\nvarying vec4 v_color;\nvarying vec2 v_localUV;\n\nuniform vec2  u_size;        // розмір квада у world-юнітах\nuniform float u_radius;      // радіус кінців\nuniform float u_aa;          // згладжування\nuniform float u_frac;        // заповнення 0..1 зліва направо\nuniform float u_trackA;      // альфа незаповненої частини\nuniform vec3  u_trackColor;  // білий = «колір беремо з тінту актора»\nuniform vec3  u_fillColor;\n\n// Знакова відстань до заокругленого прямокутника: \u003c0 усередині, >0 назовні\nfloat roundedBox(vec2 p, vec2 halfSize, float r) {\n    vec2 q = abs(p) - halfSize + r;\n    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;\n}\n\nvoid main() {\n    vec2 p = (v_localUV - 0.5) * u_size;\n\n    // AA йде ВСЕРЕДИНУ: d = 0 припадає рівно на межу квада, назовні місця немає\n    float track = 1.0 - smoothstep(-u_aa, 0.0, roundedBox(p, u_size * 0.5, u_radius));\n\n    // Заповнення: капсула завдовжки u_frac, притиснута до лівого краю\n    float f  = clamp(u_frac, 0.0, 1.0);\n    float w  = u_size.x * f;\n    vec2  hs = vec2(w * 0.5, u_size.y * 0.5);\n    vec2  pf = p - vec2(w * 0.5 - u_size.x * 0.5, 0.0);\n\n    float fill = 1.0 - smoothstep(-u_aa, 0.0, roundedBox(pf, hs, min(u_radius, w * 0.5)));\n    fill *= step(0.0001, f);                       // нуль — лишається сама доріжка\n\n    float trackA = track * u_trackA;\n\n    // Заповнення НАД доріжкою (alpha over), як обводка над заливкою в roundRect\n    float a = fill + trackA * (1.0 - fill);\n\n    vec3 rgb = u_fillColor * fill + u_trackColor * trackA * (1.0 - fill);\n    rgb /= max(a, 0.0001);                         // назад у пряму альфу\n\n    gl_FragColor = vec4(rgb, a) * v_color;\n}", "id": "1.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/ProgressBarEffect.kt", "note": "НОВИЙ ФАЙЛ. Поруч з RoundRectEffect.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.utils.vfx.effects.base\n\nimport com.badlogic.gdx.graphics.Color\nimport com.badlogic.gdx.graphics.glutils.ShaderProgram\nimport com.lewydo.orbitdash.game.utils.vfx.VfxContext\n\n// ─────────────────────────────────────────────────────────────────────────────\n// ProgressBarEffect — смуга прогресу капсулою (single-pass).\n//\n// Те саме, що ProgressRingEffect робить для кільця, тільки по прямій: доріжка\n// з альфою trackAlpha на всю довжину і заповнення на frac зліва. Одна фігура —\n// один актор і один draw; двома акторами це коштувало б два перемикання\n// шейдера в батчі HUD.\n//\n// Доріжка й заповнення мають окремі кольори, бо в грі вони різні: доріжка\n// біла й ледь видима, заповнення — кольору активного буста.\n//\n// Радіус — у world-юнітах, як у RoundRectEffect: не «пливе» при зміні розміру.\n// ─────────────────────────────────────────────────────────────────────────────\nclass ProgressBarEffect : VfxEffect() {\n\n    override val fragmentShader = \"shader/base/progressBar/progressBarFS.glsl\"\n\n    /** Радіус кінців. Половина висоти = капсула. */\n    var radius = 1.5f\n\n    /** Заповнення 0..1, зліва направо. */\n    var frac = 1f\n\n    /** Альфа незаповненої частини. */\n    var trackAlpha = 0.2f\n\n    /** Ширина зони згладжування в юнітах. */\n    var aaWidth = 1.2f\n\n    /** Колір доріжки. Білий = «беру з тінту актора». Міняти через .set(). */\n    val trackColor = Color(Color.WHITE)\n\n    /** Колір заповнення. Білий = те саме. */\n    val fillColor = Color(Color.WHITE)\n\n    override fun setUniforms(shader: ShaderProgram, ctx: VfxContext) {\n        shader.setUniformf(\"u_size\", ctx.width, ctx.height)\n        shader.setUniformf(\"u_radius\", radius)\n        shader.setUniformf(\"u_aa\", aaWidth)\n        shader.setUniformf(\"u_frac\", frac.coerceIn(0f, 1f))\n        shader.setUniformf(\"u_trackA\", trackAlpha)\n        shader.setUniformf(\"u_trackColor\", trackColor.r, trackColor.g, trackColor.b)\n        shader.setUniformf(\"u_fillColor\", fillColor.r, fillColor.g, fillColor.b)\n    }\n\n    override fun stateKey(): Long {\n        var k = 41L\n        k = k * 31 + radius.toRawBits()\n        k = k * 31 + frac.toRawBits()\n        k = k * 31 + trackAlpha.toRawBits()\n        k = k * 31 + aaWidth.toRawBits()\n        k = k * 31 + trackColor.toIntBits().toLong()\n        k = k * 31 + fillColor.toIntBits().toLong()\n        return k\n    }\n}", "id": "2.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/boost/APanelBooster.kt", "note": "Два ARoundRect → один VfxImage з ProgressBarEffect.", "lang": "kotlin", "hunks": [{"verb": "replace", "where": "біля рядка 4", "old": "import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout\nimport com.lewydo.orbitdash.game.actors.ui.ABoostHex\nimport com.lewydo.orbitdash.game.actors.ui.ARoundRect\nimport com.lewydo.orbitdash.game.content.info\nimport com.lewydo.orbitdash.game.utils.SizeScaler\nimport com.lewydo.orbitdash.game.utils.actor.setColorRGB\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen\n\n// ----------------------------------------------------------------------------", "new": "import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout\nimport com.lewydo.orbitdash.game.actors.ui.ABoostHex\nimport com.lewydo.orbitdash.game.content.info\nimport com.lewydo.orbitdash.game.utils.SizeScaler\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen\nimport com.lewydo.orbitdash.game.utils.vfx.VfxImage\nimport com.lewydo.orbitdash.game.utils.vfx.effects.base.ProgressBarEffect\n\n// ----------------------------------------------------------------------------", "oldMarks": [0, 0, 1, 0, 0, 1, 0, 0, 0], "newMarks": [0, 0, 0, 0, 0, 1, 1, 0, 0], "id": "3.1"}, {"verb": "add", "where": "біля рядка 26", "old": "//  PULSE сюди не потрапляє навмисно: він разовий — зносить шипи й зникає,\n//  показувати «скільки лишилось» нема чого.\n// ----------------------------------------------------------------------------\nclass APanelBooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) {", "new": "//  PULSE сюди не потрапляє навмисно: він разовий — зносить шипи й зникає,\n//  показувати «скільки лишилось» нема чого.\n//\n//  СМУГА — ОДИН АКТОР, а не «доріжка + заповнення». ProgressBarEffect малює\n//  обидві в одному квадi, як ProgressRingEffect малює кільця м'яча: два\n//  ARoundRect коштували б удвічі більше перемикань шейдера в батчі HUD, а\n//  заповнення довелось би щокадру рухати руками.\n// ----------------------------------------------------------------------------\nclass APanelBooster(override val screen: AdvancedScreen) : AConstraintLayout(screen) {", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 0, 0], "id": "3.2"}, {"verb": "replace", "where": "біля рядка 45", "old": "    // Actors\n    // ------------------------------------------------------------------------\n    private val aHex   = ABoostHex(screen)\n    private val aTrack = ARoundRect(screen)\n    private val aFill  = ARoundRect(screen)\n\n    // ------------------------------------------------------------------------", "new": "    // Actors\n    // ------------------------------------------------------------------------\n    private val aHex = ABoostHex(screen)\n\n    private val fxBar = ProgressBarEffect().apply { trackAlpha = TRACK_ALPHA }\n    private val aBar  = VfxImage(screen, screen.drawerUtil.getRegion(), fxBar)\n\n    // ------------------------------------------------------------------------", "oldMarks": [0, 0, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "3.3"}, {"verb": "replace", "where": "біля рядка 60", "old": "    override fun addActorsOnGroup() {\n        addHex()\n        addTrack()\n        addFill()\n\n        // Радіус — похідна геометрія у world-юнітах, тому keepScaled, а не\n        // sizeChanged(): фактор скейлера існує лише зі stage, і в sizeChanged()\n        // капсула вийшла б прямокутником (та сама пастка, що з кільцями м'яча).\n        keepScaled {\n            val r = (BAR_H / 2f).toActual\n            aTrack.radius = r\n            aFill.radius  = r\n        }\n\n        // Панель існує лише поки щось діє — на старті рану її немає.", "new": "    override fun addActorsOnGroup() {\n        addHex()\n        addBar()\n\n        // Радіус — похідна геометрія у world-юнітах, тому keepScaled, а не\n        // sizeChanged(): фактор скейлера існує лише зі stage, і в sizeChanged()\n        // капсула вийшла б прямокутником (та сама пастка, що з кільцями м'яча).\n        keepScaled { fxBar.radius = (BAR_H / 2f).toActual }\n\n        // Панель існує лише поки щось діє — на старті рану її немає.", "oldMarks": [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0, 0, 0, 1, 0, 0], "id": "3.4"}, {"verb": "replace", "where": "біля рядка 93", "old": "            lastBoost = boost\n            aHex.boost = boost\n            aFill.setColorRGB(boost.info.color)\n        }\n\n        // Ширина смуги міняється щокадру, тому вона НЕ в реєстрі розмірів:\n        // межі ставить код, як позицію м'яча на орбіті. Доріжка вже на місці\n        // від лейауту — беремо її межі й ріжемо по частці.\n        aFill.setBounds(aTrack.x, aTrack.y, aTrack.width * engine.boostFrac, aTrack.height)\n    }\n", "new": "            lastBoost = boost\n            aHex.boost = boost\n            fxBar.fillColor.set(boost.info.color)\n        }\n\n        // Час, що збігає, — один юніформ: актор не рухається й не міняє розміру\n        fxBar.frac = engine.boostFrac\n    }\n", "oldMarks": [0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0, 1, 1, 0, 0], "id": "3.5"}, {"verb": "replace", "where": "біля рядка 116", "old": "    }\n\n    private fun addTrack() {\n        aTrack.setSizeScaled(BAR_W, BAR_H)\n        add(aTrack) { centerX(); bottomToBottom() }\n        aTrack.color.a = TRACK_ALPHA\n    }\n\n    /** Поза лейаутом: межі щокадру ставить syncFrom(). */\n    private fun addFill() {\n        addActor(aFill)\n    }\n", "new": "    }\n\n    private fun addBar() {\n        aBar.setSizeScaled(BAR_W, BAR_H)\n        add(aBar) { centerX(); bottomToBottom() }\n    }\n", "oldMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 0, 0], "id": "3.6"}]}], "state": {"submitted": "2026-09-20T09:00:49.117Z", "hunks": {"1.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "2.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.4": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.5": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}, "3.6": {"choice": "auto", "result": {"ok": true, "by": "claude", "note": "вставлено"}}}, "result": {"ok": true, "by": "claude", "at": "2026-09-20T09:25:00.000Z", "note": "усі 8 вставлено, assembleDebug OK; шейдер компілюється на GPU — перевірка на пристрої: узяти магніт і подивитись смугу"}}}</script>
+<script id="app">
+(function () {
+  "use strict";
+
+  const data = JSON.parse(document.getElementById("patch-data").textContent);
+  const state = data.state || (data.state = {});
+  state.hunks = state.hunks || {};
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const fmtTime = (iso) => {
+    try { return new Date(iso).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso || ""; }
+  };
+
+  const allHunks = [];
+  data.files.forEach((f) => f.hunks.forEach((h) => allHunks.push(h)));
+
+  const submitted = () => !!state.submitted;
+  const hasResults = () => allHunks.some((h) => state.hunks[h.id] && state.hunks[h.id].result);
+
+  // Чернетка вибору до «Готово» — лише в цьому браузері; не вдалось — не страшно
+  const DRAFT_KEY = "patch-draft-" + data.id;
+  function loadDraft() {
+    if (submitted()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+      Object.keys(d).forEach((id) => {
+        if (allHunks.some((h) => h.id === id)) state.hunks[id] = { choice: d[id] };
+      });
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try {
+      const d = {};
+      Object.keys(state.hunks).forEach((id) => { if (state.hunks[id].choice) d[id] = state.hunks[id].choice; });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) { /* немає сховища */ }
+  }
+
+  // ── підсвітка: блок цілком (коментарі на кілька рядків), потім різання на рядки ──
+  function highlight(text, lang) {
+    const hl = window.hljs;
+    if (!hl || !lang || !hl.getLanguage(lang)) return null;
+    try { return hl.highlight(text, { language: lang, ignoreIllegals: true }).value; }
+    catch (e) { return null; }
+  }
+  function splitHtmlLines(htmlText) {
+    const lines = [];
+    let cur = "";
+    const open = [];
+    const re = /(<span[^>]*>)|(<\/span>)|(\n)|([^<\n]+|<(?!\/?span)[^>]*>)/g;
+    let m;
+    while ((m = re.exec(htmlText))) {
+      if (m[1]) { open.push(m[1]); cur += m[1]; }
+      else if (m[2]) { open.pop(); cur += m[2]; }
+      else if (m[3]) { cur += "</span>".repeat(open.length); lines.push(cur); cur = open.join(""); }
+      else cur += m[4];
+    }
+    lines.push(cur);
+    return lines;
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function codeBlock(kind, label, text, marks, lang) {
+    const box = el("div", "code " + kind);
+    const head = el("div", "code-label");
+    head.appendChild(el("span", null, label));
+    const btn = el("button", "copy", "Копіювати");
+    btn.type = "button";
+    btn.addEventListener("click", async () => {
+      const ok = await copyText(text);
+      btn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => { btn.textContent = "Копіювати"; }, 1600);
+    });
+    head.appendChild(btn);
+    box.appendChild(head);
+
+    const pre = el("pre");
+    const code = el("code");
+    const hl = highlight(text, lang);
+    const lines = hl != null ? splitHtmlLines(hl) : text.split("\n").map(escapeHtml);
+    code.innerHTML = lines.map((l, i) => {
+      const cls = marks ? (marks[i] ? "ln chg" : "ln ctx") : "ln";
+      return '<span class="' + cls + '">' + (l || "") + "</span>";
+    }).join("");
+    pre.appendChild(code);
+    box.appendChild(pre);
+    return box;
+  }
+
+  const VERB = { replace: "ЗАМІНИТИ", add: "ДОДАТИ", remove: "ВИДАЛИТИ", create: "НОВИЙ ФАЙЛ", delete: "ВИДАЛИТИ ФАЙЛ" };
+
+  function hunkStatus(h) {
+    const s = state.hunks[h.id];
+    if (!s || !s.choice) return el("span", "pill new", "не обрано");
+    if (s.result) {
+      const p = el("span", "pill " + (s.result.ok ? "done" : "fail"), s.result.note || (s.result.ok ? "готово" : "не вийшло"));
+      return p;
+    }
+    if (submitted()) return el("span", "pill pending", s.choice === "auto" ? "Claude вставляє" : "Claude перевіряє");
+    return null;
+  }
+
+  function setChoice(id, choice) {
+    if (submitted()) return;
+    const s = state.hunks[id] || (state.hunks[id] = {});
+    s.choice = s.choice === choice ? null : choice;
+    saveDraft();
+    render();
+  }
+
+  function renderPage() {
+    const root = $("root");
+    const scrollY = window.scrollY;
+    root.textContent = "";
+
+    const head = el("header", "head");
+    const eyebrow = el("div", "eyebrow");
+    eyebrow.appendChild(el("span", "num", "патч " + data.id));
+    if (data.date) eyebrow.appendChild(el("span", null, data.date));
+    head.appendChild(eyebrow);
+    head.appendChild(el("h1", null, data.title));
+    root.appendChild(head);
+
+    // summaryHtml генерує Claude з власного .md — довірений вміст
+    const summary = el("section", "summary");
+    summary.innerHTML = data.summaryHtml || "";
+    root.appendChild(summary);
+
+    const steps = el("section", "steps");
+    const t = el("div", "steps-title");
+    t.appendChild(el("h2", null, "Зміни"));
+    t.appendChild(el("p", null, (data.order ? data.order + " " : "") +
+      "Біля кожної зміни обери, хто її вставляє, потім «Готово» внизу."));
+    steps.appendChild(t);
+
+    const locked = submitted();
+    data.files.forEach((f, fi) => {
+      const card = el("article", "file");
+      const fh = el("div", "file-head");
+      const fid = el("div", "file-id");
+      fid.appendChild(el("span", "idx", String(fi + 1)));
+      fid.appendChild(el("span", "path", f.path));
+      fh.appendChild(fid);
+      if (f.hunks.length > 1) {
+        const all = el("div", "file-all");
+        all.appendChild(el("span", null, "увесь файл:"));
+        [["self", "сам"], ["auto", "авто"]].forEach(([c, label]) => {
+          const b = el("button", "link", label);
+          b.type = "button";
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            f.hunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = c === "self" ? "manual" : "auto"; });
+            saveDraft(); render();
+          });
+          all.appendChild(b);
+        });
+        fh.appendChild(all);
+      }
+      card.appendChild(fh);
+      if (f.note) card.appendChild(el("p", "file-note", f.note));
+
+      f.hunks.forEach((h) => {
+        const hb = el("div", "hunk");
+        const top = el("div", "hunk-top");
+        const ht = el("div", "hunk-title");
+        ht.appendChild(el("span", "hid", h.id));
+        ht.appendChild(el("span", "verb " + h.verb, VERB[h.verb] || h.verb));
+        if (h.where) ht.appendChild(el("span", "where", h.where));
+        const st = hunkStatus(h);
+        if (st && (locked || !state.hunks[h.id] || !state.hunks[h.id].choice)) ht.appendChild(st);
+        top.appendChild(ht);
+
+        const choice = el("div", "choice");
+        choice.setAttribute("role", "group");
+        choice.setAttribute("aria-label", "Хто вставляє зміну " + h.id);
+        const cur = (state.hunks[h.id] || {}).choice;
+        [["manual", "self", "Вставив сам"], ["auto", "auto", "Вставити автоматично"]].forEach(([val, cls, label]) => {
+          const b = el("button", cls, label);
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(cur === val));
+          b.disabled = locked;
+          b.addEventListener("click", () => setChoice(h.id, val));
+          choice.appendChild(b);
+        });
+        top.appendChild(choice);
+        hb.appendChild(top);
+
+        const lang = h.lang || f.lang;
+        if (h.old != null) hb.appendChild(codeBlock("old", h.verb === "add" ? "Знайти (вже є у файлі)" : "Було", h.old, h.oldMarks, lang));
+        if (h.new != null) hb.appendChild(codeBlock("new", h.verb === "create" ? "Файл цілком" : "Стало", h.new, h.newMarks, lang));
+        card.appendChild(hb);
+      });
+      steps.appendChild(card);
+    });
+    root.appendChild(steps);
+    window.scrollTo(0, scrollY);
+  }
+
+  // ── панель ───────────────────────────────────────────────────────────
+  let artifactApi = null;
+  let busy = false;
+
+  function counts() {
+    let self = 0, auto = 0, none = 0;
+    allHunks.forEach((h) => {
+      const c = (state.hunks[h.id] || {}).choice;
+      if (c === "manual") self++; else if (c === "auto") auto++; else none++;
+    });
+    return { self, auto, none };
+  }
+
+  function renderBar() {
+    const status = $("status"), bulk = $("bulk"), send = $("send");
+    status.textContent = ""; bulk.textContent = "";
+    const c = counts();
+
+    if (state.result) {
+      status.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Готово" : "Є проблеми"));
+      status.appendChild(el("span", null, fmtTime(state.result.at)));
+      if (state.result.note) status.appendChild(el("span", "note", state.result.note));
+      send.hidden = true;
+      return;
+    }
+
+    const tally = el("span", "tally", "сам " + c.self + " · авто " + c.auto + (c.none ? " · не обрано " + c.none : ""));
+    status.appendChild(tally);
+
+    if (submitted()) {
+      status.appendChild(el("span", "pill pending", "Надіслано"));
+      status.appendChild(el("span", "note", fmtTime(state.submitted) + " — Claude вставить «авто», перевірить «сам» і збере проєкт"));
+      send.hidden = hasResults();
+      send.className = "send ghost";
+      send.textContent = "Змінити вибір";
+      send.disabled = !artifactApi || busy;
+      return;
+    }
+
+    if (!artifactApi) status.appendChild(el("span", "note", "надіслати можна на claude.ai; інакше напиши в чат"));
+    else if (c.none) status.appendChild(el("span", "note", "обери для кожної зміни"));
+
+    bulk.appendChild(el("span", null, "усе одразу:"));
+    [["manual", "усе сам"], ["auto", "усе автоматично"], [null, "очистити"]].forEach(([val, label]) => {
+      const b = el("button", "link", label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        allHunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = val; });
+        saveDraft(); render();
+      });
+      bulk.appendChild(b);
+    });
+
+    send.hidden = false;
+    send.className = "send";
+    send.textContent = c.none ? "Готово — ще " + c.none + " без вибору" : "Готово — надіслати Claude";
+    send.disabled = !artifactApi || busy || c.none > 0;
+  }
+
+  function render() { renderPage(); renderBar(); }
+
+  // Документ = незмінні частини + новий стан; живий DOM не серіалізуємо
+  const HEAD_EXTRA =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"><\/script>';
+  const BAR =
+    '<div class="bar" id="bar"><div class="bar-inner">' +
+    '<div class="status" id="status"></div><div class="bulk" id="bulk"></div>' +
+    '<button class="send" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app = document.getElementById("app").textContent;
+    const json = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main>" + BAR +
+      "<script id=\"patch-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", "note", code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+
+  $("send").addEventListener("click", () => {
+    if (!artifactApi || busy) return;
+    if (submitted()) {           // «Змінити вибір» — поки Claude не почав
+      if (hasResults()) return;
+      state.submitted = null;
+    } else {
+      if (counts().none > 0) return;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  });
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script>

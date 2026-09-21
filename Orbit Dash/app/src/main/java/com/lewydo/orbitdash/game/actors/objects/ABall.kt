@@ -4,6 +4,9 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
+import com.lewydo.orbitdash.game.actors.progress.ARingProgress
+import com.lewydo.orbitdash.engine.RunEngine.Boost
+import com.lewydo.orbitdash.game.content.info
 import com.lewydo.orbitdash.game.utils.GameColor
 import com.lewydo.orbitdash.game.utils.SizeScaler
 import com.lewydo.orbitdash.game.utils.actor.setColorRGB
@@ -11,8 +14,6 @@ import com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen
 import com.lewydo.orbitdash.game.utils.gdxGame
 import com.lewydo.orbitdash.game.utils.theme.ThemeManager
 import com.lewydo.orbitdash.game.utils.theme.ThemeSync
-import com.lewydo.orbitdash.game.utils.vfx.VfxImage
-import com.lewydo.orbitdash.game.utils.vfx.effects.ProgressRingEffect
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  ABall — м'яч гравця з усіма його станами: один актор, як один компонент у
@@ -30,9 +31,16 @@ import com.lewydo.orbitdash.game.utils.vfx.effects.ProgressRingEffect
 //  «повертається» разом з орбітою, як ctx.rotate у прототипі), але кільце
 //  комбо завжди починається з 12-ї, а супутники крутяться своїм темпом.
 //
-//  Кільця — один шейдер ProgressRingEffect: комбо тане від 12-ї за
+//  Кільця — два ARingProgress, тобто один шейдер: комбо тане від 12-ї за
 //  годинниковою, щит — те саме кільце з frac = 1. Супутники — та сама графіка,
 //  що іскра на полі: гравець читає «спіймані іскри стали моїми».
+//
+//  КОЛЬОРИ — З ДВОХ РІЗНИХ ДЖЕРЕЛ, І ЦЕ НАВМИСНО. Усе, що є САМ м'яч — тіло,
+//  ореол, кільце комбо, ореоли супутників — бере player із теми: комбо це стан
+//  гравця, тож воно й міняється зі скіном. Кільце щита читає колір бустера
+//  SHIELD із BoostCatalog і в темі не бере участі: щит упізнається лише
+//  кольором, і блакитне означає «щит» у будь-якій темі (див. шапку каталогу).
+//  Білими лишаються крапка напряму й крапки супутників — як іскра на полі.
 // ─────────────────────────────────────────────────────────────────────────────
 class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
@@ -56,6 +64,8 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         // ── кільце щита ──
         private const val SHIELD_R = 28.75f
         private const val SHIELD_W = 2.5f
+        /** Прозорість кільця щита, як у прототипі: rgba("#4dd9ff", 0.8). */
+        private const val SHIELD_A = 0.8f
 
         // ── супутники комбо ──
         /** Найбільше супутників: x5 дає чотири (множник − 1). */
@@ -89,11 +99,8 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     private val aBall  = Image(gdxGame.assetsMsdf.circle)
     private val aPoint = Image(gdxGame.assetsMsdf.circle).apply { color = GameColor.white_90 }
 
-    private val fxShield = ProgressRingEffect().apply { frac = 1f }
-    private val aShield  = VfxImage(screen, screen.drawerUtil.getRegion(), fxShield)
-
-    private val fxCombo = ProgressRingEffect().apply { trackAlpha = COMBO_TRACK_A }
-    private val aCombo  = VfxImage(screen, screen.drawerUtil.getRegion(), fxCombo)
+    private val aShield = ARingProgress(screen).apply { frac = 1f }
+    private val aCombo  = ARingProgress(screen).apply { trackAlpha = COMBO_TRACK_A }
 
     private class Sat(val aGlow: Image, val aDot: Image)
     private val sats = List(MAX_SATS) {
@@ -131,10 +138,10 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
         // обидва кільця за квад. keepScaled виконується тут, уже з фактором,
         // і переприкладається на кожен resize.
         keepScaled {
-            fxShield.radius    = SHIELD_R.toActual
-            fxShield.thickness = SHIELD_W.toActual
-            fxCombo.radius     = COMBO_R.toActual
-            fxCombo.thickness  = COMBO_W.toActual
+            aShield.radius    = SHIELD_R.toActual
+            aShield.thickness = SHIELD_W.toActual
+            aCombo.radius     = COMBO_R.toActual
+            aCombo.thickness  = COMBO_W.toActual
         }
 
         themeSync.sync()
@@ -164,7 +171,7 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
      * (множник − 1). count = 0 — комбо немає: ні кільця, ні супутників.
      */
     fun setCombo(frac: Float, count: Int) {
-        fxCombo.frac = frac
+        aCombo.frac = frac
         val n = count.coerceIn(0, MAX_SATS)
         if (n == satCount) return
         satCount = n
@@ -181,6 +188,8 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
 
     private fun addShield() {
         add(aShield) { size(RING_QUAD); center() }
+        aShield.setColorRGB(Boost.SHIELD.info.color)
+        aShield.color.a = SHIELD_A
         aShield.isVisible = false
     }
 
@@ -238,7 +247,12 @@ class ABall(override val screen: AdvancedScreen) : AConstraintLayout(screen) {
     // Theme
     // ------------------------------------------------------------------------
     private fun syncTheme() {
-        aGlow.setColorRGB(ThemeManager.current.player)
-        aBall.setColorRGB(ThemeManager.current.player)
+        val player = ThemeManager.current.player
+        aGlow.setColorRGB(player)
+        aBall.setColorRGB(player)
+        // Кільце комбо — тінт актора, не ringColor: VfxImage віддає color у
+        // v_color, і доріжка (trackAlpha) фарбується тим самим множенням.
+        aCombo.setColorRGB(player)
+        for (s in sats) s.aGlow.setColorRGB(player)
     }
 }

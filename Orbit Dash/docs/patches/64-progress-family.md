@@ -1,0 +1,57 @@
+# Патч 64 — Прогреси в одну родину: імена й теки
+
+20.09.2026 · 17 файлів, 25 кроків. Сторінка: https://claude.ai/artifact/52qKktWef9DEKjpuXZPFLK
+
+## Що і навіщо
+
+Імена розповзлись: `AProgressBar` проти `AMaskProgress`, `ProgressBarEffect` проти
+`MaskProgressEffect` — слова ті самі, порядок різний. Плюс актори лежали в `actors/ui/`,
+ефекти в `effects/base/`, а шейдери в двох окремих теках. Патч зводить це в одну родину.
+
+### Семантика імен
+
+Спершу **чим задана форма**, потім **що це**:
+
+| було | стало |
+|---|---|
+| `AProgressBar` | **`ABarProgress`** |
+| `ProgressBarEffect` | **`BarProgressEffect`** |
+| `AMaskProgress` | `AMaskProgress` (уже правильно) |
+| `MaskProgressEffect` | `MaskProgressEffect` (уже правильно) |
+
+`Bar` — форму рахує математика, `Mask` — форму задає картинка. Додасться третій —
+`RingProgress` — назветься так само й ляже поруч.
+
+### Одна тека на рівень
+
+| | було | стало |
+|---|---|---|
+| актори | `actors/ui/` | **`actors/progress/`** |
+| ефекти | `effects/base/` | **`effects/base/progress/`** |
+| шейдери | `shader/base/progressBar/` + `shader/base/maskProgress/` | **`shader/base/progress/`** |
+
+Шейдери лягли в `base/progress`, а не в корінь `shader/progress`, щоб дзеркалити ефекти:
+`effects/base/progress` ↔ `shader/base/progress`. `base` тут означає «будівельний блок UI»,
+на відміну від `shader/orbit/`, де лежить ігрова геометрія.
+
+Файли шейдерів теж перейменовані під класи: `barProgressFS.glsl`, `maskProgressFS.glsl`.
+
+### Заразом прибрано
+
+`actors/progress/AProgress.kt` — стара чернетка з рожевою дебаг-текстурою, яку ти вже
+закоментував цілком (51 рядок під `//`). Тека `actors/progress/` тепер не має мертвого
+сусіда. Крок окремий — можеш лишити файл, якщо він ще потрібен як згадка.
+
+Також прибрано осиротілий `import ProgressBarEffect` у `TestScreen`, який лишився після
+переходу на актор у патчі 62.
+
+### Чого патч НЕ чіпає
+
+`ProgressRingEffect` (кільця комбо й щита на м'ячі) лишається зі старим ім'ям у `effects/`:
+його тягнуть `ABall` і `AWave`, це окремий дотик. За тією ж логікою він мав би стати
+`RingProgressEffect` і переїхати в `progress/` — скажеш, зроблю наступним патчем.
+
+Записи патчів у `docs/patches/` навмисно не переписані: вони описують те, що було на той
+момент, і переписувати історію не можна.
+
+Зібрано в лабораторії: `assembleDebug` — BUILD SUCCESSFUL.

@@ -3,6 +3,7 @@ package com.lewydo.orbitdash.engine
 import com.lewydo.orbitdash.engine.RunEngine.Boost
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.PI
@@ -34,6 +35,106 @@ class RunEngineTest {
             ),
             Boost.SPAWN_POOL,
         )
+    }
+
+    /**
+     * HUD питає в рушія, який буст діє і скільки від нього лишилось, — тому
+     * це правило й перевіряється тут. MAGNET триває 8 с: одразу після старту
+     * лишається все, через секунду — сім восьмих.
+     */
+    @Test
+    fun activeBoostReportsTimerToHud() {
+        val e = RunEngine(RunEngine.Config(startBoost = Boost.MAGNET), seed = 7L)
+
+        assertEquals(Boost.MAGNET, e.activeBoost)
+        assertEquals(1f, e.boostFrac, 1e-3f)
+
+        repeat(60) { e.update(1f / 60f) }
+
+        assertEquals(Boost.MAGNET, e.activeBoost)
+        assertEquals(7f / 8f, e.boostFrac, 1e-2f)
+    }
+
+    /**
+     * SHIELD не триває — він лежить зарядом. Якби він потрапляв в activeBoost,
+     * у HUD з'явилась би смуга часу, якій нема що відлічувати.
+     */
+    @Test
+    fun instantBoostsNeverBecomeActive() {
+        val e = RunEngine(RunEngine.Config(startBoost = Boost.SHIELD), seed = 7L)
+
+        assertEquals(1, e.shield)
+        assertNull(e.activeBoost)
+        assertEquals(0f, e.boostFrac, 1e-4f)
+    }
+
+    /**
+     * Таймерні бусти ВЗАЄМОВИКЛЮЧНІ: підібраний новий гасить попередній, а не
+     * стає в чергу. Саме тому в HUD одна панель, а не ряд слотів.
+     */
+    @Test
+    fun newTimedBoostReplacesTheRunningOne() {
+        val e = startedWithMagnet(runSeconds = 2f)
+        assertTrue(e.boostFrac < 1f)
+
+        assertTrue(e.debugSpawnBoost(Boost.FRENZY))
+        assertTrue(runUntil(e) { it.activeBoost == Boost.FRENZY })
+
+        assertEquals(0f, e.magnetT, 1e-4f)          // магніт згас, а не чекає своєї черги
+        assertTrue(e.boostFrac > 0.95f)             // смуга почалась із повної
+    }
+
+    /** Той самий буст удруге — не «+час», а час спочатку: смуга знов повна. */
+    @Test
+    fun sameBoostRestartsItsTimer() {
+        val e = startedWithMagnet(runSeconds = 3f)
+        assertTrue(e.boostFrac < 0.7f)
+
+        assertTrue(e.debugSpawnBoost(Boost.MAGNET))
+        assertTrue(runUntil(e) { it.boostFrac > 0.95f })
+
+        assertEquals(Boost.MAGNET, e.activeBoost)
+        assertTrue(e.magnetT <= Boost.MAGNET.dur)   // не накопичилось понад тривалість
+    }
+
+    /**
+     * SHIELD і PULSE живуть окремо від таймерних: у них власна гілка в
+     * applyBoost із return, трьох таймерів вони не чіпають. Підібраний щит
+     * посеред магніту не сміє гасити смугу в HUD.
+     */
+    @Test
+    fun shieldDoesNotCancelTheRunningTimer() {
+        val e = startedWithMagnet(runSeconds = 2f)
+        val before = e.boostFrac
+
+        assertTrue(e.debugSpawnBoost(Boost.SHIELD))
+        assertTrue(runUntil(e) { it.shield > 0 })
+
+        assertEquals(Boost.MAGNET, e.activeBoost)
+        assertTrue(e.boostFrac < before)            // час іде далі, як і йшов
+    }
+
+    /**
+     * Ран із магнітом у руках, прокручений на задані секунди.
+     *
+     * seed = 1 обрано навмисно: у вікні, куди debugSpawnBoost кладе буст,
+     * на цьому сіді немає шипа, тож м'яч доїжджає до нього живим. З будь-яким
+     * сідом тест був би про везіння, а не про правило.
+     */
+    private fun startedWithMagnet(runSeconds: Float): RunEngine {
+        val e = RunEngine(RunEngine.Config(startBoost = Boost.MAGNET), seed = 1L)
+        repeat((runSeconds * 60).toInt()) { e.update(1f / 60f) }
+        assertEquals(RunEngine.Phase.RUN, e.phase)
+        return e
+    }
+
+    /** Крутити до трьох секунд, поки не справдиться умова. false — не дочекались. */
+    private fun runUntil(e: RunEngine, cond: (RunEngine) -> Boolean): Boolean {
+        repeat(60 * 3) {
+            e.update(1f / 60f)
+            if (cond(e)) return true
+        }
+        return false
     }
 
     /** Той самий seed + ті самі тапи = той самий ран до останньої сутності. */

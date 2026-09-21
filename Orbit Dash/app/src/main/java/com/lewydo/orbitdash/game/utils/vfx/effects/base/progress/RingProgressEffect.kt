@@ -1,4 +1,4 @@
-package com.lewydo.orbitdash.game.utils.vfx.effects
+package com.lewydo.orbitdash.game.utils.vfx.effects.base.progress
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
@@ -6,19 +6,23 @@ import com.lewydo.orbitdash.game.utils.vfx.VfxContext
 import com.lewydo.orbitdash.game.utils.vfx.effects.base.VfxEffect
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ProgressRingEffect — кільце із заповненням (single-pass).
+// RingProgressEffect — кільце із заповненням (single-pass).
 //
 // Доріжка по всьому колу з альфою trackAlpha і заповнена дуга від 12-ї години
 // за годинниковою на frac оберту; frac = 1 — звичайне суцільне кільце. Так
 // малюються обидва кільця м'яча: таймер комбо (frac тане) і щит (frac = 1).
 //
+// Третій у родині прогресів, і ім'я каже, ЧИМ задана форма: Bar — математика
+// по прямій, Mask — картинка, Ring — математика по колу. Вибір між ними —
+// docs/progress.md.
+//
 // Розміри — у world-юнітах групи, у частки квада переводяться тут через
 // ctx.width, як в OrbitRingEffect. Радіус задається явно (макет), а без нього —
 // найбільший, що влазить у квад разом із товщиною й AA.
 // ─────────────────────────────────────────────────────────────────────────────
-class ProgressRingEffect : VfxEffect() {
+class RingProgressEffect : VfxEffect() {
 
-    override val fragmentShader = "shader/orbit/progressRingFS.glsl"
+    override val fragmentShader = "shader/base/progress/ringProgressFS.glsl"
 
     /** Радіус осі кільця у world-юнітах; null — найбільший, що влазить. */
     var radius: Float? = null

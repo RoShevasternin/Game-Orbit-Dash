@@ -1,0 +1,28 @@
+{
+  "id": "58",
+  "short": "Текстурний прогрес",
+  "title": "Reveal-текстура в ProgressBarEffect + клемп радіуса як у Figma",
+  "date": "20.09.2026",
+  "order": "1 → 4. Кроки рахуються від стану до патча; компілюється після 3, крок 4 — стенд.",
+  "summary_md": "pages/58.summary.md",
+  "proj": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/1149b5e6-2ae5-4818-8a8a-9bbfeaf5b408/scratchpad/lab57/",
+  "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/1149b5e6-2ae5-4818-8a8a-9bbfeaf5b408/scratchpad/lab58/",
+  "files": [
+    {
+      "path": "app/src/main/assets/shader/base/progressBar/progressBarFS.glsl",
+      "note": "Клемп радіуса + текстурний режим (u_useTex, u_texTrackA)."
+    },
+    {
+      "path": "app/src/main/assets/shader/base/roundRect/roundRectFS.glsl",
+      "note": "Клемп радіуса — один рядок."
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/ProgressBarEffect.kt",
+      "note": "textured, texturedTrackAlpha + юніформи + stateKey."
+    },
+    {
+      "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/TestScreen.kt",
+      "note": "Прогрес-стенд: 6 смуг, спільна анімація frac, текстури Pixmap на льоту."
+    }
+  ]
+}
