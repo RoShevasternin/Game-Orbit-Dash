@@ -3,28 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Тюнер 66 · Віньєтка буста</title>
+<title>Демо 66 · Віньєтка буста</title>
 <style id="style">
 :root {
-  --bg:      #0B0D14;
-  --panel:   #141824;
-  --sunk:    #0E1119;
-  --line:    #262C3B;
-  --text:    #E7ECF5;
-  --muted:   #9AA3B5;
-  --faint:   #626C82;
-  --accent:  #4DA3FF;
-  --ok:      #56D48A;
-  --warn:    #FFC857;
+  --bg: #0B0D14; --panel: #141824; --sunk: #0E1119; --line: #262C3B;
+  --text: #E7ECF5; --muted: #9AA3B5; --faint: #626C82; --accent: #4DA3FF;
+  --ok: #56D48A; --warn: #FFC857;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.55 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-.page { max-width: 860px; margin: 0 auto; padding: 22px 16px 200px; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.55 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+.page { max-width: 900px; margin: 0 auto; padding: 22px 16px 190px; }
 h1 { font-size: 24px; font-weight: 700; margin: 4px 0 8px; letter-spacing: -.01em; }
+h2 { font-size: 14px; font-weight: 700; margin: 0; }
 .eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
 p { margin: 0 0 12px; color: var(--muted); }
 code { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: .88em;
@@ -32,78 +24,87 @@ code { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size:
 button { font: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* ── сцена ──────────────────────────────────────────────── */
-.stage { display: flex; justify-content: center; margin: 18px 0 10px; }
-canvas {
-  width: 320px; max-width: 100%; aspect-ratio: 360 / 825; display: block;
-  border-radius: 18px; background: #0E1024; touch-action: manipulation;
-  box-shadow: 0 10px 40px rgba(0,0,0,.5); border: 1px solid var(--line);
-}
-.scene-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 18px; }
-.chip {
-  background: var(--panel); border: 1px solid var(--line); color: var(--muted);
-  border-radius: 999px; padding: 7px 13px; cursor: pointer; font-size: 13px; font-weight: 600;
-}
-.chip[aria-pressed="true"] { color: #0B0D14; background: var(--dot, var(--accent)); border-color: transparent; }
-.chip.ghost[aria-pressed="true"] { background: var(--accent); }
+/* Док: коли сцена вискролила з очей, наш екран переїжджає сюди — щоб
+   результат повзунка було видно одразу. Сторінка при цьому скролиться як є. */
+.dock { position: fixed; top: 10px; right: 10px; z-index: 4; display: none;
+  padding: 6px; border-radius: 16px; background: rgba(11,13,20,.82);
+  border: 1px solid var(--line); box-shadow: 0 12px 30px rgba(0,0,0,.6);
+  backdrop-filter: blur(6px); }
+.dock.on { display: block; }
+.dock canvas.game { width: 168px; border-radius: 10px; box-shadow: none; cursor: grab; }
+.dock.dragging { cursor: grabbing; }
+.dock .dock-head { display: flex; align-items: center; gap: 6px; padding: 0 2px 5px; }
+.dock .dock-boost { flex: 1; font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+.dock .zbtn { width: 22px; height: 22px; padding: 0; line-height: 1; border-radius: 7px;
+  background: var(--sunk); border: 1px solid var(--line); color: var(--text); cursor: pointer; font-size: 13px; }
+.dock .zval { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--faint); min-width: 22px; text-align: center; }
+@media (max-width: 520px) { .dock canvas.game { width: 132px; } }
 
-/* ── групи повзунків ────────────────────────────────────── */
+/* мініатюра біля повзунка: показує, на що саме він впливає */
+.row .top { align-items: center; }
+.mini { width: 74px; height: 40px; flex: none; border-radius: 7px; border: 1px solid var(--line);
+  background: #0E1024; box-shadow: none; }
+.resetall { background: var(--sunk); border: 1px solid var(--line); color: var(--muted);
+  border-radius: 9px; padding: 7px 12px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
+.resetall:disabled { opacity: .4; cursor: not-allowed; }
+.zoomrow { display: flex; align-items: center; justify-content: center; gap: 10px; margin: -6px 0 16px;
+  font-size: 12.5px; color: var(--faint); }
+.zoomrow input[type=range] { width: 190px; accent-color: var(--accent); }
+.screens { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 16px 0 10px; }
+.screen { flex: 0 0 auto; }
+.screen figcaption { text-align: center; font-size: 12px; color: var(--faint); margin-top: 7px; }
+.screen figcaption b { color: var(--muted); font-weight: 600; }
+canvas { display: block; border-radius: 16px; border: 1px solid var(--line);
+  box-shadow: 0 10px 40px rgba(0,0,0,.5); background: #0E1024; touch-action: manipulation; }
+canvas.game  { width: 250px; aspect-ratio: 360 / 825; touch-action: pan-y; }
+canvas.proto { width: 194px; aspect-ratio: 720 / 1280; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.chip { background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+  border-radius: 999px; padding: 7px 13px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.chip[aria-pressed="true"] { color: #0B0D14; background: var(--dot, var(--accent)); border-color: transparent; }
+
 .group { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); margin-bottom: 14px; overflow: hidden; }
 .group > header { padding: 11px 14px; background: var(--sunk); border-bottom: 1px solid var(--line); }
-.group h2 { margin: 0; font-size: 14px; font-weight: 700; }
 .group .sub { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); }
 .group .desc { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); }
 .rows { padding: 6px 14px 12px; }
-
 .row { padding: 9px 0; border-bottom: 1px dashed var(--line); }
 .row:last-child { border-bottom: 0; }
 .row .top { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
-.row .name { font-size: 13.5px; }
 .row .name b { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 12.5px; }
-.row .val { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.row .val { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--muted); }
 .row.changed .val { color: var(--warn); }
-.row .def { color: var(--faint); font-size: 11px; }
 .row .hint { margin: 2px 0 0; font-size: 12px; color: var(--faint); }
 .row input[type=range] { width: 100%; margin: 6px 0 0; accent-color: var(--accent); }
-.row .reset { background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 11px; padding: 0 2px; }
-.row.changed .reset { color: var(--accent); }
+.row .reset { background: none; border: 0; color: var(--accent); cursor: pointer; font-size: 11px; }
 .seg { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-.seg button {
-  flex: 1; min-width: 90px; background: var(--sunk); color: var(--muted);
-  border: 1px solid var(--line); border-radius: 9px; padding: 8px 6px; cursor: pointer; font-size: 12.5px; font-weight: 600;
-}
+.seg button { flex: 1; min-width: 86px; background: var(--sunk); color: var(--muted);
+  border: 1px solid var(--line); border-radius: 9px; padding: 8px 6px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
 .seg button[aria-pressed="true"] { background: var(--accent); border-color: transparent; color: #0B0D14; }
+textarea { width: 100%; min-height: 72px; resize: vertical; background: var(--sunk); color: var(--text);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px; font: inherit; }
 
-textarea {
-  width: 100%; min-height: 76px; resize: vertical; background: var(--sunk); color: var(--text);
-  border: 1px solid var(--line); border-radius: 10px; padding: 10px; font: inherit;
-}
-
-/* ── нижня панель ───────────────────────────────────────── */
-.bar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--panel);
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--panel);
   border-top: 1px solid var(--line); padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -8px 26px rgba(0,0,0,.45);
-}
+  box-shadow: 0 -8px 26px rgba(0,0,0,.45); }
 .bar-inner { max-width: 830px; margin: 0 auto; display: flex; flex-direction: column; gap: 9px; }
 .status { font-size: 13.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
 .pill { border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
 .pill.sent { background: #16304F; color: #9CD0FF; }
 .pill.done { background: #15301F; color: var(--ok); }
-.send {
-  width: 100%; border-radius: 12px; padding: 14px; cursor: pointer; font-weight: 700; font-size: 15px;
-  background: var(--accent); color: #07101D; border: 2px solid var(--accent);
-}
+.send { width: 100%; border-radius: 12px; padding: 14px; cursor: pointer; font-weight: 700; font-size: 15px;
+  background: var(--accent); color: #07101D; border: 2px solid var(--accent); }
 .send.ghost { background: transparent; color: var(--accent); }
 .send:disabled { opacity: .45; cursor: not-allowed; }
-@media (max-width: 420px) { h1 { font-size: 20px; } }
+@media (max-width: 420px) { h1 { font-size: 20px; } canvas.game { width: 200px; } canvas.proto { width: 156px; } }
 </style>
 </head>
 <body>
 <main class="page" id="root"></main>
 <div class="bar" id="bar"></div>
 
-<script id="tuner-data" type="application/json">{"id":"66","v":1,"title":"Віньєтка активного буста","patch":null,"state":{"values":{},"note":"","submitted":null,"result":null}}</script>
+<script id="tuner-data" type="application/json">{"id":"66","v":3,"title":"Віньєтка буста — перенос із прототипу","patch":null,"state":{"values":{},"note":"","submitted":null,"result":null}}</script>
 <script id="app">
 (function () {
   "use strict";
@@ -111,70 +112,91 @@ textarea {
   const state = data.state || (data.state = {});
   state.values = state.values || {};
 
-  // ─────────────────────────────────────────────────────────────────────────
-  //  ЧИСЛА СЦЕНИ — зі справжнього коду гри, не з ока:
-  //    екран 360×825 юнітів (WIDTH_UI), поле FIELD_SIZE 320 (GameScreen),
-  //    HUD 332×70 на margin 17 зверху, поле на 36 нижче нього,
-  //    орбіти LAYOUT_2 [190, 320] і LAYOUT_3 [130, 225, 320] — ДІАМЕТРИ
-  //    (AOrbitField), товщина 3 / активна 4.5, м'яч 22, ореол на 10 всередину.
-  //    Палітра NEON (Theme.kt), кольори бустів (BoostCatalog).
-  // ─────────────────────────────────────────────────────────────────────────
-  const SCREEN = { w: 360, h: 825 };
-  const HUD    = { w: 332, h: 70, top: 17 };
-  const FIELD  = 320;
-  const LAYOUT_2 = [190, 320];
-  const LAYOUT_3 = [130, 225, 320];
-  const RING_TH = 3, RING_TH_ACT = 4.5, BALL = 22, HALO_GAP = 10;
+  // ═══════════════════════════════════════════════════════════════════════
+  //  ДВА ЕКРАНИ ПОРУЧ.
+  //
+  //  ЛІВОРУЧ — прототип як є: 720×1280, центр поля CX 360 / CY 610, усі
+  //  числа з orbit-dash-tutorial.jsx (рядки 1246–1331) один в один.
+  //  ПРАВОРУЧ — наш екран: 360×825 юнітів, поле 320 під HUD 332×70.
+  //
+  //  Пропорції різні (9:16 проти 9:20.6), і центр поля в нас помітно вище
+  //  центру екрана. Тому радіуси прототипу перекладені не «поділити на 2»,
+  //  а через ЧАСТКУ ПІВДІАГОНАЛІ екрана — інакше на нашому екрані край
+  //  віньєтки не дотягнеться до кутів.
+  // ═══════════════════════════════════════════════════════════════════════
+  const PROTO = { w: 720, h: 1280, cx: 360, cy: 610, rings: [190, 320], ball: 22, ringTh: 6, hudTop: 66 };
+  const GAME  = { w: 360, h: 825, hud: { w: 332, h: 70, top: 17 }, field: 320, rings: [95, 160], ball: 11, ringTh: 3 };
+  GAME.cx = GAME.w / 2;
+  GAME.cy = GAME.hud.top + GAME.hud.h + 36 + GAME.field / 2;   // 283 — центр поля
 
   const NEON = { bg: "#0E1024", ring: "#2B3060", player: "#00E5FF", gem: "#FFD54A", spike: "#FF3D68" };
 
-  // Тривалості — з RunEngine.Boost; кольори — з BoostCatalog
+  // Тривалості — RunEngine.Boost, кольори — BoostCatalog. Прототип малював
+  // віньєтку СВОЇМИ кольорами; збігаються всі, крім SLOW: у каталозі він
+  // #FFFFFF, у прототипі #A0D2FF. Вибір — повзунок SLOW_COLOR.
   const BOOSTS = {
-    MAGNET: { label: "MAGNET",  color: "#C07BFF", dur: 8  },
-    FRENZY: { label: "GEM x2",  color: "#FFD54A", dur: 10 },
-    SLOW:   { label: "SLOW-MO", color: "#FFFFFF", dur: 4  },
+    MAGNET: { label: "MAGNET",  dur: 8,  cat: "#C07BFF", proto: "#C07BFF" },
+    FRENZY: { label: "GEM x2",  dur: 10, cat: "#FFD54A", proto: "#FFD54A" },
+    SLOW:   { label: "SLOW-MO", dur: 4,  cat: "#FFFFFF", proto: "#A0D2FF" },
   };
-  /** Альтернативний колір для SLOW, якщо білий не читається. */
-  const ICE = "#8FE3FF";
+  const ICE = "#A0D2FF";
 
-  // ─────────────────────────────────────────────────────────────────────────
-  //  Повзунки = майбутні константи AVignette. def — те, що я поставив би сам.
-  // ─────────────────────────────────────────────────────────────────────────
+  /** Колір віньєтки цього буста: каталог, або крижаний для SLOW. */
+  function vigColor(k) {
+    if (k !== "SLOW") return BOOSTS[k].cat;
+    return valOf("SLOW_COLOR") === "ice" ? ICE : BOOSTS[k].cat;
+  }
+  /** Колір HUD (хекс і смуга) — рівно каталог, крім випадку «поміняти й у каталозі». */
+  function hudColor(k) {
+    if (k !== "SLOW") return BOOSTS[k].cat;
+    return valOf("SLOW_COLOR") === "ice" ? ICE : BOOSTS[k].cat;
+  }
+  /**
+   * Підсвітка (зірочки GEM x2, гребінь хвилі SLOW) — ТОЙ САМИЙ колір буста,
+   * розбавлений білим на HILIGHT. У прототипі тут стояли вписані руками
+   * #FFF6D0 і #DFF0FF; так колір лишається похідним від каталогу.
+   */
+  function hiliteRgba(col, a) {
+    const c = hx(col), k = valOf("HILIGHT");
+    const m = (v) => Math.round(v + (255 - v) * k);
+    return "rgba(" + m(c[0]) + "," + m(c[1]) + "," + m(c[2]) + "," + a + ")";
+  }
+
+  // ── Повзунки. def = РІВНО числа прототипу (у частках півдіагоналі там, де це радіуси).
+  const HD_PROTO = Math.hypot(PROTO.w, PROTO.h) / 2;            // 734.8 — півдіагональ прототипу
   const PARAMS = [
-    { g: "shape", key: "INNER", label: "де починається", min: 0.1, max: 0.95, step: 0.01, def: 0.45, unit: "",
-      hint: "частка півдіагоналі екрана: 0 — від центру, 1 — від самого краю" },
-    { g: "shape", key: "POW", label: "різкість спаду", min: 0.6, max: 4, step: 0.1, def: 2.0, unit: "",
-      hint: "1 — лінійно, більше — довго нічого й раптом край" },
-    { g: "shape", key: "ELLIPSE", type: "bool", label: "еліпс за формою екрана", def: true,
-      hint: "вимкнено — коло: кути темніші за боки" },
+    { g: "env", key: "PUNCH", label: "сплеск на старті", min: 0, max: 2, step: 0.1, def: 0.8, unit: "",
+      hint: "1 + PUNCH у перші 0.45 с — «бустер щойно спрацював»" },
+    { g: "env", key: "WARN_FROM", label: "блимання за", min: 0, max: 3, step: 0.1, def: 1.6, unit: "с",
+      hint: "в останні секунди віньєтка блимає, і тим частіше, чим ближче кінець" },
+    { g: "env", key: "FADE_OUT", label: "згасання", min: 0.05, max: 1, step: 0.05, def: 0.25, unit: "с" },
 
-    { g: "color", key: "TINT_A", label: "колір буста, альфа", min: 0, max: 0.9, step: 0.01, def: 0.34, unit: "" },
-    { g: "color", key: "DARK_A", label: "затемнення, альфа", min: 0, max: 0.7, step: 0.01, def: 0.22, unit: "",
-      hint: "чорний під кольором: без нього кольорове світіння освітлює екран, а не обрамляє" },
-    { g: "color", key: "ADDITIVE", type: "bool", label: "колір адитивно", def: true,
-      hint: "lighter: світиться, як неон. Вимкнено — звичайна альфа, спокійніше" },
+    { g: "edge", key: "EDGE_A_MAGNET", label: "край MAGNET", min: 0, max: 0.8, step: 0.02, def: 0.34, unit: "" },
+    { g: "edge", key: "EDGE_A_FRENZY", label: "край GEM x2", min: 0, max: 0.8, step: 0.02, def: 0.26, unit: "" },
+    { g: "edge", key: "EDGE_A_SLOW",   label: "край SLOW-MO", min: 0, max: 0.8, step: 0.02, def: 0.34, unit: "" },
+    { g: "edge", key: "R0", label: "де починається край", min: 0.2, max: 0.9, step: 0.01, def: +(330 / HD_PROTO).toFixed(2), unit: "",
+      hint: "частка півдіагоналі. 330 px прототипу = 0.45" },
 
-    { g: "time", key: "FADE_IN",  label: "поява", min: 0, max: 1, step: 0.05, def: 0.15, unit: "с" },
-    { g: "time", key: "FADE_OUT", label: "згасання", min: 0, max: 1.5, step: 0.05, def: 0.35, unit: "с" },
-    { g: "time", key: "PULSE_LAST", label: "пульс за скільки до кінця", min: 0, max: 3, step: 0.1, def: 1.0, unit: "с",
-      hint: "0 — без пульсу; гравець бачить «ось-ось скінчиться», не дивлячись на смугу" },
-    { g: "time", key: "PULSE_DEPTH", label: "глибина пульсу", min: 0, max: 1, step: 0.05, def: 0.45, unit: "",
-      hint: "частка альфи, яка знімається у провалі пульсу" },
-    { g: "time", key: "PULSE_HZ", label: "темп пульсу", min: 0.5, max: 6, step: 0.1, def: 2.6, unit: "Гц" },
+    { g: "base", key: "BASE_A", label: "постійна чорна віньєтка", min: 0, max: 0.6, step: 0.02, def: 0.42, unit: "",
+      hint: "у прототипі вона є ЗАВЖДИ, у грі її немає взагалі. 0 — не додаємо" },
 
-    { g: "slow", key: "SLOW_MODE", type: "enum", label: "SLOW-MO — чим фарбувати", def: "ice",
-      options: [
-        { v: "white", t: "білим (як у каталозі)" },
-        { v: "ice",   t: "крижаним #8FE3FF" },
-        { v: "dark",  t: "лише затемнення" },
-      ],
-      hint: "у BoostCatalog SLOW = #FFFFFF. Біла віньєтка на темному фоні читається як засвітка — тут вирішуємо, як бути" },
+    { g: "color", key: "SLOW_COLOR", type: "enum", label: "колір SLOW-MO", def: "ice",
+      options: [{ v: "cat", t: "#FFFFFF — як у BoostCatalog" }, { v: "ice", t: "#A0D2FF — як у прототипі" }],
+      hint: "обереш крижаний — у патчі міняю колір SLOW у самому BoostCatalog, щоб хекс, смуга й віньєтка були одним кольором" },
+    { g: "color", key: "HILIGHT", label: "підсвітка = колір + білий", min: 0, max: 1, step: 0.05, def: 0.7, unit: "",
+      hint: "зірочки GEM x2 і гребінь хвилі SLOW: 0 — чистий колір буста, 1 — чисто білий. У прототипі були вписані руками #FFF6D0 і #DFF0FF" },
+
+    { g: "extra", key: "BALL_GLOW", type: "bool", label: "ореол магніту на м'ячі", def: true,
+      hint: "прототип, рядок 1179: окремий ореол кольору магніту, d 130±10, пульс 8 рад/с, альфа 0.5. У грі це ще один шар в ABall" },
+    { g: "extra", key: "EXTRAS", type: "bool", label: "кільця й іскорки", def: true,
+      hint: "вимкнено — лише кольоровий край: дешевше, але MAGNET і SLOW стають однаковими" },
   ];
   const GROUPS = {
-    shape: { title: "Форма", sub: "AVignette", desc: "Профіль альфи від центру до краю. Малюється один раз у текстуру, на екрані лише тінт." },
-    color: { title: "Колір", sub: "AVignette + BoostCatalog", desc: "Колір буста йде тінтом актора — це безкоштовно. Затемнення під ним окремим шаром." },
-    time:  { title: "Час",   sub: "AVignette.act()", desc: "Джерело — engine.activeBoost і engine.boostFrac, ті самі, що читає APanelBooster." },
-    slow:  { title: "Окремий випадок SLOW-MO", sub: "BoostCatalog", desc: "Єдиний буст, чий колір білий." },
+    env:   { title: "Огинаюча", sub: "спільна для трьох бустів", desc: "kin 0.12 с · сплеск · блимання наприкінці · згасання. Точно як у прототипі." },
+    edge:  { title: "Кольоровий край", sub: "edge(col, a, r0)", desc: "Градієнт від r0 до краю: 0 → 0.3·a на 0.55 → a. Єдина частина, яка потрібна обов'язково." },
+    color: { title: "Кольори", sub: "BoostCatalog", desc: "MAGNET і GEM x2 у прототипі й каталозі збігаються. SLOW — ні: тут вирішуємо, що з цим робити." },
+    base:  { title: "Постійна віньєтка", sub: "поза бустами", desc: "Чорний градієнт поверх усієї гри, завжди. У нас його зараз немає — тут видно, з ним і без." },
+    extra: { title: "Характер бустів", sub: "кільця / іскорки / хвилі", desc: "MAGNET стягує кільця, GEM x2 сипле іскорки по периметру, SLOW-MO дихає хвилями назовні." },
   };
   const P = {}; PARAMS.forEach((p) => { P[p.key] = p; });
 
@@ -184,11 +206,10 @@ textarea {
   const dec    = (p) => { const s = String(p.step); return s.includes(".") ? s.split(".")[1].length : 0; };
   const fmt    = (p, v) => {
     if (p.type === "bool") return v ? "так" : "ні";
-    if (p.type === "enum") return (p.options.find((o) => o.v === v) || {}).t || v;
+    if (p.type === "enum") return (p.options.find((o) => o.v === v) || {}).t || String(v);
     return Number(v).toFixed(dec(p)) + (p.unit ? " " + p.unit : "");
   };
 
-  // ── чернетка в браузері до «Готово» ──────────────────────────────────────
   const DRAFT_KEY = "tuner-draft-" + data.id;
   function loadDraft() {
     if (locked()) return;
@@ -210,290 +231,508 @@ textarea {
 
   const $ = (id) => document.getElementById(id);
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  const hx = (h) => { const s = h.replace("#", ""); return [parseInt(s.slice(0,2),16), parseInt(s.slice(2,4),16), parseInt(s.slice(4,6),16)]; };
+  const rgba = (h, a) => { const c = hx(h); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  //  СЦЕНА. Юніти екрана → пікселі канваса одним множником, як viewport гри.
-  // ─────────────────────────────────────────────────────────────────────────
-  const view = {
-    boost: "MAGNET",
-    t: 0,              // скільки буст уже триває, с
-    running: true,
-    loop: true,
-    angle: 0,
-    ring: 0,
-    rings: 2,
-  };
-
-  const hex = (h) => {
-    const s = h.replace("#", "");
-    return [parseInt(s.slice(0, 2), 16), parseInt(s.slice(2, 4), 16), parseInt(s.slice(4, 6), 16)];
-  };
-  const rgba = (h, a) => { const c = hex(h); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; };
-
-  /** Колір, яким фарбується віньєтка цього буста (з урахуванням режиму SLOW). */
-  function vignetteColor() {
-    const b = BOOSTS[view.boost];
-    if (view.boost !== "SLOW") return b.color;
-    const mode = valOf("SLOW_MODE");
-    return mode === "ice" ? ICE : b.color;
+  // ── запечений glow-спрайт, як NeonBaker у прототипі ──────────────────────
+  const glowCache = {};
+  function glowSprite(color) {
+    if (glowCache[color]) return glowCache[color];
+    const s = 64, c = document.createElement("canvas");
+    c.width = s; c.height = s;
+    const g = c.getContext("2d");
+    const grad = g.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+    grad.addColorStop(0, rgba(color, 0.7));
+    grad.addColorStop(0.35, rgba(color, 0.25));
+    grad.addColorStop(1, rgba(color, 0));
+    g.fillStyle = grad; g.fillRect(0, 0, s, s);
+    glowCache[color] = c;
+    return c;
   }
-  function tintAlphaFor() {
-    if (view.boost === "SLOW" && valOf("SLOW_MODE") === "dark") return 0;
-    return valOf("TINT_A");
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  Стан демонстрації
+  // ═══════════════════════════════════════════════════════════════════════
+  const view = { boost: "MAGNET", t: 0, time: 0, angle: 0, ring: 0, loop: true, running: true };
+
+  /**
+   * Зум і панорама НАШОГО екрана (лівий канвас і док). Потрібні, бо віньєтка
+   * живе по краях, а на 132 px краю не роздивитись. cx/cy — точка екрана в
+   * юнітах, яка лишається в центрі перегляду.
+   */
+  const zoom = { k: 1, cx: GAME.w / 2, cy: GAME.h / 2 };
+  function clampPan() {
+    const hw = GAME.w / (2 * zoom.k), hh = GAME.h / (2 * zoom.k);
+    zoom.cx = Math.min(GAME.w - hw, Math.max(hw, zoom.cx));
+    zoom.cy = Math.min(GAME.h - hh, Math.max(hh, zoom.cy));
+  }
+  function setZoom(k) {
+    zoom.k = Math.min(4, Math.max(1, Math.round(k * 10) / 10));
+    clampPan();
+    if (zoomUi) zoomUi();
+    if (dockZoomLabel) dockZoomLabel.textContent = "×" + zoom.k.toFixed(zoom.k % 1 ? 1 : 0);
+  }
+  let zoomUi = null;
+
+  /** I = kin · punch · warn · kout — огинаюча прототипу, рядки 1265–1270. */
+  function intensity() {
+    const dur = BOOSTS[view.boost].dur;
+    const el_ = view.t;                       // скільки вже діє
+    const vt  = dur - view.t;                 // скільки лишилось
+    if (vt <= 0) return 0;
+    const kin   = Math.min(1, el_ / 0.12);
+    const punch = 1 + valOf("PUNCH") * Math.max(0, 1 - el_ / 0.45);
+    const wf    = valOf("WARN_FROM");
+    const warn  = (wf > 0 && vt < wf) ? 0.35 + 0.65 * Math.abs(Math.cos(view.time * (5 + (wf - vt) * 9))) : 1;
+    const kout  = Math.min(1, vt / valOf("FADE_OUT"));
+    return kin * punch * warn * kout;
   }
 
   /**
-   * Множник альфи в момент t: поява → 1 → пульс в останні PULSE_LAST →
-   * згасання після кінця. Рівно те, що робитиме AVignette.act() від boostFrac.
+   * Малює сцену + віньєтку на переданий контекст.
+   * @param S — геометрія екрана (PROTO або GAME), у ЙОГО власних одиницях.
    */
-  function envelope(t) {
-    const dur = BOOSTS[view.boost].dur;
-    const fi  = valOf("FADE_IN"), fo = valOf("FADE_OUT");
-    if (t < 0) return 0;
-    if (t > dur) return Math.max(0, 1 - (t - dur) / Math.max(1e-3, fo));
-    let a = fi > 0 ? Math.min(1, t / fi) : 1;
-    const left = dur - t, last = valOf("PULSE_LAST");
-    if (last > 0 && left < last) {
-      const k = 1 - left / last;                                   // 0 → 1 до кінця
-      const s = 0.5 - 0.5 * Math.cos(2 * Math.PI * valOf("PULSE_HZ") * t);
-      a *= 1 - valOf("PULSE_DEPTH") * s * k;
+  function paint(ctx, S, scale) {
+    const hd = Math.hypot(S.w, S.h) / 2;                 // півдіагональ цього екрана
+    const K  = S === PROTO ? 1 : S.w / PROTO.w;          // прототип → наші юніти (0.5)
+
+    if (S === GAME && zoom.k > 1) {
+      const z = scale * zoom.k;
+      ctx.setTransform(z, 0, 0, z, (S.w / 2 - zoom.cx) * z, (S.h / 2 - zoom.cy) * z);
+    } else {
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
     }
-    return a;
-  }
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.restore();
+    ctx.fillStyle = NEON.bg; ctx.fillRect(0, 0, S.w, S.h);
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  let S = 1;   // пікселів на юніт
-
-  function resizeCanvas() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-    const rect = canvas.getBoundingClientRect();
-    if (!rect.width) return;
-    canvas.width  = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.width * dpr * SCREEN.h / SCREEN.w);
-    S = canvas.width / SCREEN.w;
-  }
-
-  const stars = Array.from({ length: 46 }, () => ({
-    x: Math.random() * SCREEN.w, y: Math.random() * SCREEN.h,
-    r: 0.4 + Math.random() * 1.1, a: 0.15 + Math.random() * 0.45,
-  }));
-
-  function ringD(i) { return (view.rings >= 3 ? LAYOUT_3 : LAYOUT_2)[i]; }
-
-  function drawScene(dt) {
-    const cx = SCREEN.w / 2;
-    const fieldTop = HUD.top + HUD.h + 36;
-    const fy = fieldTop + FIELD / 2;                 // центр поля, юніти
-
-    ctx.setTransform(S, 0, 0, S, 0, 0);
-    ctx.clearRect(0, 0, SCREEN.w, SCREEN.h);
-
-    // фон + зорі
-    ctx.fillStyle = NEON.bg; ctx.fillRect(0, 0, SCREEN.w, SCREEN.h);
-    for (const s of stars) { ctx.fillStyle = "rgba(255,255,255," + s.a + ")"; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
-
-    // ореол активної орбіти
-    const halo = ringD(view.ring) - 2 * HALO_GAP;
-    const g = ctx.createRadialGradient(cx, fy, 0, cx, fy, halo / 2);
-    g.addColorStop(0, rgba(NEON.player, 0.12)); g.addColorStop(1, rgba(NEON.player, 0));
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, fy, halo / 2, 0, 7); ctx.fill();
+    // зорі
+    for (const s of stars) {
+      ctx.fillStyle = "rgba(255,255,255," + s.a + ")";
+      ctx.beginPath(); ctx.arc(s.x * S.w, s.y * S.h, s.r * K * 2, 0, 7); ctx.fill();
+    }
 
     // орбіти
-    for (let i = 0; i < view.rings; i++) {
+    for (let i = 0; i < S.rings.length; i++) {
       const active = i === view.ring;
-      ctx.strokeStyle = active ? rgba(NEON.ring, 1) : rgba(NEON.ring, 0.55);
-      ctx.lineWidth = active ? RING_TH_ACT : RING_TH;
-      ctx.beginPath(); ctx.arc(cx, fy, ringD(i) / 2, 0, 7); ctx.stroke();
+      ctx.strokeStyle = rgba(NEON.ring, active ? 1 : 0.55);
+      ctx.lineWidth = active ? S.ringTh * 1.5 : S.ringTh;
+      ctx.beginPath(); ctx.arc(S.cx, S.cy, S.rings[i], 0, 7); ctx.stroke();
     }
 
-    // здобич і шипи на орбітах — щоб було видно, як віньєтка з ними сусідить
-    const r0 = ringD(0) / 2, r1 = ringD(view.rings - 1) / 2;
+    // здобич
+    const rOut = S.rings[S.rings.length - 1];
     const items = [
-      { r: r1, a: view.angle + 40,  c: NEON.gem,   s: 7 },
-      { r: r1, a: view.angle + 120, c: NEON.spike, s: 9 },
-      { r: r0, a: -view.angle + 200, c: NEON.gem,  s: 7 },
-      { r: r1, a: -view.angle + 290, c: BOOSTS[view.boost].color, s: 11 },
+      { r: rOut, a: view.angle + 40,  c: NEON.gem,   s: 14 * K },
+      { r: rOut, a: view.angle + 130, c: NEON.spike, s: 18 * K },
+      { r: S.rings[0], a: -view.angle + 210, c: NEON.gem, s: 14 * K },
     ];
     for (const it of items) {
-      const x = cx + Math.cos(it.a * Math.PI / 180) * it.r;
-      const y = fy + Math.sin(it.a * Math.PI / 180) * it.r;
-      const gg = ctx.createRadialGradient(x, y, 0, x, y, it.s * 1.8);
-      gg.addColorStop(0, rgba(it.c, 0.55)); gg.addColorStop(1, rgba(it.c, 0));
-      ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(x, y, it.s * 1.8, 0, 7); ctx.fill();
+      const x = S.cx + Math.cos(it.a * Math.PI/180) * it.r;
+      const y = S.cy + Math.sin(it.a * Math.PI/180) * it.r;
+      ctx.drawImage(glowSprite(it.c), x - it.s * 1.8, y - it.s * 1.8, it.s * 3.6, it.s * 3.6);
       ctx.fillStyle = it.c; ctx.beginPath(); ctx.arc(x, y, it.s / 2, 0, 7); ctx.fill();
     }
 
-    // м'яч
-    const br = ringD(view.ring) / 2;
-    const bx = cx + Math.cos(view.angle * Math.PI / 180) * br;
-    const by = fy + Math.sin(view.angle * Math.PI / 180) * br;
-    const bg = ctx.createRadialGradient(bx, by, 0, bx, by, BALL * 2.2);
-    bg.addColorStop(0, rgba(NEON.player, 0.5)); bg.addColorStop(1, rgba(NEON.player, 0));
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(bx, by, BALL * 2.2, 0, 7); ctx.fill();
-    ctx.fillStyle = NEON.player; ctx.beginPath(); ctx.arc(bx, by, BALL / 2, 0, 7); ctx.fill();
+    // ── м'яч. Ореоли — числами прототипу (88 і 34), адитивно ────────────
+    const br = S.rings[view.ring];
+    const bx = S.cx + Math.cos(view.angle * Math.PI/180) * br;
+    const by = S.cy + Math.sin(view.angle * Math.PI/180) * br;
+    const blob = (size, color, alpha) => {
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(glowSprite(color), bx - size/2, by - size/2, size, size);
+      ctx.globalAlpha = 1;
+    };
+    ctx.globalCompositeOperation = "lighter";
+    blob(88 * K, NEON.player, 0.95);
+    blob(34 * K, "#FFFFFF", 0.5);
+    // ОКРЕМИЙ ОРЕОЛ МАГНІТА, що дихає: прототип, рядок 1179 —
+    // glow(px, py, 130 + 10·sin(time·8), "#c07bff", 0.5). Тільки для MAGNET.
+    if (view.boost === "MAGNET" && valOf("BALL_GLOW") && intensity() > 0.001) {
+      blob((130 + 10 * Math.sin(view.time * 8)) * K, vigColor("MAGNET"), 0.5);
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = NEON.player; ctx.beginPath(); ctx.arc(bx, by, S.ball, 0, 7); ctx.fill();
 
-    drawHud();
+    // ── постійна чорна віньєтка (у прототипі 300 → 800) ───────────────────
+    const baseA = valOf("BASE_A");
+    if (baseA > 0) {
+      const g = ctx.createRadialGradient(S.cx, S.cy, 0.41 * hd, S.cx, S.cy, 1.09 * hd);
+      g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0," + baseA + ")");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S.w, S.h);
+    }
+
+    // ── віньєтка буста ────────────────────────────────────────────────────
+    const I = intensity();
+    if (I > 0.001) {
+      const b = BOOSTS[view.boost], col = vigColor(view.boost);
+      const R0 = valOf("R0") * hd, ROUT = 1.09 * hd;
+
+      const edge = (a) => {
+        const g = ctx.createRadialGradient(S.cx, S.cy, R0, S.cx, S.cy, ROUT);
+        g.addColorStop(0,    rgba(col, 0));
+        g.addColorStop(0.55, rgba(col, a * 0.3));
+        g.addColorStop(1,    rgba(col, a));
+        ctx.fillStyle = g; ctx.fillRect(0, 0, S.w, S.h);
+      };
+      const extras = valOf("EXTRAS");
+
+      if (view.boost === "MAGNET") {
+        edge(valOf("EDGE_A_MAGNET") * I);
+        if (extras) {
+          ctx.globalCompositeOperation = "lighter";
+          for (let k = 0; k < 3; k++) {
+            const ph = (view.time * 0.55 + k / 3) % 1;              // 0 = край, 1 = біля поля
+            ctx.strokeStyle = rgba(col, Math.sin(ph * Math.PI) * 0.24 * I);
+            ctx.lineWidth = (8 + 22 * (1 - ph)) * K;
+            ctx.beginPath(); ctx.arc(S.cx, S.cy, 1.12 * hd - ph * 0.545 * hd, 0, 7); ctx.stroke();
+          }
+          ctx.globalCompositeOperation = "source-over";
+        }
+      } else if (view.boost === "FRENZY") {
+        edge(valOf("EDGE_A_FRENZY") * I * (0.82 + 0.18 * Math.sin(view.time * 7)));
+        if (extras) {
+          ctx.globalCompositeOperation = "lighter";
+          const m = 26 * K, Per = 2 * (S.w + S.h - 4 * m);
+          for (let k = 0; k < 16; k++) {
+            const cyc = view.time * 1.2 + k * 0.618;
+            const n = Math.floor(cyc), f = cyc - n;
+            const h = Math.abs(Math.sin((n + 1) * 78.233 + k * 12.9898) * 43758.5453) % 1;
+            let d = h * Per, sx, sy;
+            if (d < S.w - 2*m) { sx = m + d; sy = m; }
+            else if ((d -= S.w - 2*m) < S.h - 2*m) { sx = S.w - m; sy = m + d; }
+            else if ((d -= S.h - 2*m) < S.w - 2*m) { sx = S.w - m - d; sy = S.h - m; }
+            else { d -= S.w - 2*m; sx = m; sy = S.h - m - d; }
+            const a = Math.pow(Math.sin(f * Math.PI), 2) * I;
+            if (a < 0.02) continue;
+            const gs = 34 * K;
+            ctx.globalAlpha = a * 0.7;
+            ctx.drawImage(glowSprite(col), sx - gs/2, sy - gs/2, gs, gs);
+            ctx.globalAlpha = 1;
+            const s = (5 + 7 * a) * K;
+            ctx.strokeStyle = hiliteRgba(col, a); ctx.lineWidth = 2 * K;
+            ctx.beginPath();
+            ctx.moveTo(sx - s, sy); ctx.lineTo(sx + s, sy);
+            ctx.moveTo(sx, sy - s); ctx.lineTo(sx, sy + s);
+            ctx.stroke();
+          }
+          ctx.globalCompositeOperation = "source-over";
+        }
+      } else {
+        edge(valOf("EDGE_A_SLOW") * I * (0.8 + 0.2 * Math.sin(view.time * 1.6)));
+        if (extras) {
+          ctx.globalCompositeOperation = "lighter";
+          for (let k = 0; k < 2; k++) {
+            const ph = (view.time * 0.28 + k / 2) % 1;              // 0 = біля поля, 1 = край
+            ctx.strokeStyle = hiliteRgba(col, (1 - ph) * Math.sin(ph * Math.PI) * 0.22 * I);
+            ctx.lineWidth = 3 * K;
+            ctx.beginPath(); ctx.arc(S.cx, S.cy, 0.449 * hd + ph * 0.653 * hd, 0, 7); ctx.stroke();
+          }
+          ctx.globalCompositeOperation = "source-over";
+        }
+      }
+    }
+
+    drawHud(ctx, S, K);
   }
 
-  /** HUD: рахунок і APanelBooster (хекс 18×21 + смуга 64×3, база 64×31). */
-  function drawHud() {
-    const cx = SCREEN.w / 2;
+  /** HUD: рахунок і панель буста. У нашому екрані — розмірами з APanelBooster. */
+  function drawHud(ctx, S, K) {
+    const b = BOOSTS[view.boost], hud = hudColor(view.boost);
+    ctx.textBaseline = "top"; ctx.textAlign = "left";
     ctx.fillStyle = "rgba(255,255,255,.92)";
-    ctx.font = "700 26px 'JetBrains Mono', monospace";
-    ctx.textAlign = "left"; ctx.textBaseline = "top";
-    ctx.fillText("1 248", 22, HUD.top + 8);
+    ctx.font = "700 " + Math.round(26 * (S === PROTO ? 2 : 1)) + "px 'JetBrains Mono', monospace";
+    ctx.fillText("1 248", 22 * (S === PROTO ? 2 : 1), (S === PROTO ? 40 : 25));
 
-    ctx.font = "600 11px 'IBM Plex Sans', system-ui, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,.45)";
-    ctx.fillText("COMBO x3", 22, HUD.top + 42);
+    const bw = 64 * (S === PROTO ? 2 : 1), hexH = 21 * (S === PROTO ? 2 : 1), hexW = 18 * (S === PROTO ? 2 : 1);
+    const px = S.w - 22 * (S === PROTO ? 2 : 1) - bw, py = (S === PROTO ? 34 : 27);
 
-    // панель буста праворуч у HUD
-    const b = BOOSTS[view.boost];
-    const px = SCREEN.w - 22 - 64, py = HUD.top + 10;
-    const hexW = 18, hexH = 21;
     ctx.save();
-    ctx.translate(px + 32, py + hexH / 2);
+    ctx.translate(px + bw/2, py + hexH/2);
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
-      const a = (60 * i - 30) * Math.PI / 180;
-      const x = Math.cos(a) * hexW / 2, y = Math.sin(a) * hexH / 2;
+      const a = (60 * i - 30) * Math.PI/180;
+      const x = Math.cos(a) * hexW/2, y = Math.sin(a) * hexH/2;
       i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = b.color; ctx.lineWidth = 1.6; ctx.stroke();
-    ctx.fillStyle = rgba(b.color, 0.18); ctx.fill();
+    ctx.strokeStyle = hud; ctx.lineWidth = 1.6 * (S === PROTO ? 2 : 1); ctx.stroke();
+    ctx.fillStyle = rgba(hud, 0.18); ctx.fill();
     ctx.restore();
 
-    const barY = py + hexH + 7, frac = Math.max(0, Math.min(1, 1 - view.t / b.dur));
-    ctx.fillStyle = "rgba(255,255,255,.2)";
-    roundRect(px, barY, 64, 3, 1.5); ctx.fill();
-    ctx.fillStyle = b.color;
-    roundRect(px, barY, 64 * frac, 3, 1.5); ctx.fill();
-
-    ctx.textAlign = "center";
-    ctx.font = "700 9px 'IBM Plex Sans', system-ui, sans-serif";
-    ctx.fillStyle = rgba(b.color, 0.9);
-    ctx.fillText(b.label, px + 32, barY + 7);
+    const barY = py + hexH + 7 * (S === PROTO ? 2 : 1);
+    const frac = Math.max(0, Math.min(1, 1 - view.t / b.dur));
+    const th = 3 * (S === PROTO ? 2 : 1);
+    ctx.fillStyle = "rgba(255,255,255,.2)"; ctx.fillRect(px, barY, bw, th);
+    ctx.fillStyle = hud; ctx.fillRect(px, barY, bw * frac, th);
   }
 
-  function roundRect(x, y, w, h, r) {
-    ctx.beginPath();
-    if (ctx.roundRect) { ctx.roundRect(x, y, Math.max(0, w), h, r); return; }
-    ctx.rect(x, y, Math.max(0, w), h);
+  // ═══════════════════════════════════════════════════════════════════════
+  //  МІНІАТЮРИ БІЛЯ ПОВЗУНКІВ.
+  //  Кожна малює рівно те, чим керує її повзунок, і живе в тому ж rAF-циклі.
+  // ═══════════════════════════════════════════════════════════════════════
+  const minis = [];
+
+  /** Огинаюча як крива: те саме I, але по всій тривалості буста. */
+  function envAt(tt) {
+    const dur = BOOSTS[view.boost].dur, vt = dur - tt;
+    if (vt <= 0 || tt < 0) return 0;
+    const kin   = Math.min(1, tt / 0.12);
+    const punch = 1 + valOf("PUNCH") * Math.max(0, 1 - tt / 0.45);
+    const wf    = valOf("WARN_FROM");
+    const warn  = (wf > 0 && vt < wf) ? 0.35 + 0.65 * Math.abs(Math.cos(tt * (5 + (wf - vt) * 9))) : 1;
+    return kin * punch * warn * Math.min(1, vt / valOf("FADE_OUT"));
   }
 
-  /**
-   * ВІНЬЄТКА. Профіль однаковий для затемнення й кольору:
-   *   d      — відстань від центру, нормована (1 = кут екрана),
-   *   alpha  = smoothstep(INNER → 1, d) ^ POW
-   * У грі це запечеться у VfxTexture один раз; тут рахуємо градієнтом.
-   */
-  function drawVignette() {
-    const env = envelope(view.t);
-    if (env <= 0.001) return;
-
-    const cx = SCREEN.w / 2, cy = SCREEN.h / 2;
-    const inner = valOf("INNER"), pow = valOf("POW");
-    const ellipse = valOf("ELLIPSE");
-    const rOuter = ellipse ? SCREEN.h / 2 : Math.hypot(SCREEN.w, SCREEN.h) / 2;
-
-    // 12 зупинок градієнта — достатньо, щоб крива читалась без смуг
-    const stops = [];
-    for (let i = 0; i <= 12; i++) {
-      const d = i / 12;
-      const x = d <= inner ? 0 : (d - inner) / (1 - inner);
-      stops.push([d, Math.pow(x * x * (3 - 2 * x), pow)]);
+  /** Крива огинаючої з бігунцем; hi — яку ділянку підсвітити. */
+  function miniEnvelope(c, w, h, hi) {
+    const dur = BOOSTS[view.boost].dur;
+    if (hi) {
+      c.fillStyle = "rgba(77,163,255,.14)";
+      if (hi === "in")   c.fillRect(0, 0, w * (0.45 / dur), h);
+      if (hi === "warn") c.fillRect(w * (1 - valOf("WARN_FROM") / dur), 0, w * (valOf("WARN_FROM") / dur), h);
+      if (hi === "out")  c.fillRect(w * (1 - valOf("FADE_OUT") / dur), 0, w * (valOf("FADE_OUT") / dur), h);
     }
-
-    const paint = (color, alpha, mode) => {
-      if (alpha <= 0.001) return;
-      ctx.save();
-      ctx.globalCompositeOperation = mode;
-      if (ellipse) { ctx.translate(cx, cy); ctx.scale(SCREEN.w / SCREEN.h, 1); ctx.translate(-cx, -cy); }
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rOuter);
-      for (const [d, a] of stops) g.addColorStop(d, rgba(color, a * alpha * env));
-      ctx.fillStyle = g;
-      ctx.fillRect(-SCREEN.w, -SCREEN.h, SCREEN.w * 3, SCREEN.h * 3);
-      ctx.restore();
-    };
-
-    paint("#000000", valOf("DARK_A"), "source-over");
-    paint(vignetteColor(), tintAlphaFor(), valOf("ADDITIVE") ? "lighter" : "source-over");
+    c.strokeStyle = vigColor(view.boost); c.lineWidth = 1.5;
+    c.beginPath();
+    for (let i = 0; i <= w; i++) {
+      const y = h - 3 - (h - 6) * Math.min(1, envAt(i / w * dur) / 1.8);
+      i ? c.lineTo(i, y) : c.moveTo(i, y);
+    }
+    c.stroke();
+    const px = w * Math.min(1, view.t / dur);
+    c.strokeStyle = "rgba(255,255,255,.35)"; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(px, 0); c.lineTo(px, h); c.stroke();
   }
+
+  /** Маленький «екран» із тим самим градієнтом краю. */
+  function miniEdge(c, w, h, col, a, r0frac, markR0) {
+    const hd = Math.hypot(w, h) / 2, cx = w / 2, cy = h / 2;
+    const g = c.createRadialGradient(cx, cy, r0frac * hd, cx, cy, 1.09 * hd);
+    g.addColorStop(0, rgba(col, 0));
+    g.addColorStop(0.55, rgba(col, a * 0.3));
+    g.addColorStop(1, rgba(col, a));
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    if (markR0) {
+      c.strokeStyle = "rgba(255,255,255,.45)"; c.lineWidth = 1; c.setLineDash([3, 3]);
+      c.beginPath(); c.ellipse(cx, cy, r0frac * hd * (w / hd) * 0.5, r0frac * hd * (h / hd) * 0.5, 0, 0, 7); c.stroke();
+      c.setLineDash([]);
+    }
+  }
+
+  function miniPaint(key, c, w, h) {
+    c.clearRect(0, 0, w, h);
+    c.fillStyle = NEON.bg; c.fillRect(0, 0, w, h);
+    const col = vigColor(view.boost), T = view.time;
+
+    switch (key) {
+      case "PUNCH":     miniEnvelope(c, w, h, "in");   break;
+      case "WARN_FROM": miniEnvelope(c, w, h, "warn"); break;
+      case "FADE_OUT":  miniEnvelope(c, w, h, "out");  break;
+
+      case "EDGE_A_MAGNET": miniEdge(c, w, h, vigColor("MAGNET"), valOf(key), valOf("R0")); break;
+      case "EDGE_A_FRENZY": miniEdge(c, w, h, vigColor("FRENZY"), valOf(key), valOf("R0")); break;
+      case "EDGE_A_SLOW":   miniEdge(c, w, h, vigColor("SLOW"),   valOf(key), valOf("R0")); break;
+      case "R0":            miniEdge(c, w, h, col, 0.5, valOf("R0"), true); break;
+      case "BASE_A": {
+        const hd = Math.hypot(w, h) / 2;
+        const g = c.createRadialGradient(w/2, h/2, 0.41 * hd, w/2, h/2, 1.09 * hd);
+        g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0," + valOf("BASE_A") + ")");
+        c.fillStyle = "#1A1F3A"; c.fillRect(0, 0, w, h);
+        c.fillStyle = "#00E5FF"; c.beginPath(); c.arc(w/2, h/2, 4, 0, 7); c.fill();
+        c.fillStyle = g; c.fillRect(0, 0, w, h);
+        break;
+      }
+      case "SLOW_COLOR": {
+        miniEdge(c, w/2, h, "#FFFFFF", 0.4, 0.3);
+        c.save(); c.translate(w/2, 0); miniEdge(c, w/2, h, ICE, 0.4, 0.3); c.restore();
+        c.strokeStyle = "rgba(255,255,255,.25)"; c.beginPath(); c.moveTo(w/2, 0); c.lineTo(w/2, h); c.stroke();
+        break;
+      }
+      case "HILIGHT": {
+        const a = 0.55 + 0.45 * Math.abs(Math.sin(T * 2));
+        c.strokeStyle = hiliteRgba(col, a); c.lineWidth = 1.5;
+        const x = w * 0.32, y = h / 2, r = 7;
+        c.beginPath(); c.moveTo(x - r, y); c.lineTo(x + r, y); c.moveTo(x, y - r); c.lineTo(x, y + r); c.stroke();
+        c.strokeStyle = hiliteRgba(col, 0.5); c.lineWidth = 1.2;
+        c.beginPath(); c.arc(w * 0.72, y, 5 + 3 * Math.sin(T * 2), 0, 7); c.stroke();
+        break;
+      }
+      case "BALL_GLOW": {
+        const d = (26 + 2 * Math.sin(T * 8));
+        c.globalCompositeOperation = "lighter";
+        c.globalAlpha = 0.5;
+        c.drawImage(glowSprite(vigColor("MAGNET")), w/2 - d/2, h/2 - d/2, d, d);
+        c.globalAlpha = 0.95;
+        c.drawImage(glowSprite(NEON.player), w/2 - 9, h/2 - 9, 18, 18);
+        c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
+        c.fillStyle = NEON.player; c.beginPath(); c.arc(w/2, h/2, 3, 0, 7); c.fill();
+        break;
+      }
+      case "EXTRAS": {
+        c.globalCompositeOperation = "lighter";
+        if (view.boost === "FRENZY") {
+          for (let k = 0; k < 4; k++) {
+            const f = (T * 1.2 + k * 0.618) % 1, a = Math.pow(Math.sin(f * Math.PI), 2);
+            const x = 8 + (w - 16) * ((k * 0.37 + 0.2) % 1), y = k % 2 ? h - 7 : 7;
+            c.strokeStyle = hiliteRgba(col, a); c.lineWidth = 1.2;
+            const r = 3 + 2 * a;
+            c.beginPath(); c.moveTo(x - r, y); c.lineTo(x + r, y); c.moveTo(x, y - r); c.lineTo(x, y + r); c.stroke();
+          }
+        } else {
+          const outward = view.boost === "SLOW";
+          for (let k = 0; k < 2; k++) {
+            const ph = (T * (outward ? 0.28 : 0.55) + k / 2) % 1;
+            const rr = outward ? 4 + ph * (w / 2) : (w / 2) - ph * (w / 2 - 4);
+            c.strokeStyle = rgba(col, Math.sin(ph * Math.PI) * 0.5);
+            c.lineWidth = outward ? 1.2 : 1 + 2 * (1 - ph);
+            c.beginPath(); c.arc(w/2, h/2, rr, 0, 7); c.stroke();
+          }
+        }
+        c.globalCompositeOperation = "source-over";
+        c.fillStyle = "rgba(255,255,255,.5)"; c.beginPath(); c.arc(w/2, h/2, 2.5, 0, 7); c.fill();
+        break;
+      }
+    }
+    c.strokeStyle = "rgba(255,255,255,.06)"; c.strokeRect(0.5, 0.5, w - 1, h - 1);
+  }
+
+  const stars = Array.from({ length: 44 }, () => ({
+    x: Math.random(), y: Math.random(), r: 0.4 + Math.random() * 1.0, a: 0.15 + Math.random() * 0.4,
+  }));
+
+  // ── два канваси ──────────────────────────────────────────────────────────
+  const cGame  = document.createElement("canvas"); cGame.className  = "game";
+  const cProto = document.createElement("canvas"); cProto.className = "proto";
+  const cDock  = document.createElement("canvas"); cDock.className  = "game";
+  const ctxG = cGame.getContext("2d"), ctxP = cProto.getContext("2d"), ctxD = cDock.getContext("2d");
+  let scaleG = 1, scaleP = 1, scaleD = 1;
+
+  function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const rg = cGame.getBoundingClientRect(), rp = cProto.getBoundingClientRect();
+    if (rg.width) { cGame.width  = Math.round(rg.width * dpr); cGame.height  = Math.round(rg.width * dpr * GAME.h / GAME.w);  scaleG = cGame.width / GAME.w; }
+    if (rp.width) { cProto.width = Math.round(rp.width * dpr); cProto.height = Math.round(rp.width * dpr * PROTO.h / PROTO.w); scaleP = cProto.width / PROTO.w; }
+    const rd = cDock.getBoundingClientRect();
+    if (rd.width) { cDock.width = Math.round(rd.width * dpr); cDock.height = Math.round(rd.width * dpr * GAME.h / GAME.w); scaleD = cDock.width / GAME.w; }
+  }
+
+  // ── панорама пальцем і зум колесом/щипком на нашому екрані ──────────────
+  (function bindPanZoom() {
+    let pts = new Map(), lastD = 0, moved = false;
+    const unitsPerPx = () => GAME.w / (cGame.getBoundingClientRect().width * zoom.k);
+
+    cGame.addEventListener("pointerdown", (e) => {
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      moved = false;
+      cGame.setPointerCapture(e.pointerId);
+    });
+    cGame.addEventListener("pointermove", (e) => {
+      const prev = pts.get(e.pointerId);
+      if (!prev) return;
+      const cur = { x: e.clientX, y: e.clientY };
+      if (pts.size === 1 && zoom.k > 1) {
+        zoom.cx -= (cur.x - prev.x) * unitsPerPx();
+        zoom.cy -= (cur.y - prev.y) * unitsPerPx();
+        clampPan();
+        moved = true;
+        e.preventDefault();
+      }
+      pts.set(e.pointerId, cur);
+      if (pts.size === 2) {
+        const [a, b] = [...pts.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (lastD) setZoom(zoom.k * (d / lastD));
+        lastD = d; moved = true;
+        e.preventDefault();
+      }
+    });
+    const up = (e) => { pts.delete(e.pointerId); if (pts.size < 2) lastD = 0; };
+    cGame.addEventListener("pointerup", up);
+    cGame.addEventListener("pointercancel", up);
+    cGame.addEventListener("dblclick", () => { zoom.cx = GAME.w / 2; zoom.cy = GAME.h / 2; setZoom(1); });
+    cGame.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      setZoom(zoom.k * (e.deltaY < 0 ? 1.12 : 0.89));
+    }, { passive: false });
+  })();
 
   let last = 0;
   function frame(now) {
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
     last = now;
+    view.time += dt;
     if (view.running) {
       view.t += dt;
-      const dur = BOOSTS[view.boost].dur;
-      if (view.t > dur + valOf("FADE_OUT") + 0.6) { if (view.loop) view.t = 0; else view.running = false; }
+      if (view.t > BOOSTS[view.boost].dur + 0.7) { if (view.loop) view.t = 0; else view.running = false; }
     }
     view.angle = (view.angle + dt * 42) % 360;
-    drawScene(dt);
-    drawVignette();
+    paint(ctxG, GAME,  scaleG);
+    paint(ctxP, PROTO, scaleP);
+    if (dockOn) paint(ctxD, GAME, scaleD);
+    for (const m of minis) miniPaint(m.key, m.ctx, m.w, m.h);
     requestAnimationFrame(frame);
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════
   //  UI
-  // ─────────────────────────────────────────────────────────────────────────
-  function sceneControls() {
-    const wrap = el("div", "scene-bar");
+  // ═══════════════════════════════════════════════════════════════════════
+  let controlsNode = null, dockLabelNode = null, dockZoomLabel = null, dockOn = false;
+  function controls() {
+    const wrap = el("div", "controls");
     Object.keys(BOOSTS).forEach((k) => {
-      const b = el("button", "chip", BOOSTS[k].label);
-      b.type = "button";
-      b.style.setProperty("--dot", BOOSTS[k].color);
+      const b = el("button", "chip", BOOSTS[k].label); b.type = "button";
+      b.style.setProperty("--dot", vigColor(k));
       b.setAttribute("aria-pressed", String(view.boost === k));
-      b.addEventListener("click", () => { view.boost = k; view.t = 0; view.running = true; renderScene(); });
+      b.addEventListener("click", () => {
+        view.boost = k; view.t = 0; view.running = true;
+        if (dockLabelNode) dockLabelNode.textContent = BOOSTS[k].label;
+        redrawControls();
+      });
       wrap.appendChild(b);
     });
-    const again = el("button", "chip ghost", "↺ ще раз");
-    again.type = "button";
+    const again = el("button", "chip", "↺ ще раз"); again.type = "button";
     again.addEventListener("click", () => { view.t = 0; view.running = true; });
     wrap.appendChild(again);
-
-    const loop = el("button", "chip ghost", "повторювати");
-    loop.type = "button";
+    const loop = el("button", "chip", "повторювати"); loop.type = "button";
     loop.setAttribute("aria-pressed", String(view.loop));
-    loop.addEventListener("click", () => { view.loop = !view.loop; renderScene(); });
+    loop.addEventListener("click", () => { view.loop = !view.loop; redrawControls(); });
     wrap.appendChild(loop);
-
-    const rings = el("button", "chip ghost", view.rings === 3 ? "3 орбіти" : "2 орбіти");
-    rings.type = "button";
-    rings.addEventListener("click", () => { view.rings = view.rings === 3 ? 2 : 3; view.ring = Math.min(view.ring, view.rings - 1); renderScene(); });
-    wrap.appendChild(rings);
+    const ring = el("button", "chip", "орбіта " + (view.ring + 1)); ring.type = "button";
+    ring.addEventListener("click", () => { view.ring = (view.ring + 1) % GAME.rings.length; redrawControls(); });
+    wrap.appendChild(ring);
     return wrap;
   }
-  let sceneBarNode = null;
-  function renderScene() {
-    const fresh = sceneControls();
-    sceneBarNode.replaceWith(fresh);
-    sceneBarNode = fresh;
+  function redrawControls() { const f = controls(); controlsNode.replaceWith(f); controlsNode = f; }
+  // Розмір канваса міняється разом із .compact — ловимо це, а не лише resize вікна
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => resizeCanvas());
+    setTimeout(() => { ro.observe(cGame); ro.observe(cProto); }, 0);
   }
 
   function paramRow(p) {
     const row = el("div", "row" + (isDef(p.key) ? "" : " changed"));
     const top = el("div", "top");
     const name = el("div", "name");
-    const b = el("b", null, p.key); name.append(b, " · " + p.label);
+    name.append(el("b", null, p.key), " · " + p.label);
     const val = el("div", "val", fmt(p, valOf(p.key)));
-    top.append(name, val);
-    row.appendChild(top);
 
-    const set = (v) => {
-      if (v === p.def) delete state.values[p.key]; else state.values[p.key] = v;
-      saveDraft(); rerenderParams();
-    };
+    const mc = el("canvas", "mini");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const MW = 74, MH = 40;
+    mc.width = MW * dpr; mc.height = MH * dpr;
+    const mctx = mc.getContext("2d");
+    mctx.scale(dpr, dpr);
+    minis.push({ key: p.key, ctx: mctx, w: MW, h: MH });
+
+    top.append(name, mc, val); row.appendChild(top);
+
+    const set = (v) => { if (v === p.def) delete state.values[p.key]; else state.values[p.key] = v; saveDraft(); rerender(); };
 
     if (p.type === "bool" || p.type === "enum") {
       const seg = el("div", "seg");
-      const opts = p.type === "bool"
-        ? [{ v: true, t: "так" }, { v: false, t: "ні" }]
-        : p.options;
-      opts.forEach((o) => {
+      (p.type === "enum" ? p.options : [{ v: true, t: "так" }, { v: false, t: "ні" }]).forEach((o) => {
         const btn = el("button", null, o.t); btn.type = "button";
         btn.setAttribute("aria-pressed", String(valOf(p.key) === o.v));
         btn.disabled = locked();
@@ -503,75 +742,153 @@ textarea {
       row.appendChild(seg);
     } else {
       const r = el("input"); r.type = "range";
-      r.min = p.min; r.max = p.max; r.step = p.step; r.value = valOf(p.key);
-      r.disabled = locked();
+      r.min = p.min; r.max = p.max; r.step = p.step; r.value = valOf(p.key); r.disabled = locked();
       r.addEventListener("input", () => { val.textContent = fmt(p, Number(r.value)); });
       r.addEventListener("change", () => set(Number(r.value)));
       row.appendChild(r);
     }
 
-    const foot = el("div", "hint");
-    foot.append(p.hint ? p.hint + " · " : "");
-    const def = el("span", "def", "дефолт " + fmt(p, p.def));
-    foot.appendChild(def);
+    const hint = el("div", "hint");
+    hint.append((p.hint ? p.hint + " · " : "") + "прототип: " + fmt(p, p.def));
     if (!isDef(p.key) && !locked()) {
-      const rst = el("button", "reset", "↺"); rst.type = "button";
+      const rst = el("button", "reset", " ↺"); rst.type = "button";
       rst.addEventListener("click", () => set(p.def));
-      foot.append(" ", rst);
+      hint.appendChild(rst);
     }
-    row.appendChild(foot);
+    row.appendChild(hint);
     return row;
   }
 
   let paramsNode = null;
   function paramsBlock() {
+    minis.length = 0;                       // старі канваси йдуть у смітник разом із рядками
     const box = el("div");
     Object.keys(GROUPS).forEach((gk) => {
-      const g = GROUPS[gk];
-      const sec = el("section", "group");
-      const head = el("header");
+      const g = GROUPS[gk], sec = el("section", "group"), head = el("header");
       head.appendChild(el("h2", null, g.title));
       head.appendChild(el("div", "sub", g.sub));
       head.appendChild(el("p", "desc", g.desc));
       sec.appendChild(head);
       const rows = el("div", "rows");
       PARAMS.filter((p) => p.g === gk).forEach((p) => rows.appendChild(paramRow(p)));
-      sec.appendChild(rows);
-      box.appendChild(sec);
+      sec.appendChild(rows); box.appendChild(sec);
     });
     return box;
   }
-  function rerenderParams() {
-    const fresh = paramsBlock();
-    paramsNode.replaceWith(fresh);
-    paramsNode = fresh;
-    renderBar();
-  }
+  function rerender() { const f = paramsBlock(); paramsNode.replaceWith(f); paramsNode = f; renderBar(); }
 
   function render() {
     const root = $("root"); root.innerHTML = "";
-    root.appendChild(el("div", "eyebrow", "Тюнер · майбутній патч " + data.id));
-    root.appendChild(el("h1", null, data.title));
+    root.appendChild(el("div", "eyebrow", "Демо · майбутній патч 66"));
+    root.appendChild(el("h1", null, "Віньєтка буста з прототипу"));
     root.appendChild(el("p", null,
-      "Екран, орбіти, м'яч і HUD намальовані справжніми числами гри (360×825, поле 320, орбіти 190/320 і 130/225/320). " +
-      "Віньєтка рахується тією ж формулою, яку я перенесу в шейдер. Повзунки підписані іменами майбутніх констант."));
+      "Код віньєтки перенесено з orbit-dash-tutorial.jsx (рядки 1246–1331) один в один. " +
+      "Ліворуч — наш екран 360×825 із полем під HUD, праворуч — прототип 720×1280. " +
+      "Радіуси перекладені через частку півдіагоналі, бо пропорції екранів різні."));
 
-    const stage = el("div", "stage"); stage.appendChild(canvas);
-    root.appendChild(stage);
-    sceneBarNode = sceneControls(); root.appendChild(sceneBarNode);
+    const screens = el("div", "screens");
+    const f1 = el("figure", "screen"); f1.style.margin = "0";
+    f1.appendChild(cGame);
+    const c1 = el("figcaption"); c1.append("наш екран · "); c1.appendChild(el("b", null, "360×825"));
+    f1.appendChild(c1);
+    const f2 = el("figure", "screen"); f2.style.margin = "0";
+    f2.appendChild(cProto);
+    const c2 = el("figcaption"); c2.append("прототип · "); c2.appendChild(el("b", null, "720×1280"));
+    f2.appendChild(c2);
+    screens.append(f1, f2);
+    root.appendChild(screens);
 
+    controlsNode = controls(); root.appendChild(controlsNode);
+
+    // Зум нашого екрана: віньєтка живе по краях, і на малому їх не роздивитись.
+    const zr = el("div", "zoomrow");
+    zr.appendChild(el("span", null, "зум"));
+    const zi = el("input"); zi.type = "range"; zi.min = 1; zi.max = 4; zi.step = 0.1; zi.value = zoom.k;
+    const zv = el("span", null, "×1.0");
+    zi.addEventListener("input", () => { setZoom(Number(zi.value)); });
+    zr.append(zi, zv);
+    const zrst = el("button", "resetall", "у центр");
+    zrst.type = "button";
+    zrst.addEventListener("click", () => { zoom.cx = GAME.w / 2; zoom.cy = GAME.h / 2; setZoom(1); });
+    zr.appendChild(zrst);
+    root.appendChild(zr);
+    zoomUi = () => { zi.value = zoom.k; zv.textContent = "×" + zoom.k.toFixed(1); };
+    zoomUi();
+
+    // Док у кутку: той САМИЙ канвас переїжджає туди, коли сцена вискролила.
+    // Липку сцену не робимо — два екрани вищі за в'юпорт, і сторінка з нею
+    // переставала скролитись узагалі.
+    document.querySelectorAll(".dock").forEach((n) => n.remove());
+    const dock = el("div", "dock");
+    const head = el("div", "dock-head");
+    const dockLabel = el("div", "dock-boost", BOOSTS[view.boost].label);
+    const zOut = el("button", "zbtn", "−"), zIn = el("button", "zbtn", "+");
+    const zLab = el("span", "zval", "×1");
+    zOut.type = zIn.type = "button";
+    zOut.addEventListener("click", () => setZoom(zoom.k - 0.5));
+    zIn.addEventListener("click", () => setZoom(zoom.k + 0.5));
+    head.append(dockLabel, zOut, zLab, zIn);
+    dock.append(head, cDock);
+    document.body.appendChild(dock);
+    dockLabelNode = dockLabel;
+    dockZoomLabel = zLab;
+
+    // Док можна відтягнути, якщо він перекрив потрібне
+    let drag = null;
+    head.addEventListener("pointerdown", (e) => {
+      if (e.target !== head && e.target !== dockLabel) return;
+      const r = dock.getBoundingClientRect();
+      drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+      dock.classList.add("dragging"); head.setPointerCapture(e.pointerId);
+    });
+    head.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      dock.style.left = (e.clientX - drag.dx) + "px";
+      dock.style.top  = (e.clientY - drag.dy) + "px";
+      dock.style.right = "auto";
+    });
+    head.addEventListener("pointerup", () => { drag = null; dock.classList.remove("dragging"); });
+
+    if (window.IntersectionObserver) {
+      new IntersectionObserver((e) => {
+        dockOn = !e[0].isIntersecting;
+        dock.classList.toggle("on", dockOn);
+        if (dockOn) resizeCanvas();          // канвас дока щойно отримав розмір
+      }, { threshold: 0, rootMargin: "-60px 0px 0px 0px" }).observe(screens);
+    }
     paramsNode = paramsBlock(); root.appendChild(paramsNode);
 
-    const noteBox = el("section", "group");
-    const nh = el("header"); nh.appendChild(el("h2", null, "Коментар"));
-    nh.appendChild(el("p", "desc", "Те, що повзунками не передати: «на SYNTH занадто», «хочу теплішим»."));
+    // Скинути все до чисел прототипу
+    const resetRow = el("div", "zoomrow");
+    const rall = el("button", "resetall", "↺ скинути все до прототипу");
+    rall.type = "button";
+    rall.disabled = locked();
+    let armed = false, armTimer = 0;
+    rall.addEventListener("click", () => {
+      if (!armed) {                      // confirm() у пісочниці артефакта не працює
+        armed = true;
+        rall.textContent = "точно скинути? натисни ще раз";
+        armTimer = setTimeout(() => { armed = false; rall.textContent = "↺ скинути все до прототипу"; }, 3000);
+        return;
+      }
+      clearTimeout(armTimer);
+      state.values = {};
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+      render();
+    });
+    resetRow.appendChild(rall);
+    root.appendChild(resetRow);
+
+    const noteBox = el("section", "group"), nh = el("header");
+    nh.appendChild(el("h2", null, "Коментар"));
+    nh.appendChild(el("p", "desc", "Що змінити словами: «на нашому екрані край завузький», «іскорки зайві»."));
     noteBox.appendChild(nh);
     const nr = el("div", "rows");
     const ta = el("textarea"); ta.value = state.note || ""; ta.disabled = locked();
     ta.addEventListener("input", () => { state.note = ta.value; saveDraft(); });
-    nr.appendChild(ta); noteBox.appendChild(nr);
-    root.appendChild(noteBox);
+    nr.appendChild(ta); noteBox.appendChild(nr); root.appendChild(noteBox);
 
+    resizeCanvas();
     renderBar();
   }
 
@@ -579,18 +896,16 @@ textarea {
   let artifactApi = null, busy = false;
   function renderBar() {
     const bar = $("bar"); bar.innerHTML = "";
-    const inner = el("div", "bar-inner");
-    const status = el("div", "status");
-
+    const inner = el("div", "bar-inner"), status = el("div", "status");
     const changed = Object.keys(state.values).length;
     if (state.result) {
       status.appendChild(el("span", "pill done", "Перенесено"));
       status.appendChild(el("span", null, state.result.note || ""));
     } else if (locked()) {
       status.appendChild(el("span", "pill sent", "Надіслано"));
-      status.appendChild(el("span", null, new Date(state.submitted).toLocaleString("uk-UA") + " — напиши в чат, Claude прочитає"));
+      status.appendChild(el("span", null, new Date(state.submitted).toLocaleString("uk-UA") + " — напиши в чат"));
     } else {
-      status.appendChild(el("span", null, changed ? "змінено значень: " + changed : "усе на дефолтах"));
+      status.appendChild(el("span", null, changed ? "змінено проти прототипу: " + changed : "усе як у прототипі"));
       if (!artifactApi) status.appendChild(el("span", null, "· надіслати можна на claude.ai"));
     }
     inner.appendChild(status);
@@ -601,11 +916,10 @@ textarea {
     send.disabled = !artifactApi || busy || !!state.result;
     send.addEventListener("click", () => {
       if (!artifactApi || busy) return;
-      if (locked()) { state.submitted = null; } else {
-        const full = {};
-        PARAMS.forEach((p) => { full[p.key] = valOf(p.key); });
-        state.values = full;
-        state.submitted = new Date().toISOString();
+      if (locked()) state.submitted = null;
+      else {
+        const full = {}; PARAMS.forEach((p) => { full[p.key] = valOf(p.key); });
+        state.values = full; state.submitted = new Date().toISOString();
       }
       publish();
     });
@@ -633,15 +947,12 @@ textarea {
     } catch (e) {
       busy = false;
       if (e && e.code === "conflict") return;
-      state.submitted = null;
-      render();
-      $("status") && $("status").appendChild(el("span", null, "не вдалось надіслати — напиши в чат"));
+      state.submitted = null; render();
     }
   }
 
   loadDraft();
   render();
-  resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
   requestAnimationFrame(frame);
 
