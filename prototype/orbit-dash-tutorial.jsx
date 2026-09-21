@@ -50,6 +50,10 @@ const DEFAULT_SAVE = {
   daily: null,
 };
 
+// Версія збірки: номер +1 за кожну зміну, плюс дата й час (Київ). Ставиться автоматично.
+// Видно в DEV-панелі: так одразу ясно, чи підтягнулось оновлення.
+const BUILD = "v1 · 21.09.2026 10:28";
+
 const W = 720, H = 1280, CX = 360, CY = 610, D = Math.PI / 180;
 const LAYOUT2 = [190, 320, 320];
 const LAYOUT3 = [130, 225, 320];
@@ -2165,7 +2169,8 @@ export default function OrbitDash() {
         {/* ------------------------------------------------ DEV */}
         {dev && (
           <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 px-10" style={{ background: "rgba(4,5,11,0.9)" }}>
-            <div className="font-mono text-xs tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>DEV PANEL · прибрати в релізі</div>
+            <div className="font-mono text-xs tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>DEV PANEL · прибрати в релізі</div>
+            <div className="font-mono font-bold text-sm tracking-widest mb-2" style={{ color: pal.gem }}>BUILD {BUILD}</div>
             <div className="w-full flex flex-col gap-2" style={{ maxWidth: 280 }}>
               <Btn kind="primary" small onClick={startTutorial}>▶ TUTORIAL</Btn>
               <Btn small onClick={() => { setDevHud((v) => !v); beep(devHud ? 420 : 760, 0.1, "sine", 0.09, 200); }}>
