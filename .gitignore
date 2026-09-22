@@ -35,8 +35,3 @@ market/content/source/footage/*.mp4
 ._*
 .Spotlight-V100
 .Trashes
-
-# Ключі підпису й зібрані бандли — не в репозиторій (він публічний)
-*.keystore
-keystore.properties
-*.aab
