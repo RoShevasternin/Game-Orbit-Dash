@@ -9,6 +9,7 @@ import com.lewydo.orbitdash.MainActivity
 import com.lewydo.orbitdash.game.manager.MusicManager
 import com.lewydo.orbitdash.game.manager.NavigationManager
 import com.lewydo.orbitdash.game.manager.SoundManager
+import com.lewydo.orbitdash.game.manager.SoundSynth
 import com.lewydo.orbitdash.game.manager.SpriteManager
 import com.lewydo.orbitdash.game.manager.util.MusicUtil
 import com.lewydo.orbitdash.game.manager.util.SoundUtil
@@ -70,6 +71,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
     lateinit var spriteManager        : SpriteManager         private set
     lateinit var musicManager         : MusicManager          private set
     lateinit var soundManager         : SoundManager          private set
+    lateinit var soundSynth           : SoundSynth            private set
     lateinit var msdfManager          : MsdfManager           private set
 
     // ------------------------------------------------------------------------
@@ -116,6 +118,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         spriteManager         = SpriteManager(assetManager)
         musicManager          = MusicManager(assetManager)
         soundManager          = SoundManager(assetManager)
+        soundSynth            = SoundSynth()
         msdfManager           = MsdfManager()
         navigationManager     = NavigationManager(this)
 
@@ -164,7 +167,7 @@ class GDXGame(val activity: MainActivity) : AdvancedGame() {
         try {
             coroutine.cancel()
             disposableSet.disposeAll()
-            disposeAll(assetManager, musicUtil, soundUtil, VfxTextures, VfxShaderCache, Blit, msdfManager)
+            disposeAll(assetManager, musicUtil, soundUtil, soundSynth, VfxTextures, VfxShaderCache, Blit, msdfManager)
             super.dispose()
             log("dispose $currentClassName")
         } catch (e: Exception) {

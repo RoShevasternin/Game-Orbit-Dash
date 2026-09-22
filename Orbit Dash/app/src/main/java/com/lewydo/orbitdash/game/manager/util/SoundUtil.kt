@@ -2,8 +2,10 @@ package com.lewydo.orbitdash.game.manager.util
 
 import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.utils.Disposable
+import com.lewydo.orbitdash.game.content.Sfx
+import com.lewydo.orbitdash.game.content.SfxCatalog
 import com.lewydo.orbitdash.game.manager.AudioManager
-import com.lewydo.orbitdash.game.manager.SoundManager
+import com.lewydo.orbitdash.game.utils.gdxGame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -27,10 +29,35 @@ import kotlinx.coroutines.launch
 
 class SoundUtil : Disposable {
 
-    private companion object { const val QUEUE_CAPACITY = 8 }
+    private companion object {
+        const val QUEUE_CAPACITY = 8
+        /**
+         * Множник синтезованих звуків: vol прототипу → динамік телефона.
+         *
+         * 3.2 = 1 / 0.31, де 0.31 — пік найгучнішого рецепта (ORBIT3, два шари).
+         * Потрібен, бо гучність приїжджає ДВІЧІ: wav уже нормалізовано до повної
+         * шкали, а coff = vol прототипу (0.06..0.31) тоді вдруге його притискає —
+         * тап виходив на 4 % шкали проти 60 % у старого click.mp3, тобто нечутно.
+         * Множник повертає абсолютний рівень, лишаючи баланс прототипу між звуками.
+         */
+        const val SYNTH_GAIN = 3.2f
+    }
 
-    val CLICK     = AdvancedSound(SoundManager.EnumSound.CLICK.data.sound, 1f)
-    val CHECK_BOX = AdvancedSound(SoundManager.EnumSound.CHECK_BOX.data.sound, 1f)
+    // ── Синтезовані звуки (SoundSynth) ──────────────────────────────────────
+    //  Один AdvancedSound на Sfx: тротлінг живе в ньому, тому кешуємо.
+    private val synth = gdxGame.soundSynth
+    private val bySfx = HashMap<Sfx, AdvancedSound>()
+
+    /** Обгортка над запеченим семплом; coff = vol прототипу (wav нормалізовано). */
+    fun sound(sfx: Sfx): AdvancedSound =
+        bySfx.getOrPut(sfx) { AdvancedSound(synth.sound(sfx), synth.peak(sfx) * SYNTH_GAIN) }
+
+    /** Відтворити подію з каталогу. */
+    fun play(sfx: Sfx, playCoff: Float = 1f) = play(sound(sfx), playCoff)
+
+    /** Кнопки й тумблери — теж синтез, як у прототипі; click.mp3 більше не грає. */
+    val CLICK     = sound(SfxCatalog.UI_TICK)
+    val CHECK_BOX = sound(SfxCatalog.CHECK_BOX)
 
     // 0..100
     var volumeLevel = AudioManager.volumeLevelPercent

@@ -26,6 +26,8 @@ import com.lewydo.orbitdash.game.actors.panel.APanelGameHud
 import com.lewydo.orbitdash.engine.RunEngine
 import com.lewydo.orbitdash.game.actors.debug.ADebugIconBar
 import com.lewydo.orbitdash.game.actors.debug.addDebugIconBar
+import com.lewydo.orbitdash.game.content.Sfx
+import com.lewydo.orbitdash.game.content.SfxCatalog
 import com.lewydo.orbitdash.game.content.info
 import com.lewydo.orbitdash.game.utils.Block
 import com.lewydo.orbitdash.game.utils.actor.addAndFillActor
@@ -92,6 +94,16 @@ class GameScreen : AdvancedScreen() {
         private const val POOL_BURSTS = 3
         /** Квад бурста — точка: крапки малюються за межами, як glow в об'єктах. */
         private const val BURST_SIZE  = 8f
+
+        // ── звук і вібро: числа з прототипу (beep + buzz біля кожної події) ──
+        /** Вікно ланцюжка гемів: наступний гем у ці 2 с — на півтон вище. */
+        private const val GEM_CHAIN_WIN    = 2f
+        private const val BUZZ_TAP         = 8
+        private const val BUZZ_COMBO       = 12
+        private const val BUZZ_SHIELD_SAVE = 30
+        private const val BUZZ_ORBIT3      = 30
+        private const val BUZZ_PULSE       = 40
+        private const val BUZZ_DEATH       = 60
     }
 
     // ------------------------------------------------------------------------
@@ -139,6 +151,13 @@ class GameScreen : AdvancedScreen() {
 
     /** Скільки комбо цього рану вже закомічено — ревайв фіксує той самий ран удруге. */
     private var comboCommitted = 0
+
+    /**
+     * Ланцюжок гемів — лише для висоти звуку, тому живе тут, а не в рушії:
+     * на рахунок не впливає. Тікає реальним часом, як comboT у прототипі.
+     */
+    private var gemChain  = 0
+    private var gemChainT = 0f
 
     private var debugOrbit3    = false
     /** DEBUG: множник часу для рушія. x0.25 — розглядати near-miss «під лупою». */
@@ -260,6 +279,7 @@ class GameScreen : AdvancedScreen() {
         super.render(delta)
 
         engine.update(delta * debugTimeScale)
+        tickGemChain(delta * debugTimeScale)
 
         syncField()
         syncPlayer()
@@ -377,6 +397,8 @@ class GameScreen : AdvancedScreen() {
         ))
         if (quickDeaths >= 2) quickDeaths = 0
         comboCommitted = 0
+        gemChain  = 0
+        gemChainT = 0f
 
         engine.listener = runListener
         applyDebugFlags()
@@ -387,6 +409,7 @@ class GameScreen : AdvancedScreen() {
         // показав би стару розкладку і смикнув би її на місце.
         syncField()
         gdxGame.analytics.runStart()
+        sfx(SfxCatalog.RUN_START)
     }
 
     /**
@@ -412,7 +435,13 @@ class GameScreen : AdvancedScreen() {
     }
 
     private val runListener = object : RunEngine.Listener {
+        override fun onTap() {
+            // Після tap() dir уже новий: назовні — 300 Гц, всередину — 340
+            sfx(if (engine.dir > 0) SfxCatalog.TAP_OUT else SfxCatalog.TAP_IN, BUZZ_TAP)
+        }
+
         override fun onDied(result: RunEngine.RunResult) {
+            sfx(SfxCatalog.DEATH, BUZZ_DEATH)
             quickDeaths = if (result.durationSec < 15) quickDeaths + 1 else 0
 
             // Рекорд і лічильник ранів — одразу. Геми — пізніше, у bankRun():
@@ -439,17 +468,47 @@ class GameScreen : AdvancedScreen() {
             log("DEAD score=${result.score} gems=${result.gems} t=${result.durationSec}s ring=${result.deathRing} best=$newBest")
         }
 
-        override fun onOrbit3Online() { log("ORBIT III ONLINE") }
+        override fun onRevived()      { sfx(SfxCatalog.REVIVE) }
+        override fun onOrbit3Online() { sfx(SfxCatalog.ORBIT3, BUZZ_ORBIT3); log("ORBIT III ONLINE") }
         override fun onNearMiss(e: RunEngine.Entity, sparkAngle: Float, bonus: Int) {
             // Усе — в точці ІСКРИ, не шипа: саме за цим рушій і віддає кут
             val r = e.rr * RunEngine.TO_FIELD
             showSparkFx(r, -sparkAngle)
             showFloat("COMBO x${engine.multiplier}", r, -sparkAngle)
+            // Висота — від комбо після +1: перша іскра вже на півтон вище за 950 Гц
+            sfx(SfxCatalog.combo(engine.combo.toInt()), BUZZ_COMBO)
             log("COMBO! +$bonus")
         }
-        override fun onBoostApplied(boost: RunEngine.Boost, e: RunEngine.Entity?) { log("BOOST $boost") }
-        override fun onShieldSaved(e: RunEngine.Entity) { log("SHIELD SAVED") }
-        // TODO: звуки, партикли, вібро — кожен у своєму колбеку
+        override fun onGemPicked(e: RunEngine.Entity, value: Float) { sfx(SfxCatalog.gem(gemChainStep())) }
+        override fun onBoostApplied(boost: RunEngine.Boost, e: RunEngine.Entity?) {
+            when (boost) {
+                RunEngine.Boost.SHIELD -> sfx(SfxCatalog.SHIELD_UP)
+                RunEngine.Boost.PULSE  -> sfx(SfxCatalog.PULSE, BUZZ_PULSE)
+                else                   -> sfx(SfxCatalog.BOOST)      // MAGNET / FRENZY / SLOW — з таймером
+            }
+            log("BOOST $boost")
+        }
+        override fun onShieldSaved(e: RunEngine.Entity) { sfx(SfxCatalog.SHIELD_SAVE, BUZZ_SHIELD_SAVE); log("SHIELD SAVED") }
+    }
+
+    // ------------------------------------------------------------------------
+    // Sfx · звук + вібро біля події, як beep() / buzz() у прототипі
+    // ------------------------------------------------------------------------
+    private fun sfx(sound: Sfx, buzzMs: Int = 0) {
+        gdxGame.soundUtil.play(sound)
+        if (buzzMs > 0) gdxGame.vibroUtil.vibro(buzzMs)
+    }
+
+    /** Гем у вікні — +1 щабель (до GEM_CHAIN_MAX), вікно заново; поза вікном — з нуля. */
+    private fun gemChainStep(): Int {
+        gemChain  = if (gemChainT > 0f) minOf(SfxCatalog.GEM_CHAIN_MAX, gemChain + 1) else 0
+        gemChainT = GEM_CHAIN_WIN
+        return gemChain
+    }
+
+    private fun tickGemChain(dt: Float) {
+        gemChainT = maxOf(0f, gemChainT - dt)
+        if (gemChainT <= 0f) gemChain = 0
     }
 
     // ------------------------------------------------------------------------

@@ -1,0 +1,44 @@
+{
+ "id": "71",
+ "short": "Звук і вібро",
+ "title": "Звук і вібро — осцилятор прототипу, запечений у wav",
+ "date": "22.09.2026",
+ "order": "1 → 8 разом; компілюється після 5 (SoundUtil читає gdxGame.soundSynth).",
+ "summary_md": "pages/71.summary.md",
+ "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+ "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/22e6410c-32f8-485c-abfd-ef7c79f7ca80/scratchpad/lab71/",
+ "files": [
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/content/SfxCatalog.kt",
+   "note": "НОВИЙ ФАЙЛ: Wave / Beep / Sfx / SfxCatalog — рецепти з JSX один в один, драбини combo(n) і gem(n), список all."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/manager/SoundSynth.kt",
+   "note": "НОВИЙ ФАЙЛ: рецепт → PCM (рампи WebAudio, polyBLEP) → wav → Sound; кеш local/sfx/v<хеш>/; Disposable."
+  },
+  {
+   "path": "app/src/test/java/com/lewydo/orbitdash/game/manager/SoundSynthTest.kt",
+   "note": "НОВИЙ ФАЙЛ: 9 JVM-тестів чистої частини синтезатора."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/manager/util/SoundUtil.kt",
+   "note": "sound(Sfx) / play(Sfx), SYNTH_GAIN; CLICK і CHECK_BOX тепер із синтезу — click.mp3 більше не грає."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/GDXGame.kt",
+   "note": "Поле soundSynth: create() робить, dispose() відпускає."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/LoaderScreen.kt",
+   "note": "bakeAll у loadAssets() — до першого soundUtil; READY на «TAP TO START», MENU_IN на тап."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt",
+   "note": "sfx() = звук + вібро; ланцюжок гемів (вікно 2 с, до 12); усі колбеки рушія; RUN_START у startRun."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/panel/APanelMenu.kt",
+   "note": "PLAY без кліку — як у прототипі, звучить сам старт рану."
+  }
+ ]
+}

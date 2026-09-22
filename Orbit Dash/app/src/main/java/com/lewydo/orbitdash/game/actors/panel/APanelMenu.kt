@@ -176,7 +176,8 @@ class APanelMenu(override val screen: AdvancedScreen) : AAutoLayout(
 
     /** Лістенери ставимо один раз: кнопки не перестворюються. */
     private fun wireListeners() {
-        aPlayBtn.setOnClickListener  { onPlay() }
+        // PLAY без кліку: у прототипі кнопка німа — звучить сам старт рану (RUN_START)
+        aPlayBtn.setOnClickListener(sound = null) { onPlay() }
         aBoostBtn.setOnClickListener { onPlayBoost(rolledBoost) }
         aGemsBtn.setOnClickListener  { onGems(rolledGems) }
         aShopBtn.setOnClickListener  { onShop() }

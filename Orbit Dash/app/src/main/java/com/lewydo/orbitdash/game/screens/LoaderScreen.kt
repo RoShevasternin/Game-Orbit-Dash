@@ -4,6 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.Group
 import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.layout.constraintLayout.AConstraintLayout
 import com.lewydo.orbitdash.game.actors.loader.AMainLoader
+import com.lewydo.orbitdash.game.content.SfxCatalog
 import com.lewydo.orbitdash.game.manager.MusicManager
 import com.lewydo.orbitdash.game.manager.SoundManager
 import com.lewydo.orbitdash.game.manager.SpriteManager
@@ -70,6 +71,7 @@ class LoaderScreen : AdvancedScreen() {
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         // LoaderScreen.touchDown — коли ще не готово
         if (!aMain.isReadyToStart) return false
+        gdxGame.soundUtil.play(SfxCatalog.MENU_IN)
         aStarField.animWarp() // ← зорі розганяються і гальмують
         aMain.animTapToStart()
         return true
@@ -144,6 +146,9 @@ class LoaderScreen : AdvancedScreen() {
             loadableSoundList = SoundManager.EnumSound.entries.map { it.data }.toMutableList()
             load()
         }
+        // Синтезовані звуки: wav у local/sfx (перший запуск пише, далі читає).
+        // ДО першого soundUtil — той бере семпли звідси, коли створюється.
+        gdxGame.soundSynth.bakeAll(SfxCatalog.all)
     }
 
     private fun initAssets() {
@@ -183,6 +188,7 @@ class LoaderScreen : AdvancedScreen() {
     private fun isFinish() {
         if (isFinishLoading && isFinishProgress) {
             isFinishProgress = false
+            gdxGame.soundUtil.play(SfxCatalog.READY)   // з'явилось «TAP TO START»
 
             gdxGame.musicUtil.apply { currentMusic = MAIN.apply {
                 isLooping = true

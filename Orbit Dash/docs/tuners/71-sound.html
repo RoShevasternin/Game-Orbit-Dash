@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тюнер · Звуки гри</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style id="style">
+/* Та сама лава, що й у 53-spark / 66-vignette: темна навмисно, усі кольори явні. */
+:root {
+  --ground:  #0B1020;
+  --surface: #121A2E;
+  --sunk:    #0E1526;
+  --line:    #223052;
+  --ink:     #E6EAF5;
+  --muted:   #8B96B5;
+  --dim:     #5A6688;
+  --accent:  #22E4FF;
+  --accent-ink: #062A33;
+  --warn:    #FFC857;
+  --ok:      #5BE49B;
+  --danger:  #FF3D6E;
+  --radius:  10px;
+  --font:    "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--ground); color: var(--ink);
+  font: 15px/1.5 var(--font);
+  padding: 0 16px; padding-block: 12px 120px;
+  -webkit-text-size-adjust: 100%;
+}
+.page { max-width: 720px; margin: 0 auto; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+h1 { font-size: 24px; line-height: 1.2; margin: 6px 0 4px; font-weight: 700; text-wrap: balance; }
+h1 + p { margin: 0 0 12px; color: var(--muted); max-width: 62ch; font-size: 14px; }
+h1 + p a { color: var(--accent); text-decoration: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 500 12px/1.4 var(--mono); color: var(--dim); margin: 0 0 6px; }
+.legend b { color: var(--muted); font-weight: 500; }
+
+button { font: 600 13px/1 var(--font); border: 1px solid var(--line); background: var(--sunk); color: var(--ink); padding: 8px 12px; border-radius: 999px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.primary:disabled { background: var(--line); color: var(--dim); border-color: var(--line); cursor: not-allowed; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.play { width: 44px; height: 40px; padding: 0; font-size: 16px; border-color: var(--accent); color: var(--accent); background: transparent; flex: none; }
+button.play:active { background: var(--accent); color: var(--accent-ink); }
+button.step { min-width: 34px; height: 32px; padding: 0 8px; font: 500 12px/1 var(--mono); }
+button.step.top { border-color: var(--warn); color: var(--warn); }
+button.reset { display: none; width: 26px; height: 26px; padding: 0; font-size: 14px; line-height: 1; border-radius: 50%; color: var(--warn); border-color: var(--warn); background: transparent; }
+
+.groups { display: grid; gap: 14px; margin-top: 14px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px 6px; }
+.group h2 { margin: 0 0 2px; font: 500 13px/1.3 var(--mono); color: var(--accent); }
+.group h2 small { color: var(--dim); font-weight: 400; }
+.group p { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+
+.sound { padding: 10px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "play name reset" "fields fields fields" "hint hint hint"; gap: 6px 10px; align-items: center; }
+.sound .name { grid-area: name; font: 500 13px/1.3 var(--mono); color: var(--ink); min-width: 0; }
+.sound .name b { display: block; color: var(--muted); font-weight: 400; font-family: var(--font); font-size: 12.5px; }
+.sound.changed .name { color: var(--warn); }
+.sound .reset { grid-area: reset; }
+.sound.changed .reset { display: inline-flex; align-items: center; justify-content: center; }
+.sound .play { grid-area: play; }
+.fields { grid-area: fields; display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.field { display: inline-flex; align-items: center; gap: 5px; font: 500 12px/1 var(--mono); color: var(--dim); }
+.field input, .field select { width: 78px; font: 500 13px/1 var(--mono); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 7px; padding: 7px 8px; font-variant-numeric: tabular-nums; }
+.field select { width: auto; padding-right: 6px; }
+.field.changed input, .field.changed select { border-color: var(--warn); }
+.field .def { color: var(--dim); }
+.field.changed .def { color: var(--warn); }
+.field .def::before { content: "71: "; }
+.sound .hint { grid-area: hint; font-size: 12px; color: var(--dim); }
+.steps { grid-area: hint; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; padding-top: 2px; }
+.steps span { font: 500 11px/1 var(--mono); color: var(--dim); margin-right: 4px; }
+
+.note textarea { width: 100%; min-height: 72px; resize: vertical; font: 14px/1.45 var(--font); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.bar .in { max-width: 720px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.bar .status { flex: 1 1 200px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; min-height: 20px; }
+.pill { font: 600 11px/1 var(--mono); letter-spacing: .04em; padding: 5px 8px; border-radius: 999px; background: var(--line); color: var(--ink); }
+.pill.sent { background: #1E3A5F; color: #9CD0FF; }
+.pill.done { background: #173A2A; color: var(--ok); }
+.pill.fail { background: #4A1F2A; color: var(--danger); }
+.bar .actions { display: flex; gap: 8px; margin-left: auto; }
+@media (max-width: 480px) {
+  .bar .actions { width: 100%; }
+  .bar .actions button { flex: 1; }
+  .field input { width: 68px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main class="page" id="root"></main>
+<div class="bar" id="bar"></div>
+<script id="tuner-data" type="application/json">{"id":"71","v":1,"title":"Звуки гри","patch":"https://claude.ai/artifact/Ss9MWWsXdt9z5BgA3aShNL","state":{"values":{},"note":"","submitted":null,"result":null}}</script>
+<script id="app">
+(function () {
+  "use strict";
+  const data  = JSON.parse(document.getElementById("tuner-data").textContent);
+  const state = data.state || (data.state = {});
+  state.values = state.values || {};
+  const DRAFT_KEY = "tuner-draft-71";
+
+  // ── ЗВУК: beep() із прототипу ДОСЛІВНО. Те, що чуєш тут, і є рецепт. ──────
+  let actx = null;
+  function beep(f, dur, type, vol, slide) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      actx = actx || new AC();
+      const a = actx;
+      if (a.state === "suspended") a.resume();
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, a.currentTime);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, f + slide), a.currentTime + dur);
+      g.gain.setValueAtTime(vol, a.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(); o.stop(a.currentTime + dur);
+    } catch (e) { /* без аудіо */ }
+  }
+  const buzz = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* немає вібро */ } };
+  const semitone = (base, n) => base * Math.pow(2, n / 12);
+
+  // ── Рецепти SfxCatalog (патч 71 = JSX). Поле "wave" — тип осцилятора WebAudio. ──
+  const WAVES = ["sine", "square", "sawtooth"];
+  const SOUNDS = [
+    { g: "ui",  key: "UI_TICK",     label: "будь-яка кнопка (у JSX — офер / вибір скіна)",    layers: [{ f: 500, dur: 0.05, wave: "square",   vol: 0.06, slide: 0 }] },
+    { g: "ui",  key: "CHECK_BOX",   label: "тумблер (у JSX — dev-перемикач)",                  layers: [{ f: 760, dur: 0.08, wave: "sine",     vol: 0.08, slide: 200 }] },
+    { g: "ui",  key: "READY",       label: "завантажено, «TAP TO START»",                       layers: [{ f: 660, dur: 0.14, wave: "sine",     vol: 0.09, slide: 260 }] },
+    { g: "ui",  key: "MENU_IN",     label: "тап по лоадеру → меню",                             layers: [{ f: 520, dur: 0.12, wave: "sine",     vol: 0.10, slide: 260 }] },
+
+    { g: "run", key: "RUN_START",   label: "старт рану (PLAY німий, звучить це)",              layers: [{ f: 440, dur: 0.10, wave: "sine",     vol: 0.08, slide: 220 }] },
+    { g: "run", key: "TAP_OUT",     label: "тап · назовні",                        buzz: "BUZZ_TAP",         layers: [{ f: 300, dur: 0.06, wave: "square",   vol: 0.07, slide: 200 }] },
+    { g: "run", key: "TAP_IN",      label: "тап · всередину",                      buzz: "BUZZ_TAP",         layers: [{ f: 340, dur: 0.06, wave: "square",   vol: 0.07, slide: 200 }] },
+    { g: "run", key: "BOOST",       label: "MAGNET / GEM x2 / SLOW-MO підібрано",                             layers: [{ f: 700, dur: 0.18, wave: "sine",     vol: 0.11, slide: 350 }] },
+    { g: "run", key: "SHIELD_UP",   label: "SHIELD підібрано",                                                layers: [{ f: 600, dur: 0.15, wave: "sine",     vol: 0.10, slide: 200 }] },
+    { g: "run", key: "SHIELD_SAVE", label: "щит з'їв шип",                         buzz: "BUZZ_SHIELD_SAVE", layers: [{ f: 360, dur: 0.15, wave: "square",   vol: 0.10, slide: -120 }] },
+    { g: "run", key: "PULSE",       label: "PULSE — шипи навколо згоріли",         buzz: "BUZZ_PULSE",       layers: [{ f: 120, dur: 0.35, wave: "sawtooth", vol: 0.16, slide: -60 }] },
+    { g: "run", key: "ORBIT3",      label: "третя орбіта — два шари разом",        buzz: "BUZZ_ORBIT3",      layers: [{ f: 500, dur: 0.40, wave: "sine",     vol: 0.12, slide: 500 }, { f: 90, dur: 0.50, wave: "sine", vol: 0.20, slide: -30 }] },
+    { g: "run", key: "DEATH",       label: "смерть",                               buzz: "BUZZ_DEATH",       layers: [{ f: 220, dur: 0.50, wave: "sawtooth", vol: 0.15, slide: -170 }] },
+    { g: "run", key: "REVIVE",      label: "ревайв",                                                          layers: [{ f: 520, dur: 0.25, wave: "sine",     vol: 0.12, slide: 420 }] },
+
+    { g: "shop", key: "BUY",       label: "апгрейд куплено",           layers: [{ f: 700, dur: 0.12, wave: "sine", vol: 0.10, slide: 250 }] },
+    { g: "shop", key: "UNLOCK",    label: "скін куплено",              layers: [{ f: 700, dur: 0.15, wave: "sine", vol: 0.10, slide: 300 }] },
+    { g: "shop", key: "CLAIM",     label: "нагорода місії / стріку",   layers: [{ f: 760, dur: 0.18, wave: "sine", vol: 0.12, slide: 300 }] },
+    { g: "shop", key: "PURCHASE",  label: "орбіта 3 / без реклами",    layers: [{ f: 760, dur: 0.20, wave: "sine", vol: 0.12, slide: 350 }] },
+    { g: "shop", key: "NAME_SAVE", label: "ім'я збережено",            layers: [{ f: 600, dur: 0.08, wave: "sine", vol: 0.08, slide: 150 }] },
+  ];
+  // Драбини: base · 2^(n/12). Кожен щабель — окремий wav у грі.
+  const LADDERS = [
+    { g: "ladder", key: "COMBO", label: "іскра спіймана · n = combo після +1 (1..8)", buzz: "BUZZ_COMBO",
+      base: 950, dur: 0.07, wave: "square", vol: 0.09, slide: 250, from: 1, to: 8 },
+    { g: "ladder", key: "GEM",   label: "гем · n = ланцюжок: наступний гем у вікні — на півтон вище (0..12)",
+      base: 700, dur: 0.08, wave: "sine",   vol: 0.10, slide: 250, from: 0, to: 12 },
+  ];
+  // Числа GameScreen: вікно ланцюжка і вібро.
+  const EXTRA = [
+    { key: "GEM_CHAIN_WIN",    label: "вікно ланцюжка гемів", def: 2,  unit: "с",  step: 0.1, min: 0.2, max: 10 },
+    { key: "BUZZ_TAP",         label: "вібро · тап",          def: 8,  unit: "мс", step: 1, min: 0, max: 200 },
+    { key: "BUZZ_COMBO",       label: "вібро · іскра",        def: 12, unit: "мс", step: 1, min: 0, max: 200 },
+    { key: "BUZZ_SHIELD_SAVE", label: "вібро · щит",          def: 30, unit: "мс", step: 1, min: 0, max: 200 },
+    { key: "BUZZ_ORBIT3",      label: "вібро · орбіта 3",     def: 30, unit: "мс", step: 1, min: 0, max: 200 },
+    { key: "BUZZ_PULSE",       label: "вібро · PULSE",        def: 40, unit: "мс", step: 1, min: 0, max: 200 },
+    { key: "BUZZ_DEATH",       label: "вібро · смерть",       def: 60, unit: "мс", step: 1, min: 0, max: 200 },
+  ];
+  const GROUPS = {
+    ui:     { title: "Інтерфейс",         sub: "SoundUtil.CLICK · LoaderScreen",   desc: "Один тік на всі кнопки, як у прототипі. PLAY мовчить — за нього звучить старт рану." },
+    run:    { title: "Ран",               sub: "GameScreen.runListener",           desc: "Кожна подія рушія — свій звук; поруч вібро в мілісекундах (▶ тисне й його, якщо телефон уміє)." },
+    ladder: { title: "Драбини",           sub: "SfxCatalog.combo(n) / gem(n)",     desc: "Цифри — окремі щаблі; «підряд» грає всю драбину з кроком 160 мс, як швидкий збір." },
+    shop:   { title: "Магазин і місії",   sub: "екранів ще немає",                 desc: "Названі й запечені наперед. Підключаться, коли з'являться екрани." },
+    extra:  { title: "Вікно і вібро",     sub: "GameScreen · companion",           desc: "Скільки живе ланцюжок гемів і скільки тремтить телефон. ⋮ — спробувати вібро." },
+  };
+
+  // ── Реєстр параметрів: плоска мапа KEY → {def, kind, step, min, max}. ────
+  const FIELDS = [
+    { f: "f",     label: "f",     unit: "Гц", step: 1,    min: 40,    max: 4000 },
+    { f: "dur",   label: "dur",   unit: "с",  step: 0.01, min: 0.02,  max: 2 },
+    { f: "vol",   label: "vol",   unit: "",   step: 0.01, min: 0,     max: 0.5 },
+    { f: "slide", label: "slide", unit: "Гц", step: 10,   min: -2000, max: 2000 },
+  ];
+  const P = {}, ORDER = [];
+  function reg(key, spec) { P[key] = spec; ORDER.push(key); }
+  const layerKey = (s, li, f) => s.key + (li ? "." + (li + 1) : "") + "." + f;
+  SOUNDS.forEach((s) => s.layers.forEach((l, li) => {
+    FIELDS.forEach((fd) => reg(layerKey(s, li, fd.f), { def: l[fd.f], kind: "num", step: fd.step, min: fd.min, max: fd.max }));
+    reg(layerKey(s, li, "wave"), { def: l.wave, kind: "wave" });
+  }));
+  LADDERS.forEach((l) => {
+    reg(l.key + ".base", { def: l.base, kind: "num", step: 1, min: 40, max: 4000 });
+    FIELDS.slice(1).forEach((fd) => reg(l.key + "." + fd.f, { def: l[fd.f], kind: "num", step: fd.step, min: fd.min, max: fd.max }));
+    reg(l.key + ".wave", { def: l.wave, kind: "wave" });
+  });
+  EXTRA.forEach((e) => reg(e.key, { def: e.def, kind: "num", step: e.step, min: e.min, max: e.max }));
+
+  const locked = () => !!state.submitted;
+  const valOf  = (k) => (k in state.values ? state.values[k] : P[k].def);
+  const isDef  = (k) => valOf(k) === P[k].def;
+  const decimals = (step) => { const s = String(step); return s.includes(".") ? s.split(".")[1].length : 0; };
+
+  // ── Чернетка: незбережене живе в браузері до «Готово» ──────────────────────
+  function loadDraft() {
+    if (locked() || state.result) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      if (!d) return;
+      if (d.values) Object.keys(d.values).forEach((k) => { if (P[k]) state.values[k] = d.values[k]; });
+      if (typeof d.note === "string") state.note = d.note;
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ values: state.values, note: state.note || "" })); } catch (e) { /* немає сховища */ }
+  }
+
+  // ── Відтворення з ПОТОЧНИХ значень (не з дефолтів) ──────────────────────────
+  function playSound(s) {
+    s.layers.forEach((l, li) => beep(valOf(layerKey(s, li, "f")), valOf(layerKey(s, li, "dur")), valOf(layerKey(s, li, "wave")), valOf(layerKey(s, li, "vol")), valOf(layerKey(s, li, "slide"))));
+    if (s.buzz) buzz(valOf(s.buzz));
+  }
+  function playStep(l, n) {
+    beep(semitone(valOf(l.key + ".base"), n), valOf(l.key + ".dur"), valOf(l.key + ".wave"), valOf(l.key + ".vol"), valOf(l.key + ".slide"));
+    if (l.buzz) buzz(valOf(l.buzz));
+  }
+  function playLadder(l) {
+    for (let n = l.from; n <= l.to; n++) setTimeout(() => playStep(l, n), (n - l.from) * 160);
+  }
+
+  // ── DOM ─────────────────────────────────────────────────────────────────────
+  const $ = (id) => document.getElementById(id);
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function fieldInput(key, label, unit) {
+    const spec = P[key];
+    const wrap = el("label", "field"); wrap.id = "fw-" + key;
+    wrap.appendChild(el("span", null, label));
+    let inp;
+    if (spec.kind === "wave") {
+      inp = el("select"); WAVES.forEach((w) => { const o = el("option", null, w); o.value = w; inp.appendChild(o); });
+      inp.value = valOf(key);
+      inp.addEventListener("change", () => setVal(key, inp.value));
+    } else {
+      inp = el("input"); inp.type = "number"; inp.step = spec.step; inp.min = spec.min; inp.max = spec.max; inp.inputMode = "decimal";
+      inp.value = valOf(key);
+      inp.addEventListener("change", () => {
+        let v = Number(inp.value);
+        if (!isFinite(v)) v = spec.def;
+        v = Math.min(spec.max, Math.max(spec.min, v));
+        v = Number(v.toFixed(decimals(spec.step)));
+        inp.value = v; setVal(key, v);
+      });
+    }
+    inp.id = "in-" + key; inp.disabled = locked() || !!state.result;
+    wrap.appendChild(inp);
+    if (unit) wrap.appendChild(el("span", null, unit));
+    const def = el("span", "def", String(spec.def)); def.id = "def-" + key; wrap.appendChild(def);
+    return wrap;
+  }
+  function updateField(key) {
+    const w = $("fw-" + key); if (!w) return;
+    w.classList.toggle("changed", !isDef(key));
+    const inp = $("in-" + key); if (inp && String(inp.value) !== String(valOf(key))) inp.value = valOf(key);
+  }
+  function rowKeys(item) {
+    if (item.layers) { const ks = []; item.layers.forEach((l, li) => { FIELDS.forEach((fd) => ks.push(layerKey(item, li, fd.f))); ks.push(layerKey(item, li, "wave")); }); return ks; }
+    if (item.base != null) return [item.key + ".base", item.key + ".dur", item.key + ".vol", item.key + ".slide", item.key + ".wave"];
+    return [item.key];
+  }
+  function updateRow(item) {
+    const r = $("row-" + item.key); if (!r) return;
+    const keys = rowKeys(item);
+    keys.forEach(updateField);
+    r.classList.toggle("changed", keys.some((k) => !isDef(k)));
+  }
+
+  function soundRow(s) {
+    const r = el("div", "sound"); r.id = "row-" + s.key;
+    const play = el("button", "play", "▶"); play.type = "button"; play.title = "послухати"; play.addEventListener("click", () => playSound(s));
+    r.appendChild(play);
+    const name = el("div", "name", "SfxCatalog." + s.key); name.appendChild(el("b", null, s.label + (s.buzz ? " · вібро " + s.buzz.replace("BUZZ_", "").toLowerCase() : "")));
+    r.appendChild(name);
+    r.appendChild(resetBtn(() => rowKeys(s).forEach((k) => setVal(k, P[k].def))));
+    const fields = el("div", "fields");
+    s.layers.forEach((l, li) => {
+      if (s.layers.length > 1) fields.appendChild(el("span", "field", "шар " + (li + 1)));
+      FIELDS.forEach((fd) => fields.appendChild(fieldInput(layerKey(s, li, fd.f), fd.label, fd.unit)));
+      fields.appendChild(fieldInput(layerKey(s, li, "wave"), "wave", ""));
+    });
+    r.appendChild(fields);
+    return r;
+  }
+  function ladderRow(l) {
+    const r = el("div", "sound"); r.id = "row-" + l.key;
+    const play = el("button", "play", "▶"); play.type = "button"; play.title = "уся драбина підряд"; play.addEventListener("click", () => playLadder(l));
+    r.appendChild(play);
+    const name = el("div", "name", "SfxCatalog." + l.key.toLowerCase() + "(n)"); name.appendChild(el("b", null, l.label + (l.buzz ? " · вібро " + l.buzz.replace("BUZZ_", "").toLowerCase() : "")));
+    r.appendChild(name);
+    r.appendChild(resetBtn(() => rowKeys(l).forEach((k) => setVal(k, P[k].def))));
+    const fields = el("div", "fields");
+    fields.appendChild(fieldInput(l.key + ".base", "base", "Гц"));
+    fields.appendChild(fieldInput(l.key + ".dur", "dur", "с"));
+    fields.appendChild(fieldInput(l.key + ".vol", "vol", ""));
+    fields.appendChild(fieldInput(l.key + ".slide", "slide", "Гц"));
+    fields.appendChild(fieldInput(l.key + ".wave", "wave", ""));
+    r.appendChild(fields);
+    const steps = el("div", "steps"); steps.appendChild(el("span", null, "щабель n:"));
+    for (let n = l.from; n <= l.to; n++) {
+      const b = el("button", "step" + (n === l.to ? " top" : ""), String(n)); b.type = "button";
+      b.addEventListener("click", () => playStep(l, n)); steps.appendChild(b);
+    }
+    const all = el("button", "step", "▶ підряд"); all.type = "button"; all.addEventListener("click", () => playLadder(l)); steps.appendChild(all);
+    r.appendChild(steps);
+    return r;
+  }
+  function extraRow(e) {
+    const r = el("div", "sound"); r.id = "row-" + e.key;
+    const play = el("button", "play", e.key.startsWith("BUZZ") ? "⋮" : "·"); play.type = "button";
+    if (e.key.startsWith("BUZZ")) { play.title = "спробувати вібро"; play.addEventListener("click", () => buzz(valOf(e.key))); } else { play.disabled = true; play.style.borderColor = "var(--line)"; play.style.color = "var(--dim)"; }
+    r.appendChild(play);
+    const name = el("div", "name", "GameScreen." + e.key); name.appendChild(el("b", null, e.label));
+    r.appendChild(name);
+    r.appendChild(resetBtn(() => setVal(e.key, P[e.key].def)));
+    const fields = el("div", "fields"); fields.appendChild(fieldInput(e.key, "", e.unit)); r.appendChild(fields);
+    return r;
+  }
+  function resetBtn(fn) { const b = el("button", "reset", "↺"); b.type = "button"; b.title = "як у патчі 71"; b.addEventListener("click", fn); return b; }
+
+  function render() {
+    const root = $("root"); root.innerHTML = "";
+    root.appendChild(el("div", "eyebrow", "Orbit Dash · тюнер під патч 71"));
+    root.appendChild(el("h1", null, "Звуки гри — той самий beep(), що в JSX"));
+    const intro = el("p");
+    intro.append("Кожен рядок — рецепт із SfxCatalog: п'ять чисел WebAudio-осцилятора. ▶ грає його в браузері тим самим кодом, що прототип; у грі те саме запечено у wav. Зміни число — почуєш одразу. «Готово» → напиши в чат — Claude перенесе значення один в один.");
+    if (data.patch) { intro.append(" Сторінка патча: "); const a = el("a", null, "71"); a.href = data.patch; a.target = "_blank"; a.rel = "noopener"; intro.appendChild(a); intro.append("."); }
+    root.appendChild(intro);
+    const lg = el("div", "legend");
+    [["f", "стартова частота"], ["dur", "тривалість; гучність за неї падає до 0.001"], ["vol", "пікова гучність, лінійно"], ["slide", "куди їде частота до кінця: f → max(40, f + slide)"], ["wave", "форма осцилятора"]].forEach(([k, d]) => { const s = el("span"); s.appendChild(el("b", null, k + " — ")); s.append(d); lg.appendChild(s); });
+    root.appendChild(lg);
+
+    const groups = el("div", "groups");
+    ["ui", "run", "ladder", "shop", "extra"].forEach((g) => {
+      const G = GROUPS[g];
+      const box = el("section", "group");
+      const h = el("h2", null, G.title + " "); h.appendChild(el("small", null, G.sub)); box.appendChild(h);
+      box.appendChild(el("p", null, G.desc));
+      if (g === "ladder") LADDERS.forEach((l) => box.appendChild(ladderRow(l)));
+      else if (g === "extra") EXTRA.forEach((e) => box.appendChild(extraRow(e)));
+      else SOUNDS.filter((s) => s.g === g).forEach((s) => box.appendChild(soundRow(s)));
+      groups.appendChild(box);
+    });
+    const note = el("section", "group note");
+    const nh = el("h2", null, "Коментар "); nh.appendChild(el("small", null, "те, чого числами не передати")); note.appendChild(nh);
+    const ta = el("textarea"); ta.id = "note"; ta.placeholder = "«тап глухуватий», «смерть коротша», «драбина гемів занадто різка»…"; ta.value = state.note || ""; ta.disabled = locked() || !!state.result;
+    ta.addEventListener("input", () => { state.note = ta.value; saveDraft(); });
+    note.appendChild(ta); groups.appendChild(note);
+    root.appendChild(groups);
+
+    SOUNDS.forEach(updateRow); LADDERS.forEach(updateRow); EXTRA.forEach(updateRow);
+    renderBar();
+  }
+  function setVal(key, v) {
+    if (locked() || state.result) return;
+    if (v === P[key].def) delete state.values[key]; else state.values[key] = v;
+    const item = SOUNDS.find((s) => key.startsWith(s.key + ".")) || LADDERS.find((l) => key.startsWith(l.key + ".")) || EXTRA.find((e) => e.key === key);
+    if (item) updateRow(item);
+    saveDraft(); renderBar();
+  }
+  function resetAll() {
+    if (locked() || state.result) return;
+    state.values = {};
+    SOUNDS.forEach(updateRow); LADDERS.forEach(updateRow); EXTRA.forEach(updateRow);
+    saveDraft(); renderBar();
+  }
+
+  // ── Нижня панель ──────────────────────────────────────────────────────────
+  let artifactApi = null, busy = false;
+  const BAR =
+    '<div class="in"><div class="status" id="status"></div><div class="actions">' +
+    '<button id="reset" type="button">Скинути все до 71</button>' +
+    '<button class="primary" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+  function renderBar() {
+    const bar = $("bar");
+    if (!bar.firstChild) {
+      bar.innerHTML = BAR;
+      $("reset").addEventListener("click", resetAll);
+      $("send").addEventListener("click", onSend);
+    }
+    const st = $("status"); st.innerHTML = "";
+    const changed = ORDER.filter((k) => !isDef(k)).length;
+    if (state.result) {
+      st.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Перенесено в патч" : "Є проблеми"));
+      if (state.result.note) st.appendChild(el("span", null, state.result.note));
+    } else if (locked()) {
+      st.appendChild(el("span", "pill sent", "Надіслано"));
+      st.appendChild(el("span", null, fmtTime(state.submitted) + " — напиши в чат, і Claude забере числа"));
+    } else {
+      st.appendChild(el("span", null, changed ? "змінено " + changed + " з " + ORDER.length : "усе як у патчі 71"));
+      if (!artifactApi) st.appendChild(el("span", null, "· надсилання доступне лише на claude.ai"));
+    }
+    const send = $("send");
+    send.textContent = state.result ? "Перенесено" : locked() ? "Змінити" : "Готово — надіслати Claude";
+    send.disabled = busy || !artifactApi || !!state.result;
+    $("reset").disabled = busy || locked() || !!state.result;
+  }
+  function fmtTime(iso) { try { const d = new Date(iso); return d.toLocaleString("uk-UA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } }
+
+  const HEAD_EXTRA =
+    '<meta name="color-scheme" content="dark">' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">';
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app   = document.getElementById("app").textContent;
+    const json  = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main><div class=\"bar\" id=\"bar\"></div>" +
+      "<script id=\"tuner-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", null, code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+  function onSend() {
+    if (!artifactApi || busy || state.result) return;
+    if (locked()) { state.submitted = null; }          // «Змінити» — поки Claude не забрав
+    else {
+      // фіксуємо ПОВНИЙ набір: і змінені, і дефолтні — Claude читає одну мапу
+      const full = {}; ORDER.forEach((k) => { full[k] = valOf(k); });
+      state.values = full;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  }
+
+  loadDraft();
+  render();
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script>
+</body>
+</html>
