@@ -37,7 +37,6 @@ market/content/source/footage/*.mp4
 .Trashes
 
 # Ключі підпису й зібрані бандли — не в репозиторій (він публічний)
-*.jks
 *.keystore
 keystore.properties
 *.aab
