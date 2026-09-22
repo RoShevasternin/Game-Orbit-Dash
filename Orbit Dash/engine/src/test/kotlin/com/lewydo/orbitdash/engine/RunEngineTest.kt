@@ -137,6 +137,44 @@ class RunEngineTest {
         return false
     }
 
+    /**
+     * SLOW-MO мусить ВІДЧУТНО сповільнювати світ, а не «трохи міняти темп».
+     * Тест ловить обидва числа разом: і SLOW_SCALE, і те, що масштаб узагалі
+     * прикладається до кута. Порівнюємо два однакові рани, один під бустом.
+     */
+    @Test
+    fun slowMoActuallySlowsTheWorld() {
+        // Кут нормалізований 0..360 і за секунду встигає перескочити через
+        // нуль — тому різницю беремо з урахуванням обороту, а не як віднімання
+        fun sweptInHalfSecond(boost: Boost?): Float {
+            val e = RunEngine(RunEngine.Config(startBoost = boost), seed = 7L)
+            var swept = 0f
+            var prev = e.angle
+            repeat(30) {
+                e.update(1f / 60f)
+                var d = e.angle - prev
+                if (d > 180f) d -= 360f
+                if (d < -180f) d += 360f
+                swept += abs(d)
+                prev = e.angle
+            }
+            return swept
+        }
+
+        val normal = sweptInHalfSecond(null)
+        val slowed = sweptInHalfSecond(Boost.SLOW)
+
+        assertTrue("під SLOW-MO кут має рости повільніше", slowed < normal)
+        // з точністю до кадру: за той самий час встигає рівно SLOW_SCALE частки
+        assertEquals(RunEngine.SLOW_SCALE, slowed / normal, 0.02f)
+    }
+
+    /** Тривалість SLOW-MO — 6 секунд: коротший буст не встигали помітити. */
+    @Test
+    fun slowMoLastsSixSeconds() {
+        assertEquals(6f, Boost.SLOW.dur, 0.001f)
+    }
+
     /** Той самий seed + ті самі тапи = той самий ран до останньої сутності. */
     @Test
     fun sameSeedGivesSameRun() {

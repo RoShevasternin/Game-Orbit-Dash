@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Align
 import com.lewydo.orbitdash.game.actors.background.AComet
 import com.lewydo.orbitdash.game.actors.background.AStarField
 import com.lewydo.orbitdash.game.actors.debug.ADebugHud
+import com.lewydo.orbitdash.game.actors.fx.AVignette
 import com.lewydo.orbitdash.game.actors.debug.ADebugPanel
 import com.lewydo.orbitdash.game.actors.debug.addDebugHud
 import com.lewydo.orbitdash.game.actors.debug.addDebugPanel
@@ -99,6 +100,9 @@ class GameScreen : AdvancedScreen() {
     private val aPanelGameHud = APanelGameHud(this)
 
     private val aStarField by lazy { AStarField(this) }
+
+    /** Периферійний сигнал активного буста + постійна чорна віньєтка. */
+    private val aVignette  by lazy { AVignette(this) }
     private val aComet     by lazy { AComet(this) }
 
     private val aOrbitField by lazy { AOrbitField(this) }
@@ -141,6 +145,8 @@ class GameScreen : AdvancedScreen() {
     private var debugTimeScale = 1f
     /** DEBUG · EZ COMBO: комбо за прохід повз шип без іскри, і з сусіднього кільця теж. */
     private var debugEzCombo   = false
+    /** DEBUG: постійна чорна віньєтка увімкнена. */
+    private var debugVignette  = true
     /** DEBUG: м'яч стоїть, решта живе — див. RunEngine.debugFrozen. */
     private var debugPaused    = false
 
@@ -190,6 +196,13 @@ class GameScreen : AdvancedScreen() {
                 // від цього не змінюється — лише час на реакцію ×4.
                 debugTimeScale = if (debugTimeScale < 1f) 1f else 0.25f
                 btn.label.setText(if (debugTimeScale < 1f) "TIME: ON" else "TIME x0.25")
+            },
+            ADebugPanel.Item("VIGNETTE") { btn ->
+                // Постійна чорна віньєтка: подивитись гру з нею і без.
+                // Кольоровий край буста ця кнопка не чіпає.
+                debugVignette = !debugVignette
+                aVignette.baseOn = debugVignette
+                btn.label.setText(if (debugVignette) "VIGNETTE" else "VIG: OFF")
             },
             ADebugPanel.Item("PAUSE") { btn ->
                 // Стоїть лише м'яч: актори грають свої анімації, підкинуте дограє
@@ -261,6 +274,7 @@ class GameScreen : AdvancedScreen() {
 
     override fun AConstraintLayout.addActorsOnRootConstraintLayout() {
         addGameField()
+        addVignette()
         addHud()
 
         addDebugHud(ADebugHud(this@GameScreen))
@@ -293,6 +307,21 @@ class GameScreen : AdvancedScreen() {
     // Add Actors
     // ------------------------------------------------------------------------
 
+    /**
+     * Віньєтка — МІЖ полем і HUD: край екрана фарбується, а рахунок і панель
+     * лишаються чистими. Той самий порядок, що в прототипі (він малює HUD
+     * після віньєтки). Розмір актору не потрібен: квад рахує він сам від
+     * півдіагоналі екрана й центрується на полі.
+     */
+    private fun AConstraintLayout.addVignette() {
+        // ЧЕРЕЗ add(), не addActor(): сирий актор не потрапляє в реєстр
+        // лейауту, і той перестає стежити за якорями — поле лишалось там,
+        // де його порахувало ДО того, як HUD став на місце (y = −356).
+        add(aVignette) { fillParent() }
+        aVignette.follow(aOrbitField)     // кільця магніта тягнуться до орбіти
+        disposableSet.add(aVignette)
+    }
+
     /** Рахунок, геми, комбо, піпси щита, boost progress. */
     private fun AConstraintLayout.addHud() {
         aPanelGameHud.setSize(332f, 70f)
@@ -320,6 +349,7 @@ class GameScreen : AdvancedScreen() {
         // видно як спалах м'яча при відкритті екрана.
         aBall.isVisible = false
         aOrbitField.addActor(aBall)
+        disposableSet.add(aBall)          // тримає запечену текстуру хвиль магніта
 
         // Ефекти й написи — діти поля: позиція рахується в його ж координатах.
         // Спершу спалах, потім написи: напис має лишатись поверх крапок.
@@ -351,6 +381,7 @@ class GameScreen : AdvancedScreen() {
         engine.listener = runListener
         applyDebugFlags()
         aPanelGameHud.reset()     // ← НОВЕ
+        aVignette.reset()
 
         // Кільця стартують у позиції рушія без лерпу — інакше перший кадр
         // показав би стару розкладку і смикнув би її на місце.
@@ -530,6 +561,8 @@ class GameScreen : AdvancedScreen() {
     /** HUD читає рушій сам: рахунок, геми рану, комбо, щит. */
     private fun syncHud() {
         aPanelGameHud.syncFrom(engine)
+        aVignette.syncFrom(engine)
+        aBall.magnetOn = engine.activeBoost == RunEngine.Boost.MAGNET
     }
 
     // ------------------------------------------------------------------------

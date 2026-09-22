@@ -53,6 +53,13 @@ class RunEngine(
 
         const val MAX_COMBO = 8
 
+        /**
+         * Наскільки повільніше йде світ під SLOW-MO. У прототипі 0.6 — на око
+         * це майже не відчувалось; 0.45 читається як справжнє сповільнення.
+         * Тривалість буста піднята там же, у Boost: 4 → 6 с.
+         */
+        const val SLOW_SCALE = 0.45f
+
         // ── іскра комбо ──
         /**
          * Іскра висить за ORB_OFF ПЕРЕД шипом по ходу руху (engine units по дузі),
@@ -136,7 +143,7 @@ class RunEngine(
         SHIELD( 0f, 1, true),
         MAGNET( 8f, 2, true),
         FRENZY(10f, 2, true),
-        SLOW  ( 4f, 1, true),
+        SLOW  ( 6f, 1, true),
         PULSE ( 0f, 2, false);
 
         companion object {
@@ -394,7 +401,7 @@ class RunEngine(
         // спавн і сутності стоять, а таймери (комбо, бусти, invuln) і актори
         // виду живуть далі. Тому хвиля й партикли встигають розійтись, поки
         // світ завмер, — саме це й читається як удар.
-        val ts  = if (hitStopT > 0f) 0f else if (slowT > 0f) 0.6f else 1f
+        val ts  = if (hitStopT > 0f) 0f else if (slowT > 0f) SLOW_SCALE else 1f
         val wdt = dt * ts
 
         time += wdt

@@ -1,0 +1,592 @@
+<title>Патч 66 · Віньєтка буста</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script>
+<style id="style">
+:root {
+  --ground:  #F6F7F9;
+  --surface: #FFFFFF;
+  --sunk:    #F6F8FA;
+  --line:    #E1E4E8;
+  --text:    #1F2328;
+  --muted:   #59636E;
+  --faint:   #A1A9B3;
+  --accent:  #1F6FEB;
+  --accent-ink: #FFFFFF;
+  --gem:     #9A6700;
+  --gem-bg:  #FFF8C5;
+  --spike:   #CF222E;
+  --spike-bg:#FFEBE9;
+  --good:    #1A7F37;
+  --good-bg: #E6FFEC;
+  --shadow:  0 -4px 16px rgba(31, 35, 40, .08);
+  /* підсвітка коду */
+  --syn-kw:   #CF222E;
+  --syn-type: #953800;
+  --syn-fn:   #8250DF;
+  --syn-str:  #0A3069;
+  --syn-num:  #0550AE;
+  --syn-com:  #6E7781;
+  --syn-meta: #953800;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0D1117;
+    --surface: #151B23;
+    --sunk:    #0D1117;
+    --line:    #30363D;
+    --text:    #E6EDF3;
+    --muted:   #9198A1;
+    --faint:   #5C646E;
+    --accent:  #4493F8;
+    --accent-ink: #FFFFFF;
+    --gem:     #D29922;
+    --gem-bg:  rgba(187, 128, 9, .15);
+    --spike:   #F85149;
+    --spike-bg:rgba(248, 81, 73, .12);
+    --good:    #3FB950;
+    --good-bg: rgba(46, 160, 67, .14);
+    --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+    --syn-kw:   #FF7B72;
+    --syn-type: #FFA657;
+    --syn-fn:   #D2A8FF;
+    --syn-str:  #A5D6FF;
+    --syn-num:  #79C0FF;
+    --syn-com:  #8B949E;
+    --syn-meta: #FFA657;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0D1117;
+  --surface: #151B23;
+  --sunk:    #0D1117;
+  --line:    #30363D;
+  --text:    #E6EDF3;
+  --muted:   #9198A1;
+  --faint:   #5C646E;
+  --accent:  #4493F8;
+  --accent-ink: #FFFFFF;
+  --gem:     #D29922;
+  --gem-bg:  rgba(187, 128, 9, .15);
+  --spike:   #F85149;
+  --spike-bg:rgba(248, 81, 73, .12);
+  --good:    #3FB950;
+  --good-bg: rgba(46, 160, 67, .14);
+  --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+  --syn-kw:   #FF7B72;
+  --syn-type: #FFA657;
+  --syn-fn:   #D2A8FF;
+  --syn-str:  #A5D6FF;
+  --syn-num:  #79C0FF;
+  --syn-com:  #8B949E;
+  --syn-meta: #FFA657;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: 15px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.page { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 190px; }
+h1, h2, h3 { font-family: "IBM Plex Sans", system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code {
+  font-size: .88em; background: var(--sunk); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+/* ── шапка ─────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em; border-radius: 999px; padding: 2px 10px;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.new     { color: var(--muted); background: var(--sunk); border: 1px solid var(--line); }
+.pill.pending { color: var(--gem);   background: var(--gem-bg); }
+.pill.done    { color: var(--good);  background: var(--good-bg); }
+.pill.fail    { color: var(--spike); background: var(--spike-bg); }
+
+/* ── пояснення ─────────────────────────────────────── */
+.summary { max-width: 68ch; }
+.summary > * + * { margin-top: 12px; }
+.summary h3 { margin-top: 22px; }
+.summary ul { padding-left: 20px; margin-block: 8px; }
+.summary li + li { margin-top: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.summary table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.summary th, .summary td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.summary tr:last-child td { border-bottom: 0; }
+.summary th { font-weight: 600; background: var(--sunk); }
+
+/* ── кроки ─────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 26px; margin-top: 30px; }
+.steps-title { display: flex; flex-direction: column; gap: 4px; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.file { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.file-head {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--sunk); border-bottom: 1px solid var(--line);
+}
+.file-id { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.file-id .idx { font-family: "JetBrains Mono", monospace; color: var(--muted); font-weight: 500; flex: none; }
+.file-id .path { font-family: "JetBrains Mono", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.file-all { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px; font-size: 12px;
+}
+.link:disabled { color: var(--faint); cursor: default; text-decoration: none; }
+.file-note { padding: 10px 14px 0; margin: 0; color: var(--muted); font-size: 13px; }
+
+.hunk { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hunk + .hunk { border-top: 1px dashed var(--line); }
+.hunk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hunk-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; }
+.hid { font-family: "JetBrains Mono", monospace; color: var(--muted); }
+.verb { font-weight: 600; letter-spacing: .06em; font-size: 12px; }
+.verb.replace { color: var(--gem); }
+.verb.add, .verb.create { color: var(--good); }
+.verb.remove, .verb.delete { color: var(--spike); }
+.where { color: var(--muted); }
+
+/* вибір на зміну */
+.choice { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.choice button {
+  background: var(--surface); color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer;
+  font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; font-size: 12.5px;
+}
+.choice button + button { border-left: 1px solid var(--line); }
+.choice button[aria-pressed="true"].self { background: var(--text); color: var(--surface); }
+.choice button[aria-pressed="true"].auto { background: var(--accent); color: var(--accent-ink); }
+.choice button:disabled { cursor: default; }
+.choice button:disabled:not([aria-pressed="true"]) { opacity: .45; }
+
+/* код */
+.code { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+.code-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 4px 10px;
+}
+.code-label { color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line); }
+.code.old .code-label span:first-child::before { content: "● "; color: var(--spike); }
+.code.new .code-label span:first-child::before { content: "● "; color: var(--good); }
+.code pre {
+  margin: 0; padding: 8px 0; overflow-x: auto; background: var(--sunk);
+  font-size: 12.5px; line-height: 1.6; tab-size: 4;
+}
+.ln { display: block; white-space: pre; padding-right: 14px; min-height: 1.6em; }
+.ln::before { content: " "; display: inline-block; width: 26px; text-align: center; color: var(--faint); user-select: none; }
+.ln.ctx { opacity: .6; }
+.code.old .ln.chg { background: var(--spike-bg); }
+.code.old .ln.chg::before { content: "−"; color: var(--spike); }
+.code.new .ln.chg { background: var(--good-bg); }
+.code.new .ln.chg::before { content: "+"; color: var(--good); }
+.copy {
+  font: 500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .04em;
+  color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  padding: 4px 8px; cursor: pointer;
+}
+
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syn-kw); }
+.hljs-type, .hljs-title.class_, .hljs-class .hljs-title { color: var(--syn-type); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--syn-fn); }
+.hljs-string, .hljs-char { color: var(--syn-str); }
+.hljs-number { color: var(--syn-num); }
+.hljs-comment, .hljs-doctag, .hljs-quote { color: var(--syn-com); font-style: italic; }
+.hljs-meta, .hljs-annotation, .hljs-variable, .hljs-template-variable { color: var(--syn-meta); }
+
+/* ── панель ────────────────────────────────────────── */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.status { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.status .note { color: var(--muted); }
+.tally { font-variant-numeric: tabular-nums; }
+.bulk { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.bulk .link { font-size: 13px; }
+.send {
+  font: 600 15px/1.2 "IBM Plex Sans", system-ui, sans-serif;
+  border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.send.ghost { background: transparent; color: var(--accent); }
+.send:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 420px) { h1 { font-size: 22px; } .choice button { padding: 7px 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .send, .choice button { transition: transform .08s ease, background-color .12s ease; }
+  .send:active:not(:disabled) { transform: scale(.98); }
+}
+</style>
+
+<main class="page" id="root"></main>
+
+<div class="bar" id="bar"><div class="bar-inner">
+  <div class="status" id="status"></div>
+  <div class="bulk" id="bulk"></div>
+  <button class="send" id="send" type="button">Готово — надіслати Claude</button>
+</div></div>
+
+<script id="patch-data" type="application/json">{"id": "66", "title": "AVignette — периферійний сигнал активного буста", "date": "21.09.2026", "order": "Нові файли 1–3 у будь-якому порядку, але всі до 4. Компілюється після 4.", "summaryHtml": "\u003ch3>Що і навіщо\u003c/h3>\n\u003cp>Панель буста каже «скільки лишилось», але не кричить «діє МАГНІТ». Гравець дивиться на м'яч, а не на HUD, тож сигнал має бути там, куди дивитись не треба — \u003cstrong>на краю екрана\u003c/strong>.\u003c/p>\n\u003cp>Перенесено з прототипу (\u003ccode>prototype/orbit-dash-tutorial.jsx\u003c/code>, рядки 1246–1331) один в один, звірено на сторінці-демо: https://claude.ai/artifact/1pMfSSBKD6KDJV2RqxorAG\u003c/p>\n\u003ch3>Два шари, одна текстура\u003c/h3>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>шар\u003c/th>\u003cth>що робить\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>\u003ccode>aBase\u003c/code>\u003c/td>\u003ctd>чорний градієнт, лежить \u003cstrong>завжди\u003c/strong> — глибина картинки, кути гаснуть\u003c/td>\u003c/tr>\u003ctr>\u003ctd>\u003ccode>aEdge\u003c/code>\u003c/td>\u003ctd>кольоровий край активного буста; без буста просто невидимий\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Обидва — \u003cstrong>та сама запечена текстура\u003c/strong> з різним профілем, і це головне рішення патча. Профіль не міняється ніколи; міняються тільки колір і альфа, а це тінт актора, тобто безкоштовно. Живий \u003ccode>VfxImage\u003c/code> коштував би два флаші батча на шар \u003cstrong>щокадру\u003c/strong> — тут звичайний \u003ccode>Image\u003c/code> у спільному батчі. Градієнт гладкий, тому 128×128 текселів вистачає на будь-який екран (\u003ccode>density 0.5\u003c/code> від 256-юнітової фігури).\u003c/p>\n\u003ch3>Огинаюча — спільна на три бусти\u003c/h3>\n\u003cp>``\u003ccode> I = kin · punch · warn · kout \u003c/code>`\u003ccode> \u003c/code>kin\u003ccode> 0.12 с — різкий, але не миттєвий вхід. \u003c/code>punch\u003ccode> +80 % у перші 0.45 с — «щойно спрацювало». \u003c/code>warn\u003ccode> в останні 1.6 с блимає, і \u003cstrong>тим частіше, чим ближче кінець\u003c/strong> (\u003c/code>cos(t·(5 + (1.6−left)·9))\u003ccode>) — гравець читає «ось-ось скінчиться», не дивлячись на смугу. \u003c/code>kout` гасить за 0.25 с до нуля.\u003c/p>\n\u003cp>Плюс власний характер: GEM x2 мерехтить \u003ccode>sin(t·7)\u003c/code>, SLOW-MO важко дихає \u003ccode>sin(t·1.6)\u003c/code>, MAGNET тримає рівно.\u003c/p>\n\u003ch3>Дві речі, яких у прототипі не було\u003c/h3>\n\u003cp>\u003cstrong>Центр — центр ПОЛЯ, не екрана.\u003c/strong> У прототипі 720×1280 поле майже по центру, у нас екран 360×825 і поле сидить помітно вище середини. Якби віньєтка центрувалась на екрані, знизу вона тиснула б сильніше, ніж зверху. Тому актор слідкує за полем.\u003c/p>\n\u003cp>\u003cstrong>Радіуси — у частках півдіагоналі, не в пікселях.\u003c/strong> 330 px прототипу при його півдіагоналі 735 — це 0.45; ділити на 2 не можна, бо пропорції екранів різні (9:16 проти 9:20.6) і край не дотягнувся б до кутів.\u003c/p>\n\u003ch3>Кольори\u003c/h3>\n\u003cp>\u003ccode>boost.info.color\u003c/code> з \u003ccode>BoostCatalog\u003c/code>, як є: MAGNET \u003ccode>#C07BFF\u003c/code>, GEM x2 \u003ccode>#FFD54A\u003c/code>, SLOW-MO \u003ccode>#FFFFFF\u003c/code>. У прототипі SLOW був крижаний \u003ccode>#A0D2FF\u003c/code> — ти подивився обидва на демо й обрав каталог. Каталог не чіпаємо; передумаєш — це один рядок у \u003ccode>BoostCatalog\u003c/code>.\u003c/p>\n\u003ch3>Дебаг\u003c/h3>\n\u003cp>Кнопка \u003cstrong>VIGNETTE\u003c/strong> у дебаг-панелі вмикає й вимикає постійну чорну віньєтку на льоту — подивитись гру з нею і без. Кольоровий край буста вона не чіпає.\u003c/p>\n\u003ch3>Чого цей патч НЕ робить\u003c/h3>\n\u003cp>Характер бустів із прототипу — кільця, що стягуються на MAGNET, іскорки по периметру на GEM x2, хвилі назовні на SLOW-MO — і пульсуючий ореол магніту на м'ячі (рядок 1179). Це інший механізм: не запечений квад, а актор із власним \u003ccode>draw()\u003c/code>, як \u003ccode>ABurst\u003c/code>. Іде окремим патчем 67, щоб цей лишився на чотири файли.\u003c/p>\n\u003cp>Зібрано в лабораторії: \u003ccode>assembleDebug\u003c/code> — BUILD SUCCESSFUL.\u003c/p>", "files": [{"path": "app/src/main/assets/shader/base/vignette/vignetteFS.glsl", "note": "НОВИЙ ФАЙЛ: радіальний профіль альфи. Працює лише при запіканні, щокадру не виконується.", "lang": "glsl", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "#ifdef GL_ES\nprecision mediump float;\n#endif\n\n// ─────────────────────────────────────────────────────────────────────────────\n// VIGNETTE — радіальний профіль альфи від центру квада до його краю.\n//\n// Той самий градієнт, що createRadialGradient у прототипі: між u_inner і краєм\n// альфа росте ДВОМА лінійними ділянками з вузлом на 0.55 —\n//   d = u_inner        → 0\n//   d = u_inner + 0.55 → u_midA\n//   d = 1              → 1\n// Так задані обидві віньєтки: постійна чорна (u_midA 0.55, тобто пряма лінія)\n// і кольоровий край буста (u_midA 0.3 — довго майже нічого, потім швидко).\n//\n// Колір і загальну альфу дає ТІНТ АКТОРА (v_color): один запечений квад\n// обслуговує і чорну базу, і всі три кольори бустів.\n// ─────────────────────────────────────────────────────────────────────────────\n\nvarying vec4 v_color;      // колір/альфа актора\nvarying vec2 v_localUV;    // 0..1 у межах регіону (дає BATCH_VERT)\n\nuniform float u_inner;     // частка радіуса, де альфа ще нуль\nuniform float u_midA;      // альфа у вузлі 0.55\n\nvoid main() {\n    // 1 на краю вписаного кола квада — тому квад завжди 2 × зовнішній радіус\n    float d = length(v_localUV - vec2(0.5)) * 2.0;\n\n    float s = clamp((d - u_inner) / max(1e-4, 1.0 - u_inner), 0.0, 1.0);\n    float a = s \u003c 0.55\n        ? u_midA * (s / 0.55)\n        : u_midA + (1.0 - u_midA) * ((s - 0.55) / 0.45);\n\n    gl_FragColor = vec4(v_color.rgb, v_color.a * a);\n}", "id": "1.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/VignetteEffect.kt", "note": "НОВИЙ ФАЙЛ: два параметри — inner (де починається) і midA (наскільки пізно вмикається).", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.utils.vfx.effects.base\n\nimport com.badlogic.gdx.graphics.glutils.ShaderProgram\nimport com.lewydo.orbitdash.game.utils.vfx.VfxContext\n\n// ─────────────────────────────────────────────────────────────────────────────\n// VignetteEffect — радіальний профіль альфи: центр порожній, край повний.\n//\n// Використовується ЛИШЕ для запікання у VfxTexture, тому щокадрової ціни\n// не має взагалі: на екрані стоїть готова текстура, а колір і силу дає тінт.\n//\n// inner — частка радіуса, де ще нічого не видно; midA — альфа у вузлі 0.55,\n// тобто «наскільки пізно» вмикається градієнт (0.55 = пряма лінія).\n// ─────────────────────────────────────────────────────────────────────────────\nclass VignetteEffect(\n    private val inner: Float,\n    private val midA : Float,\n) : VfxEffect() {\n\n    override val fragmentShader = \"shader/base/vignette/vignetteFS.glsl\"\n\n    override fun setUniforms(shader: ShaderProgram, ctx: VfxContext) {\n        shader.setUniformf(\"u_inner\", inner)\n        shader.setUniformf(\"u_midA\", midA)\n    }\n\n    override fun stateKey(): Long {\n        var k = 59L\n        k = k * 31 + inner.toRawBits()\n        k = k * 31 + midA.toRawBits()\n        return k\n    }\n}", "id": "2.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/actors/fx/AVignette.kt", "note": "НОВИЙ ФАЙЛ: два шари на одній текстурі, огинаюча, слідкування за полем. Пакет fx — поруч із AWave і ABurst.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.actors.fx\n\nimport com.badlogic.gdx.graphics.Color\nimport com.badlogic.gdx.math.Vector2\nimport com.badlogic.gdx.scenes.scene2d.Actor\nimport com.badlogic.gdx.scenes.scene2d.ui.Image\nimport com.badlogic.gdx.utils.Align\nimport com.lewydo.orbitdash.engine.RunEngine\nimport com.lewydo.orbitdash.game.content.info\nimport com.lewydo.orbitdash.game.utils.actor.setColorRGB\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedGroup\nimport com.lewydo.orbitdash.game.utils.advanced.AdvancedScreen\nimport com.lewydo.orbitdash.game.utils.vfx.VfxTexture\nimport com.lewydo.orbitdash.game.utils.vfx.effects.base.VignetteEffect\nimport kotlin.math.abs\nimport kotlin.math.cos\nimport kotlin.math.hypot\nimport kotlin.math.min\nimport kotlin.math.sin\n\n// ─────────────────────────────────────────────────────────────────────────────\n//  AVIGNETTE — периферійний сигнал стану. Порт віньєтки з прототипу\n//  (orbit-dash-tutorial.jsx, рядки 1246–1331), числа перенесені один в один.\n//\n//  НАВІЩО. Гравець дивиться на м'яч, а не на HUD. Смуга буста в панелі каже\n//  «скільки лишилось», але не кричить «зараз діє МАГНІТ». Край екрана кричить,\n//  не забираючи жодного пікселя з поля.\n//\n//  ДВА ШАРИ, обидва — ОДНА запечена текстура з різним профілем:\n//    aBase — чорний градієнт, лежить ЗАВЖДИ (у прототипі так само). Робить\n//            картинку глибшою й гасить кути, куди не треба дивитись.\n//    aEdge — кольоровий край активного буста: колір із BoostCatalog, альфу\n//            веде огинаюча (див. нижче). Без буста просто невидимий.\n//\n//  ЧОМУ ЗАПЕЧЕНА ТЕКСТУРА, А НЕ ШЕЙДЕР ЩОКАДРУ. Профіль не міняється ніколи —\n//  міняються лише колір і альфа, а це тінт актора, тобто безкоштовно. Живий\n//  VfxImage коштував би два флаші батча на шар щокадру; тут — звичайний Image\n//  у спільному батчі. Градієнт гладкий, тому 128×128 текселів вистачає на\n//  будь-який екран (density 0.5 від 256-юнітової «фігури»).\n//\n//  ЦЕНТР — ЦЕНТР ПОЛЯ, не екрана. У прототипі градієнт іде від (CX, CY), тобто\n//  від середини орбіт; у нас поле сидить помітно вище середини екрана, і якби\n//  віньєтка була по центру екрана, знизу вона тиснула б сильніше, ніж зверху.\n//  Тому актор слідкує за полем: [follow].\n//\n//  РОЗМІР КВАДА. Шейдер дає одиницю на вписаному колі, тож квад мусить бути\n//  рівно 2 × зовнішній радіус. Зовнішній радіус — 1.09 півдіагоналі ЕКРАНА\n//  (у прототипі 800 px при півдіагоналі 735). Квад більший за екран і вилазить\n//  за нього — це нормально, растеризатор відсікає зайве.\n// ─────────────────────────────────────────────────────────────────────────────\nclass AVignette(override val screen: AdvancedScreen) : AdvancedGroup() {\n\n    companion object {\n        /** Зовнішній радіус градієнта у частках півдіагоналі екрана. */\n        private const val ROUT_K = 1.09f\n\n        // ── профілі: частка радіуса без градієнта + альфа у вузлі 0.55 ──\n        private const val BASE_INNER = 0.376f   // 300 px прототипу\n        private const val BASE_MID_A = 0.55f    // = пряма лінія, як у нього\n        private const val EDGE_INNER = 0.413f   // 330 px прототипу\n        private const val EDGE_MID_A = 0.30f    // довго майже нічого, потім різко\n\n        /** Альфа постійної чорної віньєтки. */\n        const val BASE_A = 0.42f\n\n        // ── сила кольорового краю на кожен буст ──\n        private const val A_MAGNET = 0.34f\n        private const val A_FRENZY = 0.26f\n        private const val A_SLOW   = 0.34f\n\n        // ── огинаюча: I = kin · punch · warn · kout ──\n        private const val KIN       = 0.12f   // різкий, але не миттєвий вхід\n        private const val PUNCH     = 0.8f    // +80 % у перші PUNCH_T\n        private const val PUNCH_T   = 0.45f\n        private const val WARN_FROM = 1.6f    // за скільки до кінця починає блимати\n        private const val FADE_OUT  = 0.25f   // м'яко гасне в останні\n\n        /** Власний характер: GEM x2 мерехтить швидко, SLOW-MO важко дихає. */\n        private const val FRENZY_HZ = 7f\n        private const val SLOW_HZ   = 1.6f\n\n        /** Розмір запеченої «фігури» — КОНСТАНТА: інакше кеш плодить текстури. */\n        private const val TEX     = 256f\n        private const val DENSITY = 0.5f\n    }\n\n    // ------------------------------------------------------------------------\n    // Actors\n    // ------------------------------------------------------------------------\n    private val baseTex = VfxTexture(TEX, TEX, shape = VignetteEffect(BASE_INNER, BASE_MID_A), density = DENSITY)\n    private val edgeTex = VfxTexture(TEX, TEX, shape = VignetteEffect(EDGE_INNER, EDGE_MID_A), density = DENSITY)\n\n    private val aBase = Image(baseTex.region).apply { color = Color(0f, 0f, 0f, BASE_A) }\n    private val aEdge = Image(edgeTex.region)\n\n    // ------------------------------------------------------------------------\n    // Field\n    // ------------------------------------------------------------------------\n    /** За чим центруватись. Поле; null — по центру самої групи. */\n    private var target: Actor? = null\n\n    /** Реальний час: блимання й дихання не мають сповільнюватись разом зі світом. */\n    private var time = 0f\n\n    /** Робочий вектор для переводу координат — без алокацій щокадру. */\n    private val tmp = Vector2()\n\n    /** DEBUG: постійну віньєтку можна прибрати кнопкою й подивитись без неї. */\n    var baseOn: Boolean\n        get() = aBase.isVisible\n        set(value) { aBase.isVisible = value }\n\n    // ------------------------------------------------------------------------\n    // Lifecycle\n    // ------------------------------------------------------------------------\n    override fun addActorsOnGroup() {\n        addActor(aBase)\n        addActor(aEdge)\n        aEdge.isVisible = false\n        applyQuad()\n    }\n\n    /** Центруватись за цим актором (поле), а не за власними межами. */\n    fun follow(actor: Actor) { target = actor }\n\n    override fun act(delta: Float) {\n        super.act(delta)\n        time += delta\n        applyQuad()\n    }\n\n    override fun sizeChanged() {\n        super.sizeChanged()\n        applyQuad()\n    }\n\n    /**\n     * Квад під обидва шари: сторона 2 × ROUT_K × півдіагональ ЕКРАНА, центр —\n     * центр поля. Рахується щокадру, бо поле в перші кадри ще без розкладу.\n     */\n    private fun applyQuad() {\n        val hd   = hypot(screen.worldWidth, screen.worldHeight) * 0.5f\n        val side = 2f * ROUT_K * hd\n\n        val t = target\n        val cx: Float\n        val cy: Float\n        if (t != null && t.stage != null && stage != null) {\n            // Поле — СУСІД, не батько: через сцену, бо localToAscendant тут не діє\n            t.localToStageCoordinates(tmp.set(t.width * 0.5f, t.height * 0.5f))\n            stageToLocalCoordinates(tmp)\n            cx = tmp.x; cy = tmp.y\n        } else {\n            cx = width * 0.5f; cy = height * 0.5f\n        }\n\n        aBase.setSize(side, side); aBase.setPosition(cx, cy, Align.center)\n        aEdge.setSize(side, side); aEdge.setPosition(cx, cy, Align.center)\n    }\n\n    // ------------------------------------------------------------------------\n    // Sync · стан із рушія\n    // ------------------------------------------------------------------------\n\n    /**\n     * Кличеться щокадру з HUD. Джерело те саме, що в APanelBooster:\n     * [RunEngine.activeBoost] і [RunEngine.boostFrac] — окремого стану немає.\n     */\n    fun syncFrom(engine: RunEngine) {\n        val boost = engine.activeBoost\n        if (boost == null) {\n            aEdge.isVisible = false\n            return\n        }\n\n        val left = engine.boostFrac * engine.boostTot          // скільки лишилось, с\n        val el   = engine.boostTot - left                      // скільки вже діє, с\n\n        val kin   = min(1f, el / KIN)\n        val punch = 1f + PUNCH * (1f - min(1f, el / PUNCH_T))\n        val warn  = if (left \u003c WARN_FROM) {\n            // чим ближче кінець, тим частіше блимає\n            0.35f + 0.65f * abs(cos(time * (5f + (WARN_FROM - left) * 9f)))\n        } else 1f\n        val kout  = min(1f, left / FADE_OUT)\n\n        val own = when (boost) {\n            RunEngine.Boost.MAGNET -> A_MAGNET\n            RunEngine.Boost.FRENZY -> A_FRENZY * (0.82f + 0.18f * sin(time * FRENZY_HZ))\n            RunEngine.Boost.SLOW   -> A_SLOW   * (0.8f  + 0.2f  * sin(time * SLOW_HZ))\n            else                   -> 0f\n        }\n\n        aEdge.isVisible = true\n        aEdge.setColorRGB(boost.info.color)\n        aEdge.color.a = (own * kin * punch * warn * kout).coerceIn(0f, 1f)\n    }\n\n    /** Новий ран — кольорового краю немає, поки не підібрано буст. */\n    fun reset() {\n        aEdge.isVisible = false\n        time = 0f\n    }\n\n    override fun dispose() {\n        super.dispose()\n        baseTex.dispose()\n        edgeTex.dispose()\n    }\n\n}", "id": "3.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt", "note": "Актор у дерево між полем і HUD, syncFrom щокадру, reset на новий ран, кнопка VIGNETTE у дебаг-панелі.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 9", "old": "import com.lewydo.orbitdash.game.actors.background.AStarField\nimport com.lewydo.orbitdash.game.actors.debug.ADebugHud\nimport com.lewydo.orbitdash.game.actors.debug.ADebugPanel\nimport com.lewydo.orbitdash.game.actors.debug.addDebugHud", "new": "import com.lewydo.orbitdash.game.actors.background.AStarField\nimport com.lewydo.orbitdash.game.actors.debug.ADebugHud\nimport com.lewydo.orbitdash.game.actors.fx.AVignette\nimport com.lewydo.orbitdash.game.actors.debug.ADebugPanel\nimport com.lewydo.orbitdash.game.actors.debug.addDebugHud", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "4.1"}, {"verb": "add", "where": "біля рядка 100", "old": "\n    private val aStarField by lazy { AStarField(this) }\n    private val aComet     by lazy { AComet(this) }\n", "new": "\n    private val aStarField by lazy { AStarField(this) }\n\n    /** Периферійний сигнал активного буста + постійна чорна віньєтка. */\n    private val aVignette by lazy { AVignette(this) }\n    private val aComet     by lazy { AComet(this) }\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 0, 0], "id": "4.2"}, {"verb": "add", "where": "біля рядка 142", "old": "    /** DEBUG · EZ COMBO: комбо за прохід повз шип без іскри, і з сусіднього кільця теж. */\n    private var debugEzCombo   = false\n    /** DEBUG: м'яч стоїть, решта живе — див. RunEngine.debugFrozen. */\n    private var debugPaused    = false", "new": "    /** DEBUG · EZ COMBO: комбо за прохід повз шип без іскри, і з сусіднього кільця теж. */\n    private var debugEzCombo   = false\n    /** DEBUG: постійна чорна віньєтка увімкнена. */\n    private var debugVignette  = true\n    /** DEBUG: м'яч стоїть, решта живе — див. RunEngine.debugFrozen. */\n    private var debugPaused    = false", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 0, 0], "id": "4.3"}, {"verb": "add", "where": "біля рядка 191", "old": "                debugTimeScale = if (debugTimeScale \u003c 1f) 1f else 0.25f\n                btn.label.setText(if (debugTimeScale \u003c 1f) \"TIME: ON\" else \"TIME x0.25\")\n            },\n            ADebugPanel.Item(\"PAUSE\") { btn ->", "new": "                debugTimeScale = if (debugTimeScale \u003c 1f) 1f else 0.25f\n                btn.label.setText(if (debugTimeScale \u003c 1f) \"TIME: ON\" else \"TIME x0.25\")\n            },\n            ADebugPanel.Item(\"VIGNETTE\") { btn ->\n                // Постійна чорна віньєтка: подивитись гру з нею і без.\n                // Кольоровий край буста ця кнопка не чіпає.\n                debugVignette = !debugVignette\n                aVignette.baseOn = debugVignette\n                btn.label.setText(if (debugVignette) \"VIGNETTE\" else \"VIG: OFF\")\n            },\n            ADebugPanel.Item(\"PAUSE\") { btn ->", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "4.4"}, {"verb": "add", "where": "біля рядка 262", "old": "    override fun AConstraintLayout.addActorsOnRootConstraintLayout() {\n        addGameField()\n        addHud()\n", "new": "    override fun AConstraintLayout.addActorsOnRootConstraintLayout() {\n        addGameField()\n        addVignette()\n        addHud()\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "4.5"}, {"verb": "add", "where": "біля рядка 293", "old": "    // Add Actors\n    // ------------------------------------------------------------------------\n\n    /** Рахунок, геми, комбо, піпси щита, boost progress. */", "new": "    // Add Actors\n    // ------------------------------------------------------------------------\n\n    /**\n     * Віньєтка — МІЖ полем і HUD: край екрана фарбується, а рахунок і панель\n     * лишаються чистими. Той самий порядок, що в прототипі (він малює HUD\n     * після віньєтки). Розмір актору не потрібен: квад рахує він сам від\n     * півдіагоналі екрана й центрується на полі.\n     */\n    private fun AConstraintLayout.addVignette() {\n        addActor(aVignette)\n        aVignette.follow(aOrbitField)\n        disposableSet.add(aVignette)\n    }\n\n    /** Рахунок, геми, комбо, піпси щита, boost progress. */", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "4.6"}, {"verb": "add", "where": "біля рядка 352", "old": "        applyDebugFlags()\n        aPanelGameHud.reset()     // ← НОВЕ\n\n        // Кільця стартують у позиції рушія без лерпу — інакше перший кадр", "new": "        applyDebugFlags()\n        aPanelGameHud.reset()     // ← НОВЕ\n        aVignette.reset()\n\n        // Кільця стартують у позиції рушія без лерпу — інакше перший кадр", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "4.7"}, {"verb": "add", "where": "біля рядка 531", "old": "    private fun syncHud() {\n        aPanelGameHud.syncFrom(engine)\n    }\n", "new": "    private fun syncHud() {\n        aPanelGameHud.syncFrom(engine)\n        aVignette.syncFrom(engine)\n    }\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "4.8"}]}], "state": {"submitted": null, "hunks": {}, "result": null}}</script>
+<script id="app">
+(function () {
+  "use strict";
+
+  const data = JSON.parse(document.getElementById("patch-data").textContent);
+  const state = data.state || (data.state = {});
+  state.hunks = state.hunks || {};
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const fmtTime = (iso) => {
+    try { return new Date(iso).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso || ""; }
+  };
+
+  const allHunks = [];
+  data.files.forEach((f) => f.hunks.forEach((h) => allHunks.push(h)));
+
+  const submitted = () => !!state.submitted;
+  const hasResults = () => allHunks.some((h) => state.hunks[h.id] && state.hunks[h.id].result);
+
+  // Чернетка вибору до «Готово» — лише в цьому браузері; не вдалось — не страшно
+  const DRAFT_KEY = "patch-draft-" + data.id;
+  function loadDraft() {
+    if (submitted()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+      Object.keys(d).forEach((id) => {
+        if (allHunks.some((h) => h.id === id)) state.hunks[id] = { choice: d[id] };
+      });
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try {
+      const d = {};
+      Object.keys(state.hunks).forEach((id) => { if (state.hunks[id].choice) d[id] = state.hunks[id].choice; });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) { /* немає сховища */ }
+  }
+
+  // ── підсвітка: блок цілком (коментарі на кілька рядків), потім різання на рядки ──
+  function highlight(text, lang) {
+    const hl = window.hljs;
+    if (!hl || !lang || !hl.getLanguage(lang)) return null;
+    try { return hl.highlight(text, { language: lang, ignoreIllegals: true }).value; }
+    catch (e) { return null; }
+  }
+  function splitHtmlLines(htmlText) {
+    const lines = [];
+    let cur = "";
+    const open = [];
+    const re = /(<span[^>]*>)|(<\/span>)|(\n)|([^<\n]+|<(?!\/?span)[^>]*>)/g;
+    let m;
+    while ((m = re.exec(htmlText))) {
+      if (m[1]) { open.push(m[1]); cur += m[1]; }
+      else if (m[2]) { open.pop(); cur += m[2]; }
+      else if (m[3]) { cur += "</span>".repeat(open.length); lines.push(cur); cur = open.join(""); }
+      else cur += m[4];
+    }
+    lines.push(cur);
+    return lines;
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function codeBlock(kind, label, text, marks, lang) {
+    const box = el("div", "code " + kind);
+    const head = el("div", "code-label");
+    head.appendChild(el("span", null, label));
+    const btn = el("button", "copy", "Копіювати");
+    btn.type = "button";
+    btn.addEventListener("click", async () => {
+      const ok = await copyText(text);
+      btn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => { btn.textContent = "Копіювати"; }, 1600);
+    });
+    head.appendChild(btn);
+    box.appendChild(head);
+
+    const pre = el("pre");
+    const code = el("code");
+    const hl = highlight(text, lang);
+    const lines = hl != null ? splitHtmlLines(hl) : text.split("\n").map(escapeHtml);
+    code.innerHTML = lines.map((l, i) => {
+      const cls = marks ? (marks[i] ? "ln chg" : "ln ctx") : "ln";
+      return '<span class="' + cls + '">' + (l || "") + "</span>";
+    }).join("");
+    pre.appendChild(code);
+    box.appendChild(pre);
+    return box;
+  }
+
+  const VERB = { replace: "ЗАМІНИТИ", add: "ДОДАТИ", remove: "ВИДАЛИТИ", create: "НОВИЙ ФАЙЛ", delete: "ВИДАЛИТИ ФАЙЛ" };
+
+  function hunkStatus(h) {
+    const s = state.hunks[h.id];
+    if (!s || !s.choice) return el("span", "pill new", "не обрано");
+    if (s.result) {
+      const p = el("span", "pill " + (s.result.ok ? "done" : "fail"), s.result.note || (s.result.ok ? "готово" : "не вийшло"));
+      return p;
+    }
+    if (submitted()) return el("span", "pill pending", s.choice === "auto" ? "Claude вставляє" : "Claude перевіряє");
+    return null;
+  }
+
+  function setChoice(id, choice) {
+    if (submitted()) return;
+    const s = state.hunks[id] || (state.hunks[id] = {});
+    s.choice = s.choice === choice ? null : choice;
+    saveDraft();
+    render();
+  }
+
+  function renderPage() {
+    const root = $("root");
+    const scrollY = window.scrollY;
+    root.textContent = "";
+
+    const head = el("header", "head");
+    const eyebrow = el("div", "eyebrow");
+    eyebrow.appendChild(el("span", "num", "патч " + data.id));
+    if (data.date) eyebrow.appendChild(el("span", null, data.date));
+    head.appendChild(eyebrow);
+    head.appendChild(el("h1", null, data.title));
+    root.appendChild(head);
+
+    // summaryHtml генерує Claude з власного .md — довірений вміст
+    const summary = el("section", "summary");
+    summary.innerHTML = data.summaryHtml || "";
+    root.appendChild(summary);
+
+    const steps = el("section", "steps");
+    const t = el("div", "steps-title");
+    t.appendChild(el("h2", null, "Зміни"));
+    t.appendChild(el("p", null, (data.order ? data.order + " " : "") +
+      "Біля кожної зміни обери, хто її вставляє, потім «Готово» внизу."));
+    steps.appendChild(t);
+
+    const locked = submitted();
+    data.files.forEach((f, fi) => {
+      const card = el("article", "file");
+      const fh = el("div", "file-head");
+      const fid = el("div", "file-id");
+      fid.appendChild(el("span", "idx", String(fi + 1)));
+      fid.appendChild(el("span", "path", f.path));
+      fh.appendChild(fid);
+      if (f.hunks.length > 1) {
+        const all = el("div", "file-all");
+        all.appendChild(el("span", null, "увесь файл:"));
+        [["self", "сам"], ["auto", "авто"]].forEach(([c, label]) => {
+          const b = el("button", "link", label);
+          b.type = "button";
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            f.hunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = c === "self" ? "manual" : "auto"; });
+            saveDraft(); render();
+          });
+          all.appendChild(b);
+        });
+        fh.appendChild(all);
+      }
+      card.appendChild(fh);
+      if (f.note) card.appendChild(el("p", "file-note", f.note));
+
+      f.hunks.forEach((h) => {
+        const hb = el("div", "hunk");
+        const top = el("div", "hunk-top");
+        const ht = el("div", "hunk-title");
+        ht.appendChild(el("span", "hid", h.id));
+        ht.appendChild(el("span", "verb " + h.verb, VERB[h.verb] || h.verb));
+        if (h.where) ht.appendChild(el("span", "where", h.where));
+        const st = hunkStatus(h);
+        if (st && (locked || !state.hunks[h.id] || !state.hunks[h.id].choice)) ht.appendChild(st);
+        top.appendChild(ht);
+
+        const choice = el("div", "choice");
+        choice.setAttribute("role", "group");
+        choice.setAttribute("aria-label", "Хто вставляє зміну " + h.id);
+        const cur = (state.hunks[h.id] || {}).choice;
+        [["manual", "self", "Вставив сам"], ["auto", "auto", "Вставити автоматично"]].forEach(([val, cls, label]) => {
+          const b = el("button", cls, label);
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(cur === val));
+          b.disabled = locked;
+          b.addEventListener("click", () => setChoice(h.id, val));
+          choice.appendChild(b);
+        });
+        top.appendChild(choice);
+        hb.appendChild(top);
+
+        const lang = h.lang || f.lang;
+        if (h.old != null) hb.appendChild(codeBlock("old", h.verb === "add" ? "Знайти (вже є у файлі)" : "Було", h.old, h.oldMarks, lang));
+        if (h.new != null) hb.appendChild(codeBlock("new", h.verb === "create" ? "Файл цілком" : "Стало", h.new, h.newMarks, lang));
+        card.appendChild(hb);
+      });
+      steps.appendChild(card);
+    });
+    root.appendChild(steps);
+    window.scrollTo(0, scrollY);
+  }
+
+  // ── панель ───────────────────────────────────────────────────────────
+  let artifactApi = null;
+  let busy = false;
+
+  function counts() {
+    let self = 0, auto = 0, none = 0;
+    allHunks.forEach((h) => {
+      const c = (state.hunks[h.id] || {}).choice;
+      if (c === "manual") self++; else if (c === "auto") auto++; else none++;
+    });
+    return { self, auto, none };
+  }
+
+  function renderBar() {
+    const status = $("status"), bulk = $("bulk"), send = $("send");
+    status.textContent = ""; bulk.textContent = "";
+    const c = counts();
+
+    if (state.result) {
+      status.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Готово" : "Є проблеми"));
+      status.appendChild(el("span", null, fmtTime(state.result.at)));
+      if (state.result.note) status.appendChild(el("span", "note", state.result.note));
+      send.hidden = true;
+      return;
+    }
+
+    const tally = el("span", "tally", "сам " + c.self + " · авто " + c.auto + (c.none ? " · не обрано " + c.none : ""));
+    status.appendChild(tally);
+
+    if (submitted()) {
+      status.appendChild(el("span", "pill pending", "Надіслано"));
+      status.appendChild(el("span", "note", fmtTime(state.submitted) + " — Claude вставить «авто», перевірить «сам» і збере проєкт"));
+      send.hidden = hasResults();
+      send.className = "send ghost";
+      send.textContent = "Змінити вибір";
+      send.disabled = !artifactApi || busy;
+      return;
+    }
+
+    if (!artifactApi) status.appendChild(el("span", "note", "надіслати можна на claude.ai; інакше напиши в чат"));
+    else if (c.none) status.appendChild(el("span", "note", "обери для кожної зміни"));
+
+    bulk.appendChild(el("span", null, "усе одразу:"));
+    [["manual", "усе сам"], ["auto", "усе автоматично"], [null, "очистити"]].forEach(([val, label]) => {
+      const b = el("button", "link", label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        allHunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = val; });
+        saveDraft(); render();
+      });
+      bulk.appendChild(b);
+    });
+
+    send.hidden = false;
+    send.className = "send";
+    send.textContent = c.none ? "Готово — ще " + c.none + " без вибору" : "Готово — надіслати Claude";
+    send.disabled = !artifactApi || busy || c.none > 0;
+  }
+
+  function render() { renderPage(); renderBar(); }
+
+  // Документ = незмінні частини + новий стан; живий DOM не серіалізуємо
+  const HEAD_EXTRA =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"><\/script>';
+  const BAR =
+    '<div class="bar" id="bar"><div class="bar-inner">' +
+    '<div class="status" id="status"></div><div class="bulk" id="bulk"></div>' +
+    '<button class="send" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app = document.getElementById("app").textContent;
+    const json = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main>" + BAR +
+      "<script id=\"patch-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", "note", code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+
+  $("send").addEventListener("click", () => {
+    if (!artifactApi || busy) return;
+    if (submitted()) {           // «Змінити вибір» — поки Claude не почав
+      if (hasResults()) return;
+      state.submitted = null;
+    } else {
+      if (counts().none > 0) return;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  });
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script>

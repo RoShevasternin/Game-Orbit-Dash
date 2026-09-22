@@ -39,13 +39,16 @@ No sound yet — what should catching the spark sound like? A click, a chime, a 
 
 Комент збирає відповіді (алгоритм любить коментарі більше за лайки) і вже анонсує Devlog 02.
 
+**Ліміт коментів — 150 символів**, і закріпленого, і відповідей: довші TikTok ховає
+під «ще», а їх читають на ходу.
+
 ## Відповіді на типові коментарі
 
-- «When release?» → `It's already out — free on Google Play, search "Orbit Dash" (link in bio) 🪐 Sound is the next update.`
+- «When release?» → `It's already out — free on Google Play, search "Orbit Dash" 🪐 Sound is the next update.`
 - «Is it free?» → `Yes, free with ads. Leaderboards are already live.`
 - «What engine?» → `libGDX + Kotlin. Design in Figma. No particle engine — every effect is code.`
 - «What's the tuner?» → `A page with sliders wired to the game's constants. We tune the effect there, then it goes into the code 1:1.`
-- «Can I test it?» → `Yes — it's live on Google Play right now, link in bio. Leaderboards work, sound is coming.`
+- «Can I test it?» → `Yes — it's live on Google Play right now — just search "Orbit Dash". Leaderboards work, sound is coming.`
 
 ## Перший пост нового акаунта — чек-лист
 

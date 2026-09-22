@@ -12,7 +12,7 @@ Walen — Brazilian Hype, 130 BPM, −14.1 LUFS). Обкладинка — `devl
 ## Опис поста (рекомендую)
 
 ```
-Boosts got a timer 🪐 Orbit Dash devlog 02: the combo ring takes your ball's colour, magnet / gem ×2 / slow-mo show how long they've got, and it's all one shader. Already live on Google Play (link in bio). Two of us, made with 💚 in Ukraine.
+Boosts got a timer 🪐 Orbit Dash devlog 02: the combo ring takes your ball's colour, magnet / gem ×2 / slow-mo show how long they've got, and it's all one shader. Already live on Google Play — search "Orbit Dash". Two of us, made with 💚 in Ukraine.
 
 Music: Brazilian Hype by Walen — freetouse.com/music
 ```
@@ -23,13 +23,13 @@ Music: Brazilian Hype by Walen — freetouse.com/music
 ## Варіанти
 
 ```
-Which boost is on? Now you can tell 🪐 Orbit Dash devlog 02: timers for magnet, gem ×2 and slow-mo, combo ring in your colour, one shader behind every bar. Live on Google Play, link in bio 💚
+Which boost is on? Now you can tell 🪐 Orbit Dash devlog 02: timers for magnet, gem ×2 and slow-mo, combo ring in your colour, one shader behind every bar. Live on Google Play — search "Orbit Dash" 💚
 
 Music: Brazilian Hype by Walen — freetouse.com/music
 ```
 
 ```
-Before / after 🪐 Orbit Dash devlog 02: the combo ring was white — now it's the colour of your ball, in every theme. Plus timers for every boost. Free on Google Play (bio). Made with 💚 in Ukraine.
+Before / after 🪐 Orbit Dash devlog 02: the combo ring was white — now it's the colour of your ball, in every theme. Plus timers for every boost. Free on Google Play — search "Orbit Dash". Made with 💚 in Ukraine.
 
 Music: Brazilian Hype by Walen — freetouse.com/music
 ```
@@ -46,19 +46,22 @@ Music: Brazilian Hype by Walen — freetouse.com/music
 ## Закріплений комент від автора
 
 ```
-Devlog 01 asked what catching the spark should sound like — thanks for the answers, sound is next 🔊 Meanwhile: is the boost timer readable at a glance, or should the bar be bigger? 💚
+Devlog 01 asked what the spark should sound like — thanks, sound is next 🔊 Now: is the boost timer readable at a glance, or should it be bigger? 💚
 ```
 
 Комент закриває петлю з першого випуску (там питали про звук) і ставить нове питання —
 про те, що показано в цьому ролику. Відповіді на нього реально впливають на розмір смуги в HUD.
 
+**Ліміт коментів — 150 символів**, і закріпленого, і відповідей: довші TikTok ховає
+під «ще», а їх читають на ходу.
+
 ## Відповіді на типові коментарі
 
-- «When release?» → `It's already out — free on Google Play, search "Orbit Dash" (link in bio) 🪐 This update is live.`
+- «When release?» → `It's already out — free on Google Play, search "Orbit Dash" 🪐 This update is live.`
 - «Where's the sound?» → `Next devlog. Devlog 01 collected the ideas, we're picking one 🔊`
-- «What's "one shader for every bar"?» → `The boost timer, the combo ring on the ball and any masked shape are drawn by the same little shader family — zero textures, crisp at any size.`
+- «What's "one shader for every bar"?» → `The boost timer, the combo ring and any masked shape come from one little shader family — zero textures, crisp at any size.`
 - «What engine?» → `libGDX + Kotlin. Design in Figma. No particle engine — every effect is code.`
-- «Why is slow-mo white?» → `Boost colours are fixed on purpose: purple = magnet, yellow = gem ×2, white = slow-mo, cyan = shield. Themes recolour the world, never the boosts.`
+- «Why is slow-mo white?» → `Boost colours are fixed: purple = magnet, yellow = gem ×2, white = slow-mo, cyan = shield. Themes recolour the world, never the boosts.`
 
 ## Перед публікацією — чек-лист
 

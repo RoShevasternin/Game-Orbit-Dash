@@ -100,7 +100,7 @@ Figma: гаус там уже ≈ 0.01), `VfxTexture` підсумовує
 
 | роль | приклади | vertex | читає |
 |---|---|---|---|
-| **малює** форму | `MsdfShapeEffect`, `RoundRectEffect` | `BATCH_VERT` | `v_localUV` |
+| **малює** форму | `MsdfShapeEffect`, `RoundRectEffect`, `RadialGradientEffect` | `BATCH_VERT` | `v_localUV` |
 | **обробляє** картинку | `BlurEffect`, `MaskEffect` | `Blit.VERT` | `u_texture` |
 
 Шейдер із `v_localUV` під `Blit.VERT` не злінкується — тихо переплутати не вийде.

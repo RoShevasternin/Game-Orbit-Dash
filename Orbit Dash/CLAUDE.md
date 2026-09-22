@@ -188,6 +188,8 @@ glow.effect<BlurEffect>()?.blur = 30f       // усі N оновляться н�
 | шар із фігурою | `AMsdfImage` — межі = фігура; msdf-поле (`PX_RANGE/2` текселів) малюється за ними |
 | шар + Layer Blur | `VfxTexture(w, h, …, post = [Blur], bleed = 24f).image()` або `VfxGroup` з `bleed` — межі = фігура, ефект назовні |
 | frame «hug contents», що обіймає ефект | `Image(tex.region)` розміром `tex.outerWidth × tex.outerHeight` |
+| комірка каталогу більша за фрейм (×4 бази), Clip content вимкнено | ефект — окрема дитина поверх бази: `add(aGlowMagnet) { size(148f); center() }` при базі 40 |
+| заливка **radial gradient** зі стопами | `RadialGradientEffect().stop(t, color, α)` — `offset` і `stop-opacity` з SVG один в один; запекти в `VfxTexture`. `clip` = коло, як `<circle>`; `false` — як Figma на прямокутнику |
 
 Деталь на всіх одна — `OverflowImage`: регіон ширший за актора на частки `padX/padY`.
 `bleed` — поле під post-ефект, на бік, у юнітах; **рахується сам** із ланцюга `post`

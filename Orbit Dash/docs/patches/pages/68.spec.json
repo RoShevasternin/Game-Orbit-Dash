@@ -1,0 +1,16 @@
+{
+ "id": "68",
+ "short": "Ціна кілець",
+ "title": "Кільця магніта: фіксовані сторони, простий стик, політ до орбіти",
+ "date": "21.09.2026",
+ "order": "Один файл, зміни незалежні одна від одної.",
+ "summary_md": "pages/68.summary.md",
+ "proj": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+ "lab": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/f35209ce-b2fd-4288-b833-6381c380d550/scratchpad/lab66/",
+ "files": [
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/fx/AVignette.kt",
+   "note": "32 сторони + JoinType.NONE (14–16 → 5–7 мс сцени); внутрішній край кілець — від радіуса ПОЛЯ, а не від кута екрана."
+  }
+ ]
+}

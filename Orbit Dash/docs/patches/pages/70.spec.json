@@ -1,0 +1,28 @@
+{
+ "id": "70",
+ "short": "Хвилі магніта",
+ "title": "Хвилі магніта на м'ячі — базовий радіальний градієнт із Figma",
+ "date": "21.09.2026",
+ "order": "Уже в проєкті. Кнопки — для перегляду й позначки.",
+ "summary_md": "pages/70.summary.md",
+ "proj": "/private/tmp/claude-501/-Users-admin-Apps-Game-Orbit-Dash-Orbit-Dash/f35209ce-b2fd-4288-b833-6381c380d550/scratchpad/before70/",
+ "lab": "/Users/admin/Apps/Game Orbit Dash/Orbit Dash/",
+ "files": [
+  {
+   "path": "app/src/main/assets/shader/base/radialGradient/radialGradientFS.glsl",
+   "note": "НОВИЙ ФАЙЛ: радіальний градієнт зі стопами як у Figma, до 4 стопів, обрізання по колу."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/utils/vfx/effects/base/RadialGradientEffect.kt",
+   "note": "НОВИЙ ФАЙЛ: стопи з SVG один в один; base/ — поїде в наступну гру."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/actors/objects/ABall.kt",
+   "note": "Хвилі магніта: одна запечена текстура, 4 копії зі зсувом фази, smoothstep по шляху."
+  },
+  {
+   "path": "app/src/main/java/com/lewydo/orbitdash/game/screens/GameScreen.kt",
+   "note": "aBall у disposableSet — актор тепер тримає GL-ресурс."
+  }
+ ]
+}
