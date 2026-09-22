@@ -50,9 +50,20 @@ const DEFAULT_SAVE = {
   daily: null,
 };
 
+// Налаштування гравця. Живуть окремо від сейва прогресу (свій ключ у сховищі):
+// скидання прогресу не має скидати гучність, а гучність — прогрес.
+const DEFAULT_SETTINGS = { sfx: 0.8, music: 0.5, sfxOn: true, musicOn: true, vibro: true };
+
+// Фонова музика — синтез, без файлів. Am → F → C → G, арпеджіо восьмими + бас.
+const MUSIC_BPM = 104;
+const MUSIC_CHORDS = [[57, 60, 64], [57, 60, 65], [55, 60, 64], [55, 59, 62]];
+const MUSIC_BASS   = [45, 41, 48, 43];
+const MUSIC_ARP    = [0, 1, 2, 3, 2, 1, 2, 1];
+const midiHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
 // Версія збірки: номер +1 за кожну зміну, плюс дата й час (Київ). Ставиться автоматично.
 // Видно в DEV-панелі: так одразу ясно, чи підтягнулось оновлення.
-const BUILD = "v1 · 21.09.2026 10:28";
+const BUILD = "v2 · 22.09.2026 20:00";
 
 const W = 720, H = 1280, CX = 360, CY = 610, D = Math.PI / 180;
 const LAYOUT2 = [190, 320, 320];
@@ -175,6 +186,62 @@ function DevBtn({ onClick, color, active, children, title }) {
   );
 }
 
+// Компоненти налаштувань живуть на рівні модуля НАВМИСНО: оголошені всередині
+// OrbitDash, вони перестворювались би на кожну зміну гучності, і повзунок
+// губив би палець після першого ж руху.
+function GearIcon({ color, size = 20 }) {
+  const n = 8, pts = [];
+  for (let i = 0; i < n * 4; i++) {
+    const a = (i / (n * 4)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 4 < 2 ? 9 : 6.6;                     // два кути зубця зовні, два всередині
+    pts.push(`${(10 + Math.cos(a) * r).toFixed(2)},${(10 + Math.sin(a) * r).toFixed(2)}`);
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true">
+      <polygon points={pts.join(" ")} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="10" cy="10" r="2.8" fill="none" stroke={color} strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function ToggleBtn({ on, onClick, color }) {
+  return (
+    <button
+      role="switch" aria-checked={on} onClick={onClick}
+      className="relative rounded-full shrink-0"
+      style={{
+        width: 56, height: 30, transition: "background 0.2s, box-shadow 0.2s",
+        background: on ? color : "rgba(255,255,255,0.12)",
+        border: `1px solid ${on ? color : "rgba(255,255,255,0.2)"}`,
+        boxShadow: on ? `0 0 14px ${rgba(color, 0.45)}` : "none",
+      }}
+    >
+      <span className="absolute rounded-full" style={{ width: 22, height: 22, top: 3, left: on ? 30 : 3, transition: "left 0.2s", background: on ? "#0b0d1a" : "rgba(255,255,255,0.7)" }} />
+    </button>
+  );
+}
+
+function SoundRow({ label, on, value, onToggle, onChange, onRelease, color }) {
+  const pct = Math.round(value * 100);
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="font-black tracking-widest text-sm text-white">{label}</span>
+        <span className="flex items-center gap-3">
+          <span className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.5)", minWidth: 34, textAlign: "right" }}>{pct}%</span>
+          <ToggleBtn on={on} onClick={onToggle} color={color} />
+        </span>
+      </div>
+      <input
+        type="range" min="0" max="100" value={pct} aria-label={label}
+        onChange={(e) => onChange(Number(e.target.value) / 100)}
+        onPointerUp={onRelease} onKeyUp={onRelease}
+        style={{ width: "100%", accentColor: color, opacity: on ? 1 : 0.35, transition: "opacity 0.2s" }}
+      />
+    </div>
+  );
+}
+
 export default function OrbitDash() {
   const [save, setSave] = useState(DEFAULT_SAVE);
   const [screen, setScreen] = useState("menu"); // menu | game | shop | missions | ranks
@@ -185,7 +252,9 @@ export default function OrbitDash() {
   const [ad, setAd] = useState(null);
   const [adFill, setAdFill] = useState(false);
   const [toast, setToast] = useState(null);
-  const [muted, setMuted] = useState(false);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [panel, setPanel] = useState(null); // null | "settings" | "about"
+  const patchSettings = (p) => setSettings((s) => ({ ...s, ...p }));
   const [booted, setBooted] = useState(false);
   const [storageOk, setStorageOk] = useState(true);
   const [dev, setDev] = useState(false);
@@ -243,7 +312,9 @@ export default function OrbitDash() {
   const holderRef = useRef(null);
   const engineRef = useRef(null);
   const saveRef = useRef(save);
-  const mutedRef = useRef(false);
+  const setRef = useRef(DEFAULT_SETTINGS);   // налаштування для beep/buzz/музики без перерендерів
+  const uiPauseRef = useRef(false);           // відкрита панель у рані = гра на паузі
+  const musicRef = useRef(null);
   const loadedRef = useRef(false);
   const actxRef = useRef(null);
   const deathsRef = useRef(0);
@@ -257,12 +328,44 @@ export default function OrbitDash() {
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
 
   useEffect(() => { saveRef.current = save; }, [save]);
-  useEffect(() => { mutedRef.current = muted; }, [muted]);
+  useEffect(() => { setRef.current = settings; }, [settings]);
+  useEffect(() => { uiPauseRef.current = panel !== null; }, [panel]);
+
+  // Налаштування переживають перезапуск. Запис вмикається лише ПІСЛЯ читання,
+  // інакше перший рендер затер би збережене дефолтами.
+  const settingsLoaded = useRef(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        if (window.storage && window.storage.get) {
+          const r = await window.storage.get("orbitdash-settings");
+          if (r && r.value) {
+            const p = JSON.parse(r.value);
+            const clamp01 = (v, d) => (typeof v === "number" && v >= 0 && v <= 1 ? v : d);
+            setSettings({
+              sfx: clamp01(p.sfx, DEFAULT_SETTINGS.sfx),
+              music: clamp01(p.music, DEFAULT_SETTINGS.music),
+              sfxOn: typeof p.sfxOn === "boolean" ? p.sfxOn : true,
+              musicOn: typeof p.musicOn === "boolean" ? p.musicOn : true,
+              vibro: typeof p.vibro === "boolean" ? p.vibro : true,
+            });
+          }
+        }
+      } catch {}
+      settingsLoaded.current = true;
+    })();
+  }, []);
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    try { window.storage && window.storage.set && window.storage.set("orbitdash-settings", JSON.stringify(settings)); } catch {}
+  }, [settings]);
 
   // ---------------------------------------------------------- ЗВУК / ВІБРО
 
   const beep = useCallback((f, dur, type, vol, slide) => {
-    if (mutedRef.current) return;
+    const cfg = setRef.current;
+    if (!cfg.sfxOn || cfg.sfx <= 0) return;
+    vol *= cfg.sfx;
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
@@ -279,7 +382,80 @@ export default function OrbitDash() {
     } catch (e) {}
   }, []);
 
-  const buzz = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
+  const buzz = (ms) => { if (!setRef.current.vibro) return; try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
+
+  // ---------------------------------------------------------- МУЗИКА
+  // Планувальник «з запасом»: setInterval лише будить нас, а ноти ставляться
+  // на годинник AudioContext на 0.15 с наперед. Так ритм рівний, навіть коли
+  // таймер браузера смикається під навантаженням.
+  const musicLevel = (c) => (c.musicOn ? c.music * 0.55 : 0);
+
+  const startMusic = useCallback(() => {
+    if (musicRef.current) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      actxRef.current = actxRef.current || new AC();
+      const a = actxRef.current;
+      if (a.state === "suspended") a.resume();
+
+      const out = a.createGain(); out.gain.value = 0; out.connect(a.destination);
+      const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2200; lp.Q.value = 0.6; lp.connect(out);
+      const STEP = 60 / MUSIC_BPM / 2;   // восьма
+      const m = { a, out, step: 0, next: a.currentTime + 0.1, timer: 0 };
+
+      const note = (midi, t, dur, type, vol, att) => {
+        const o = a.createOscillator(), g = a.createGain();
+        o.type = type; o.frequency.value = midiHz(midi);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + att);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(lp);
+        o.start(t); o.stop(t + dur + 0.05);
+      };
+
+      m.timer = setInterval(() => {
+        const silent = musicLevel(setRef.current) <= 0;
+        while (m.next < a.currentTime + 0.15) {
+          if (!silent) {
+            const barN = Math.floor(m.step / 8), bar = barN % 4, s8 = m.step % 8, ch = MUSIC_CHORDS[bar];
+            if (s8 === 0) note(MUSIC_BASS[bar], m.next, STEP * 8 * 0.95, "sine", 0.16, 0.06);
+            note([ch[0], ch[1], ch[2], ch[0] + 12][MUSIC_ARP[s8]], m.next, 0.34, "triangle", 0.07, 0.008);
+            if (s8 === 4 && barN % 2 === 1) note(ch[2] + 12, m.next, 0.5, "sine", 0.035, 0.01);
+          }
+          m.next += STEP; m.step++;
+        }
+      }, 40);
+
+      musicRef.current = m;
+      out.gain.setTargetAtTime(musicLevel(setRef.current), a.currentTime, 0.8); // плавний вхід
+    } catch (e) {}
+  }, []);
+
+  // Гучність музики — плавно, без клацань
+  useEffect(() => {
+    const m = musicRef.current;
+    if (m) m.out.gain.setTargetAtTime(musicLevel(settings), m.a.currentTime, 0.08);
+  }, [settings]);
+
+  // Браузер не дає грати звук без жесту — стартуємо з першого дотику чи клавіші.
+  // Згорнута вкладка — звук на паузі, щоб не грав у кишені.
+  useEffect(() => {
+    const first = () => startMusic();
+    window.addEventListener("pointerdown", first, { once: true });
+    window.addEventListener("keydown", first, { once: true });
+    const vis = () => {
+      const a = actxRef.current; if (!a) return;
+      try { document.hidden ? a.suspend() : a.resume(); } catch (e) {}
+    };
+    document.addEventListener("visibilitychange", vis);
+    return () => {
+      window.removeEventListener("pointerdown", first);
+      window.removeEventListener("keydown", first);
+      document.removeEventListener("visibilitychange", vis);
+      if (musicRef.current) { clearInterval(musicRef.current.timer); musicRef.current = null; }
+    };
+  }, [startMusic]);
 
   // ---------------------------------------------------------- ЗБЕРЕЖЕННЯ
 
@@ -1426,6 +1602,8 @@ export default function OrbitDash() {
 
     let raf, last = 0;
     const frame = (t) => {
+      // Відкриті налаштування — гра стоїть повністю, лише перемальовуємо кадр
+      if (uiPauseRef.current) { last = t; render(); raf = requestAnimationFrame(frame); return; }
       // DEV: TIME ×0.25 масштабує весь кадр — і рушій, і ефекти, і смерть
       const dt = Math.min(0.033, (t - last) / 1000 || 0.016) * dbgRef.current.time;
       last = t;
@@ -1601,6 +1779,7 @@ export default function OrbitDash() {
 
   useEffect(() => {
     const onKey = (e) => {
+      if (panel) { if (e.code === "Escape") setPanel(panel === "about" ? "settings" : null); return; }
       if (e.code !== "Space" && e.code !== "ArrowUp" && e.code !== "Enter") return;
       if (ad || screen === "ranks") return;
       if (screen === "menu" && boot.phase === "ready") { goMenu(); e.preventDefault(); }
@@ -1693,14 +1872,16 @@ export default function OrbitDash() {
         className="relative w-full overflow-hidden select-none"
         style={{ aspectRatio: "9 / 16", maxHeight: "100vh", maxWidth: "min(100vw, calc(100vh * 0.5625))", touchAction: "none" }}
       >
-        <button
-          aria-label={muted ? "Увімкнути звук" : "Вимкнути звук"}
-          onClick={() => setMuted((m) => !m)}
-          className="absolute top-3 right-3 z-30 w-10 h-10 rounded-full flex items-center justify-center font-mono text-sm"
-          style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.15)" }}
-        >
-          {muted ? "M" : "♪"}
-        </button>
+        {!ad && (
+          <button
+            aria-label="Settings"
+            onClick={() => { setPanel("settings"); beep(560, 0.06, "sine", 0.07, 120); }}
+            className="absolute top-3 right-3 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
+          >
+            <GearIcon color="rgba(255,255,255,0.75)" />
+          </button>
+        )}
 
         {screen === "menu" && boot.phase === "menu" && (
           <button
@@ -2163,6 +2344,64 @@ export default function OrbitDash() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ------------------------------------------------ НАЛАШТУВАННЯ */}
+        {panel === "settings" && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center px-8" style={{ background: "rgba(4,5,11,0.93)", backdropFilter: "blur(6px)" }}>
+            <div className="w-full flex flex-col gap-5" style={{ maxWidth: 300 }}>
+              <div className="font-black tracking-widest text-2xl text-center mb-1" style={{ color: pal.player, textShadow: `0 0 22px ${rgba(pal.player, 0.55)}` }}>SETTINGS</div>
+
+              <SoundRow label="SOUND" color={pal.player} on={settings.sfxOn} value={settings.sfx}
+                onToggle={() => patchSettings({ sfxOn: !settings.sfxOn })}
+                onChange={(v) => patchSettings({ sfx: v })}
+                onRelease={() => beep(660, 0.12, "sine", 0.12, 160)} />
+
+              <SoundRow label="MUSIC" color={pal.player} on={settings.musicOn} value={settings.music}
+                onToggle={() => { startMusic(); patchSettings({ musicOn: !settings.musicOn }); }}
+                onChange={(v) => { startMusic(); patchSettings({ music: v }); }} />
+
+              <div className="flex items-center justify-between">
+                <span className="font-black tracking-widest text-sm text-white">VIBRATION</span>
+                <ToggleBtn color={pal.player} on={settings.vibro} onClick={() => { const v = !settings.vibro; patchSettings({ vibro: v }); if (v) try { navigator.vibrate && navigator.vibrate(30); } catch (e) {} }} />
+              </div>
+
+              <div className="flex flex-col gap-2 mt-2">
+                <Btn small onClick={() => { setPanel("about"); beep(560, 0.06, "sine", 0.07, 120); }}>ABOUT US</Btn>
+                <Btn kind="primary" small onClick={() => setPanel(null)}>CLOSE</Btn>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------ ПРО НАС */}
+        {panel === "about" && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center px-8 text-center" style={{ background: "rgba(4,5,11,0.95)", backdropFilter: "blur(6px)" }}>
+            <div className="w-full flex flex-col items-center gap-4" style={{ maxWidth: 300 }}>
+              <div className="relative" style={{ width: 96, height: 96, filter: `drop-shadow(0 0 16px ${rgba(pal.player, 0.5)})` }}>
+                <div className="absolute rounded-full" style={{ inset: 0, border: `3px solid ${pal.ring}` }} />
+                <div className="absolute rounded-full" style={{ inset: 20, border: `3px solid ${pal.ring}` }} />
+                <div className={"absolute inset-0 " + (reduced ? "" : "animate-spin")} style={{ animationDuration: "7s" }}>
+                  <div className="absolute rounded-full" style={{ width: 14, height: 14, background: pal.player, top: -7, left: "50%", marginLeft: -7, boxShadow: `0 0 12px ${pal.player}` }} />
+                </div>
+              </div>
+              <div className="leading-none">
+                <div className="font-black text-2xl" style={{ color: pal.player, letterSpacing: "0.3em", marginRight: "-0.3em" }}>ORBIT</div>
+                <div className="font-black text-2xl mt-1" style={{ color: pal.gem, letterSpacing: "0.3em", marginRight: "-0.3em" }}>DASH</div>
+              </div>
+              <div className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{BUILD}</div>
+              <div className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>
+                Made with <span style={{ color: "#5ee89a" }}>💚</span> by <span className="font-black" style={{ color: pal.gem }}>LEWYDO</span>
+                <br />a two-person indie studio from Ukraine.
+              </div>
+              <div className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+                One tap, two orbits, zero mercy.<br />Thanks for playing — it means a lot to us.
+              </div>
+              <div className="w-full mt-2">
+                <Btn kind="primary" small onClick={() => setPanel("settings")}>BACK</Btn>
+              </div>
+            </div>
           </div>
         )}
 

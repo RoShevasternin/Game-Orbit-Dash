@@ -17,11 +17,14 @@ class MusicManager(var assetManager: AssetManager) {
     }
 
     enum class EnumMusic(val data: MusicData) {
-        MAIN(MusicData("music/main.mp3")),
+        /** coff 0.27 — трек голосний сам по собі; під ним ще мають читатись ефекти. */
+        MAIN(MusicData("music/main.mp3", coff = 0.27f)),
     }
 
+    /** coff — вага треку в міксі, 0..1. Авторська, не повзунок гравця (AudioMixer). */
     data class MusicData(
         val path: String,
+        val coff: Float = 1f,
     ) {
         lateinit var music: Music
     }

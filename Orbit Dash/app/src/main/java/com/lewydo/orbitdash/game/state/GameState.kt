@@ -22,6 +22,11 @@ class GameState {
     val orbit3Flow = MutableStateFlow(false)
     val noAdsFlow  = MutableStateFlow(false)
 
+    // Звук: повзунки гравця, 0..1 (формула — AudioMixer)
+    val volMasterFlow = MutableStateFlow(1f)
+    val volMusicFlow  = MutableStateFlow(1f)
+    val volSfxFlow    = MutableStateFlow(1f)
+
     /** LOAD SIGNAL
      * Стає true ПІСЛЯ повного loadFrom. Моделі, що залежать від збереженого
      * стану (напр. GoalsModel), чекають саме його — це усуває race з gridFlow.
@@ -47,6 +52,10 @@ class GameState {
         orbit3Flow.value = data.orbit3
         noAdsFlow.value  = data.noAds
 
+        volMasterFlow.value = data.volMaster
+        volMusicFlow.value  = data.volMusic
+        volSfxFlow.value    = data.volSfx
+
         // Старий сейв без pid → народжуємо тут: loadFrom — єдине місце, де
         // стан гарантовано проходить при кожному запуску, і міграція
         // відбувається сама, без окремого кроку в PlayerDataMigration.
@@ -67,6 +76,10 @@ class GameState {
 
         orbit3 = orbit3Flow.value,
         noAds  = noAdsFlow.value,
+
+        volMaster = volMasterFlow.value,
+        volMusic  = volMusicFlow.value,
+        volSfx    = volSfxFlow.value,
     )
 
     /**

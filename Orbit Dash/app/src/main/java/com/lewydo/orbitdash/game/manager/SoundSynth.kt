@@ -139,6 +139,15 @@ class SoundSynth : Disposable {
     private val sounds = HashMap<Sfx, Sound>()
     private val peaks  = HashMap<Sfx, Float>()
 
+    /**
+     * Пік найгучнішого рецепта каталогу — опора відносного міксу.
+     *
+     * Кожен wav нормалізовано до повної шкали (усі 16 біт у діло, без шуму
+     * квантування на тихих звуках), тож гучність повертає coff = peak/loudest:
+     * найгучніший звук іде на 1.0, решта — у пропорції прототипу.
+     */
+    var loudestPeak = 1f; private set
+
     /** Запекти все з каталогу. Кличеться з лоадера — SoundPool довантажує асинхронно. */
     fun bakeAll(all: List<Sfx>) {
         val root = Gdx.files.local(CACHE_ROOT)
@@ -158,7 +167,8 @@ class SoundSynth : Disposable {
             }
             sounds[sfx] = Gdx.audio.newSound(file)
         }
-        log("SoundSynth: ${all.size} sfx, written $written → ${dir.path()}")
+        loudestPeak = peaks.values.maxOrNull()?.takeIf { it > 0f } ?: 1f
+        log("SoundSynth: ${all.size} sfx, written $written, loudest $loudestPeak → ${dir.path()}")
     }
 
     fun sound(sfx: Sfx): Sound = sounds[sfx] ?: error("Sfx '${sfx.name}' не запечено — bakeAll() до першого play")

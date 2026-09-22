@@ -44,6 +44,10 @@ class PlayerModel(
     val orbit3Flow   = state.orbit3Flow
     val noAdsFlow    = state.noAdsFlow
 
+    val volMasterFlow = state.volMasterFlow
+    val volMusicFlow  = state.volMusicFlow
+    val volSfxFlow    = state.volSfxFlow
+
     val isLoadedFlow = state.isLoadedFlow
 
     // ------------------------------------------------------------------------
@@ -58,6 +62,10 @@ class PlayerModel(
     val orbit3: Boolean get() = state.orbit3Flow.value
     val noAds : Boolean get() = state.noAdsFlow.value
 
+    val volMaster: Float get() = state.volMasterFlow.value
+    val volMusic : Float get() = state.volMusicFlow.value
+    val volSfx   : Float get() = state.volSfxFlow.value
+
     /** Читати тільки ПІСЛЯ isLoadedFlow: до завантаження тут порожньо. */
     val pid: String get() = state.pidFlow.value
 
@@ -70,6 +78,18 @@ class PlayerModel(
         state.skinIdFlow.value = id
         AnalyticsManager.setActiveSkin(ThemeManager.nameOf(id))
     }
+
+    // ------------------------------------------------------------------------
+    // Audio
+    // ------------------------------------------------------------------------
+    //
+    //  Повзунок тягнуть пальцем — значення міняється десятки разів на секунду.
+    //  Тому saveGame() тут НЕ кличемо: досить автозбереження (30 с) і запису
+    //  на паузі, а диск не молотить під кожен піксель ходу повзунка.
+    //
+    fun setMasterVolume(v: Float) { state.volMasterFlow.value = v.coerceIn(0f, 1f) }
+    fun setMusicVolume (v: Float) { state.volMusicFlow.value  = v.coerceIn(0f, 1f) }
+    fun setSfxVolume   (v: Float) { state.volSfxFlow.value    = v.coerceIn(0f, 1f) }
 
     // ------------------------------------------------------------------------
     // Economy

@@ -1,0 +1,575 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Патч 72 · Мікшер гучності</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"></script><style id="style">
+:root {
+  --ground:  #F6F7F9;
+  --surface: #FFFFFF;
+  --sunk:    #F6F8FA;
+  --line:    #E1E4E8;
+  --text:    #1F2328;
+  --muted:   #59636E;
+  --faint:   #A1A9B3;
+  --accent:  #1F6FEB;
+  --accent-ink: #FFFFFF;
+  --gem:     #9A6700;
+  --gem-bg:  #FFF8C5;
+  --spike:   #CF222E;
+  --spike-bg:#FFEBE9;
+  --good:    #1A7F37;
+  --good-bg: #E6FFEC;
+  --shadow:  0 -4px 16px rgba(31, 35, 40, .08);
+  /* підсвітка коду */
+  --syn-kw:   #CF222E;
+  --syn-type: #953800;
+  --syn-fn:   #8250DF;
+  --syn-str:  #0A3069;
+  --syn-num:  #0550AE;
+  --syn-com:  #6E7781;
+  --syn-meta: #953800;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:  #0D1117;
+    --surface: #151B23;
+    --sunk:    #0D1117;
+    --line:    #30363D;
+    --text:    #E6EDF3;
+    --muted:   #9198A1;
+    --faint:   #5C646E;
+    --accent:  #4493F8;
+    --accent-ink: #FFFFFF;
+    --gem:     #D29922;
+    --gem-bg:  rgba(187, 128, 9, .15);
+    --spike:   #F85149;
+    --spike-bg:rgba(248, 81, 73, .12);
+    --good:    #3FB950;
+    --good-bg: rgba(46, 160, 67, .14);
+    --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+    --syn-kw:   #FF7B72;
+    --syn-type: #FFA657;
+    --syn-fn:   #D2A8FF;
+    --syn-str:  #A5D6FF;
+    --syn-num:  #79C0FF;
+    --syn-com:  #8B949E;
+    --syn-meta: #FFA657;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:  #0D1117;
+  --surface: #151B23;
+  --sunk:    #0D1117;
+  --line:    #30363D;
+  --text:    #E6EDF3;
+  --muted:   #9198A1;
+  --faint:   #5C646E;
+  --accent:  #4493F8;
+  --accent-ink: #FFFFFF;
+  --gem:     #D29922;
+  --gem-bg:  rgba(187, 128, 9, .15);
+  --spike:   #F85149;
+  --spike-bg:rgba(248, 81, 73, .12);
+  --good:    #3FB950;
+  --good-bg: rgba(46, 160, 67, .14);
+  --shadow:  0 -4px 16px rgba(0, 0, 0, .40);
+  --syn-kw:   #FF7B72;
+  --syn-type: #FFA657;
+  --syn-fn:   #D2A8FF;
+  --syn-str:  #A5D6FF;
+  --syn-num:  #79C0FF;
+  --syn-com:  #8B949E;
+  --syn-meta: #FFA657;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: 15px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.page { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 190px; }
+h1, h2, h3 { font-family: "IBM Plex Sans", system-ui, sans-serif; letter-spacing: -.01em; text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 19px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 600; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code {
+  font-size: .88em; background: var(--sunk); border: 1px solid var(--line);
+  border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+/* ── шапка ─────────────────────────────────────────── */
+.head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: .03em; border-radius: 999px; padding: 2px 10px;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.new     { color: var(--muted); background: var(--sunk); border: 1px solid var(--line); }
+.pill.pending { color: var(--gem);   background: var(--gem-bg); }
+.pill.done    { color: var(--good);  background: var(--good-bg); }
+.pill.fail    { color: var(--spike); background: var(--spike-bg); }
+
+/* ── пояснення ─────────────────────────────────────── */
+.summary { max-width: 68ch; }
+.summary > * + * { margin-top: 12px; }
+.summary h3 { margin-top: 22px; }
+.summary ul { padding-left: 20px; margin-block: 8px; }
+.summary li + li { margin-top: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.summary table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.summary th, .summary td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.summary tr:last-child td { border-bottom: 0; }
+.summary th { font-weight: 600; background: var(--sunk); }
+
+/* ── кроки ─────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 26px; margin-top: 30px; }
+.steps-title { display: flex; flex-direction: column; gap: 4px; }
+.steps-title p { margin: 0; color: var(--muted); font-size: 13px; }
+.file { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.file-head {
+  display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--sunk); border-bottom: 1px solid var(--line);
+}
+.file-id { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.file-id .idx { font-family: "JetBrains Mono", monospace; color: var(--muted); font-weight: 500; flex: none; }
+.file-id .path { font-family: "JetBrains Mono", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.file-all { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px; font-size: 12px;
+}
+.link:disabled { color: var(--faint); cursor: default; text-decoration: none; }
+.file-note { padding: 10px 14px 0; margin: 0; color: var(--muted); font-size: 13px; }
+
+.hunk { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hunk + .hunk { border-top: 1px dashed var(--line); }
+.hunk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.hunk-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 13px; }
+.hid { font-family: "JetBrains Mono", monospace; color: var(--muted); }
+.verb { font-weight: 600; letter-spacing: .06em; font-size: 12px; }
+.verb.replace { color: var(--gem); }
+.verb.add, .verb.create { color: var(--good); }
+.verb.remove, .verb.delete { color: var(--spike); }
+.where { color: var(--muted); }
+
+/* вибір на зміну */
+.choice { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.choice button {
+  background: var(--surface); color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer;
+  font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; font-size: 12.5px;
+}
+.choice button + button { border-left: 1px solid var(--line); }
+.choice button[aria-pressed="true"].self { background: var(--text); color: var(--surface); }
+.choice button[aria-pressed="true"].auto { background: var(--accent); color: var(--accent-ink); }
+.choice button:disabled { cursor: default; }
+.choice button:disabled:not([aria-pressed="true"]) { opacity: .45; }
+
+/* код */
+.code { border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+.code-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px 4px 10px;
+}
+.code-label { color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line); }
+.code.old .code-label span:first-child::before { content: "● "; color: var(--spike); }
+.code.new .code-label span:first-child::before { content: "● "; color: var(--good); }
+.code pre {
+  margin: 0; padding: 8px 0; overflow-x: auto; background: var(--sunk);
+  font-size: 12.5px; line-height: 1.6; tab-size: 4;
+}
+.ln { display: block; white-space: pre; padding-right: 14px; min-height: 1.6em; }
+.ln::before { content: " "; display: inline-block; width: 26px; text-align: center; color: var(--faint); user-select: none; }
+.ln.ctx { opacity: .6; }
+.code.old .ln.chg { background: var(--spike-bg); }
+.code.old .ln.chg::before { content: "−"; color: var(--spike); }
+.code.new .ln.chg { background: var(--good-bg); }
+.code.new .ln.chg::before { content: "+"; color: var(--good); }
+.copy {
+  font: 500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing: .04em;
+  color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  padding: 4px 8px; cursor: pointer;
+}
+
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--syn-kw); }
+.hljs-type, .hljs-title.class_, .hljs-class .hljs-title { color: var(--syn-type); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--syn-fn); }
+.hljs-string, .hljs-char { color: var(--syn-str); }
+.hljs-number { color: var(--syn-num); }
+.hljs-comment, .hljs-doctag, .hljs-quote { color: var(--syn-com); font-style: italic; }
+.hljs-meta, .hljs-annotation, .hljs-variable, .hljs-template-variable { color: var(--syn-meta); }
+
+/* ── панель ────────────────────────────────────────── */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: var(--shadow);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.status { font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.status .note { color: var(--muted); }
+.tally { font-variant-numeric: tabular-nums; }
+.bulk { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.bulk .link { font-size: 13px; }
+.send {
+  font: 600 15px/1.2 "IBM Plex Sans", system-ui, sans-serif;
+  border-radius: 12px; padding: 14px 12px; cursor: pointer; border: 2px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.send.ghost { background: transparent; color: var(--accent); }
+.send:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 420px) { h1 { font-size: 22px; } .choice button { padding: 7px 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .send, .choice button { transition: transform .08s ease, background-color .12s ease; }
+  .send:active:not(:disabled) { transform: scale(.98); }
+}
+</style></head><body><main class="page" id="root"></main><div class="bar" id="bar"><div class="bar-inner"><div class="status" id="status"></div><div class="bulk" id="bulk"></div><button class="send" id="send" type="button">Готово — надіслати Claude</button></div></div><script id="patch-data" type="application/json">{"id": "72", "title": "Мікшерний пульт: coff автора, повзунки гравця, майстер — і жодної системної гучності у формулі", "date": "22.09.2026", "order": "1 → 11 разом; компілюється після 6 (SoundUtil і MusicUtil читають AudioMixer).", "summaryHtml": "\u003ch3>Що і навіщо\u003c/h3>\n\u003cp>Гучність у грі рахувалась у двох місцях і обидва рахували неправильно. \u003ccode>SoundUtil\u003c/code> множив на системну гучність телефона, \u003ccode>MusicUtil\u003c/code> — теж, а Android накладає її \u003cstrong>ще раз\u003c/strong>, уже на рівні заліза. Виходив квадрат: на 50 % регулятора гра звучала на 25 %, на 25 % — на 6 %. Через це синтезовані звуки з патча 71 і здавались відсутніми — тап ішов на 4 % шкали.\u003c/p>\n\u003cp>Плюс дрібніші сліди того самого: \u003ccode>MusicUtil.coff\u003c/code> очікував 0..1, а \u003ccode>LoaderScreen\u003c/code> передавав \u003ccode>27f\u003c/code>; \u003ccode>volumeLevelFlow\u003c/code> у музиці ніхто не оновлював — підписка спрацьовувала раз і мовчала; \u003ccode>Settings.IS_MUSIC\u003c/code> читався як \u003ccode>currentMusic.isPlaying\u003c/code>, тобто «налаштування» самовільно перемикалось щоразу, коли музику глушила реклама або пауза; нічого не зберігалось.\u003c/p>\n\u003cp>Замість латання — \u003cstrong>один мікшерний пульт\u003c/strong> із трьома рівнями, у кожного рівно один господар:\u003c/p>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>рівень\u003c/th>\u003cth>хто ставить\u003c/th>\u003cth>де живе\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>\u003ccode>coff\u003c/code> — вага ассета в міксі\u003c/td>\u003ctd>\u003cstrong>автор\u003c/strong> (ми)\u003c/td>\u003ctd>у коді: пік рецепта для звуку, \u003ccode>MusicManager.EnumMusic\u003c/code> для треку\u003c/td>\u003c/tr>\u003ctr>\u003ctd>шина \u003ccode>MUSIC\u003c/code> / \u003ccode>SFX\u003c/code>\u003c/td>\u003ctd>\u003cstrong>гравець\u003c/strong>\u003c/td>\u003ctd>сейв, \u003ccode>PlayerData.volMusic\u003c/code> / \u003ccode>volSfx\u003c/code>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>майстер\u003c/td>\u003ctd>\u003cstrong>гравець\u003c/strong>\u003c/td>\u003ctd>сейв, \u003ccode>PlayerData.volMaster\u003c/code>\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Системної гучності у формулі \u003cstrong>немає\u003c/strong> — вона не наша, її накладає Android поверх.\u003c/p>\n\u003cp>``\u003ccode>kotlin fun gain(coff, bus, master, headroom) = coff * curve(bus) * curve(master) * headroom \u003c/code>``\u003c/p>\n\u003ch3>Чому повзунок не лінійний\u003c/h3>\n\u003cp>Вухо чує гучність приблизно логарифмічно: половина амплітуди — це не «удвічі тихіше», а ледь помітно тихіше. Лінійний повзунок тому відчувається зламаним: перші 70 % ходу майже нічого не міняють, а решта різко глушить. \u003ccode>curve(x) = x²\u003c/code> — це −12 дБ на середині ходу, і хід стає рівномірним на слух. Кожна шина проходить криву окремо, тож два повзунки на 50 % дають −24 дБ — рівно як два фейдери на −12 дБ у справжньому пульті.\u003c/p>\n\u003ch3>Запас під суму\u003c/h3>\n\u003cp>\u003ccode>SoundPool\u003c/code> мікс просто \u003cstrong>додає\u003c/strong> доріжки. Тап + гем + комбо можуть зійтись у тих самих 50 мс і дати суму понад одиницю — це кліп, чутний як тріск. \u003ccode>SFX_HEADROOM = 0.8\u003c/code> лишає ~2 дБ запасу; музиці він не потрібен, доріжка одна.\u003c/p>\n\u003ch3>Скільки це в числах\u003c/h3>\n\u003cp>Гучність, яку застосунок віддає \u003ccode>Sound.play()\u003c/code> (найгучніший рецепт каталогу = ORBIT3):\u003c/p>\n\u003cdiv class=\"tablewrap\">\u003ctable>\u003cthead>\u003ctr>\u003cth>звук\u003c/th>\u003cth>патч 71\u003c/th>\u003cth>71 + фікс 3.2\u003c/th>\u003cth>\u003cstrong>72\u003c/strong>\u003c/th>\u003c/tr>\u003c/thead>\u003ctbody>\u003ctr>\u003ctd>UI_TICK (кнопка)\u003c/td>\u003ctd>0.036\u003c/td>\u003ctd>0.115\u003c/td>\u003ctd>\u003cstrong>0.155\u003c/strong>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>TAP\u003c/td>\u003ctd>0.042\u003c/td>\u003ctd>0.134\u003c/td>\u003ctd>\u003cstrong>0.181\u003c/strong>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>GEM\u003c/td>\u003ctd>0.059\u003c/td>\u003ctd>0.188\u003c/td>\u003ctd>\u003cstrong>0.254\u003c/strong>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>DEATH\u003c/td>\u003ctd>0.090\u003c/td>\u003ctd>0.288\u003c/td>\u003ctd>\u003cstrong>0.388\u003c/strong>\u003c/td>\u003c/tr>\u003ctr>\u003ctd>ORBIT3\u003c/td>\u003ctd>0.185\u003c/td>\u003ctd>0.593\u003c/td>\u003ctd>\u003cstrong>0.800\u003c/strong>\u003c/td>\u003c/tr>\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>І головне: тепер це лінійно щодо регулятора телефона. 50 % на телефоні = 50 % гучності, а не 25 %.\u003c/p>\n\u003cp>Магічне \u003ccode>SYNTH_GAIN = 3.2\u003c/code> зникло: \u003ccode>coff\u003c/code> рахується як \u003ccode>пік рецепта / пік найгучнішого\u003c/code>, тобто каталог сам себе калібрує. Додаси гучніший звук — решта перебалансується.\u003c/p>\n\u003ch3>Коли зʼявляться повзунки в налаштуваннях\u003c/h3>\n\u003cp>Усе вже готове, екрану лишається один рядок на повзунок:\u003c/p>\n\u003cp>``\u003ccode>kotlin aSliderMusic.onChange { gdxGame.settings.MUSIC_VOLUME = it }   // 0..1 \u003c/code>``\u003c/p>\n\u003cul>\u003cli>\u003cstrong>музика реагує на льоту\u003c/strong> — \u003ccode>MusicUtil\u003c/code> підписаний на \u003ccode>AudioMixer.musicBusFlow\u003c/code>, гучність міняється, поки палець ще на повзунку;\u003c/li>\u003cli>\u003cstrong>ефекти\u003c/strong> беруть нове значення з наступним \u003ccode>play()\u003c/code> — підписка їм не потрібна;\u003c/li>\u003cli>\u003cstrong>значення зберігається\u003c/strong>: \u003ccode>saveGame()\u003c/code> у сеттері свідомо не кличемо — повзунок тягнуть пальцем, диск не має молотити під кожен піксель ходу. Автозбереження (30 с) і запис на паузі це покривають.\u003c/li>\u003c/ul>\n\u003cp>\u003ccode>IS_SOUND\u003c/code> / \u003ccode>IS_MUSIC\u003c/code> лишились як тумблери над повзунками (\u003ccode>&gt; 0\u003c/code> / \u003ccode>0f\u003c/code> чи \u003ccode>1f\u003c/code>) — але джерело правди тепер сейв, а не стан програвача.\u003c/p>\n\u003ch3>Заодно вичищено\u003c/h3>\n\u003cp>\u003ccode>MusicUtil\u003c/code> переписаний: замість \u003ccode>currentMusic = MAIN.apply { isLooping = …; coff = … }\u003c/code> — \u003ccode>play(EnumMusic.MAIN)\u003c/code>. Мертвий \u003ccode>volumeLevelFlow\u003c/code> прибрано. \u003ccode>AudioManager\u003c/code> (обгортка над системним) більше ніхто не читає — лишив файл на місці, він знадобиться для audio focus (дзвінок, чужа музика), але зараз у тракті його немає.\u003c/p>\n\u003ch3>Ціна й перевірка\u003c/h3>\n\u003cp>Нуль: одне множення на звук замість двох, потік музики оновлюється лише коли змінилось значення (\u003ccode>distinctUntilChanged\u003c/code>). Три нові поля в сейві з дефолтами — міграція не потрібна за правилами \u003ccode>PlayerDataMigration\u003c/code>.\u003c/p>\n\u003cp>\u003ccode>assembleDebug\u003c/code> — BUILD SUCCESSFUL. Тести: \u003cstrong>8 нових\u003c/strong> (\u003ccode>AudioMixerTest\u003c/code>) + 9 \u003ccode>SoundSynth\u003c/code> + 24 \u003ccode>:engine\u003c/code> + 1 = 42 зелені. Тести стережуть саме те, через що звук уже зникав: що системна гучність не входить у формулу, що −12 дБ на середині, що баланс між звуками не залежить від положення повзунка, що ніщо не вилітає за 0..1.\u003c/p>\n\u003cp>\u003cstrong>Не перевірено:\u003c/strong> як воно звучить. \u003ccode>coff\u003c/code> треку \u003ccode>MAIN = 0.27\u003c/code> — це число з твого старого \u003ccode>//27f\u003c/code>, я його лише переніс у правильне місце; коли ввімкнеш музику, баланс із ефектами треба буде послухати.\u003c/p>", "files": [{"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/util/AudioMixer.kt", "note": "НОВИЙ ФАЙЛ: уся формула гучності в одному місці. curve() = x², запас під суму, шина музики потоком.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.manager.util\n\nimport com.lewydo.orbitdash.game.utils.gdxGame\nimport kotlinx.coroutines.flow.Flow\nimport kotlinx.coroutines.flow.combine\nimport kotlinx.coroutines.flow.distinctUntilChanged\n\n// ----------------------------------------------------------------------------\n//  МІКШЕРНИЙ ПУЛЬТ — ОДНЕ МІСЦЕ, ДЕ ГУЧНІСТЬ ПЕРЕТВОРЮЄТЬСЯ НА ЧИСЛО.\n//\n//  Тракт має рівно три рівні, і в кожного один господар:\n//\n//    coff  ─ АВТОР. Вага ассета в міксі, 0..1. Ставиться раз, при створенні:\n//            у синтезованих звуків рахується з піка рецепта, у треку стоїть\n//            у MusicManager.EnumMusic. Гравець її не бачить і не крутить.\n//    шина  ─ ГРАВЕЦЬ. Повзунки MUSIC і SFX у налаштуваннях, 0..1. Живуть у\n//            сейві (PlayerData.volMusic / volSfx), тож переживають перезапуск.\n//    майстер ─ ГРАВЕЦЬ. Один повзунок на все, 0..1 (PlayerData.volMaster).\n//\n//  І ВСЕ. Системної гучності телефона в формулі НЕМАЄ — її накладає Android\n//  поверх нашого числа. Раніше ми множили на неї самі, і вона прикладалась\n//  двічі: на 50 % гучності гра звучала на 25 %, на 25 % — на 6 %. Саме через\n//  це синтезовані звуки й здавались «відсутніми» (патч 71).\n//\n//  ── Чому повзунок не лінійний ───────────────────────────────────────────\n//  Вухо чує гучність приблизно логарифмічно: половина амплітуди — це не\n//  «удвічі тихіше», а ледь помітно тихіше. Лінійний повзунок тому відчувається\n//  зламаним: перші 70 % ходу майже нічого не міняють, а решта різко глушить.\n//  curve() = x² (−12 дБ на середині) робить хід рівномірним на слух. Кожна\n//  шина проходить криву окремо, тому два повзунки на 50 % дають −24 дБ — так\n//  само, як два фейдери на −12 дБ у справжньому пульті.\n//\n//  ── Запас під суму ──────────────────────────────────────────────────────\n//  SoundPool мікс просто ДОДАЄ доріжки. Тап + гем + комбо можуть зійтись у\n//  тих самих 50 мс і дати суму понад одиницю — це кліп, чутний як тріск.\n//  SFX_HEADROOM лишає 2 дБ запасу; музика його не потребує (доріжка одна).\n// ----------------------------------------------------------------------------\nobject AudioMixer {\n\n    /** Запас під суму одночасних ефектів. ~2 дБ: чутно не стає тихіше, кліпу немає. */\n    const val SFX_HEADROOM = 0.8f\n\n    // ── Чиста математика: без Gdx і без стану, тому тестується на JVM ───────\n\n    /** Повзунок 0..1 → підсилення 0..1. x²: рівномірно на слух, −12 дБ на середині. */\n    fun curve(slider: Float): Float = slider.coerceIn(0f, 1f).let { it * it }\n\n    /**\n     * Фінальне число для `Sound.play()` / `Music.volume`.\n     *\n     * @param coff     вага ассета (автор)\n     * @param bus      повзунок шини (гравець)\n     * @param master   майстер-повзунок (гравець)\n     * @param headroom запас під суму доріжок; 1 = без запасу\n     */\n    fun gain(coff: Float, bus: Float, master: Float, headroom: Float = 1f): Float =\n        (coff.coerceIn(0f, 1f) * curve(bus) * curve(master) * headroom).coerceIn(0f, 1f)\n\n    /** Формула ефекту з ЯВНИМИ повзунками: те саме, що sfx(), але без сейву — тести й дебаг. */\n    fun sfxAt(coff: Float, bus: Float, master: Float, playCoff: Float = 1f): Float =\n        gain(coff * playCoff.coerceIn(0f, 1f), bus, master, SFX_HEADROOM)\n\n    // ── Живі значення з сейву ───────────────────────────────────────────────\n\n    private val player get() = gdxGame.modelPlayer\n\n    /**\n     * Шина музики БЕЗ coff треку: master × music. Трек домножує свій coff сам —\n     * так один потік обслуговує будь-який трек, і зміна повзунка чутна одразу,\n     * поки палець ще на ньому.\n     */\n    val musicBusFlow: Flow\u003cFloat>\n        get() = combine(player.volMasterFlow, player.volMusicFlow) { m, mus ->\n            gain(1f, mus, m)\n        }.distinctUntilChanged()\n\n    /** Те саме значення «просто зараз» — для щойно запущеного треку. */\n    fun musicBus(): Float = gain(1f, player.volMusic, player.volMaster)\n\n    /** Гучність ефекту: вага ассета × шина SFX × майстер × запас. */\n    fun sfx(coff: Float, playCoff: Float = 1f): Float =\n        sfxAt(coff, player.volSfx, player.volMaster, playCoff)\n\n    /** Ефекти вимкнені повзунком — черга навіть не потрібна. */\n    val isSfxSilent: Boolean get() = player.volSfx \u003c= 0f || player.volMaster \u003c= 0f\n}", "id": "1.1"}]}, {"path": "app/src/test/java/com/lewydo/orbitdash/game/manager/util/AudioMixerTest.kt", "note": "НОВИЙ ФАЙЛ: 8 тестів чистої математики — зокрема що системна гучність у формулу НЕ входить.", "lang": "kotlin", "hunks": [{"verb": "create", "where": "створити", "old": null, "new": "package com.lewydo.orbitdash.game.manager.util\n\nimport org.junit.Assert.assertEquals\nimport org.junit.Assert.assertTrue\nimport org.junit.Test\nimport kotlin.math.abs\nimport kotlin.math.log10\n\n/**\n * Чиста математика пульта — без Gdx і без сейву. Стережемо рівно те, через що\n * звук уже одного разу зник: щоб системна гучність не прикладалась двічі,\n * щоб повзунок ішов рівно на слух і щоб нічого не вилітало за 0..1.\n */\nclass AudioMixerTest {\n\n    private fun db(gain: Float) = 20.0 * log10(gain.toDouble())\n\n    @Test\n    fun `усе на максимумі — це запас, а не одиниця`() {\n        // Найгучніший звук каталогу (coff 1) при всіх повзунках на максимум\n        assertEquals(AudioMixer.SFX_HEADROOM, AudioMixer.sfxAt(1f, 1f, 1f), 1e-6f)\n        // а музика запасу не потребує — доріжка одна\n        assertEquals(1f, AudioMixer.gain(1f, 1f, 1f), 1e-6f)\n    }\n\n    @Test\n    fun `повзунок на середині — мінус 12 дБ`() {\n        val g = AudioMixer.gain(1f, 0.5f, 1f)\n        assertEquals(0.25f, g, 1e-6f)\n        assertTrue(\"дБ=${db(g)}\", abs(db(g) + 12.0) \u003c 0.1)\n    }\n\n    @Test\n    fun `два повзунки складаються в дБ, як у пульті`() {\n        // −12 дБ (шина) + −12 дБ (майстер) = −24 дБ\n        val g = AudioMixer.gain(1f, 0.5f, 0.5f)\n        assertEquals(0.0625f, g, 1e-6f)\n        assertTrue(\"дБ=${db(g)}\", abs(db(g) + 24.0) \u003c 0.1)\n    }\n\n    @Test\n    fun `нуль на будь-якому повзунку — тиша`() {\n        assertEquals(0f, AudioMixer.gain(1f, 0f, 1f), 0f)\n        assertEquals(0f, AudioMixer.gain(1f, 1f, 0f), 0f)\n        assertEquals(0f, AudioMixer.gain(0f, 1f, 1f), 0f)\n    }\n\n    @Test\n    fun `вихід завжди в межах 0 до 1`() {\n        // Сміття на вході не має вилетіти за шкалу Sound_play()\n        assertEquals(1f, AudioMixer.gain(5f, 9f, 9f), 1e-6f)\n        assertEquals(0f, AudioMixer.gain(-2f, 1f, 1f), 0f)\n        assertEquals(0f, AudioMixer.gain(1f, -1f, 1f), 0f)\n        assertEquals(1f, AudioMixer.curve(2f), 0f)\n        assertEquals(0f, AudioMixer.curve(-0.5f), 0f)\n    }\n\n    @Test\n    fun `крива монотонна і не має плато`() {\n        var prev = -1f\n        var v = 0f\n        while (v \u003c= 1.0001f) {\n            val g = AudioMixer.curve(v)\n            assertTrue(\"не росте на $v\", g > prev)\n            prev = g\n            v += 0.05f\n        }\n    }\n\n    @Test\n    fun `баланс ассетів зберігається на будь-якому положенні повзунка`() {\n        // Тап (coff 0.23) має лишатись рівно втричі тихішим за орбіту (0.69)\n        // і на максимумі, і на чверті ходу — повзунок не міняє мікс.\n        for (slider in listOf(1f, 0.5f, 0.25f)) {\n            val tap    = AudioMixer.gain(0.23f, slider, 1f)\n            val orbit3 = AudioMixer.gain(0.69f, slider, 1f)\n            assertEquals(\"slider=$slider\", 3f, orbit3 / tap, 1e-4f)\n        }\n    }\n\n    @Test\n    fun `системна гучність у формулу не входить`() {\n        // Єдиний тест, який справді стереже баг патча 71: раніше play()\n        // множив ще й на системну гучність, і та прикладалась двічі.\n        // Якщо хтось поверне множник — тут з'явиться третій аргумент.\n        val g = AudioMixer.gain(0.5f, 1f, 1f)\n        assertEquals(0.5f, g, 1e-6f)\n    }\n}", "id": "2.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/data/SerializableData.kt", "note": "Три повзунки в сейві: volMaster / volMusic / volSfx, дефолт 1. Нові поля з дефолтом — міграція не потрібна.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 44", "old": "    /** Прибирає банер/MREC/interstitial. Rewarded лишається — це не покупка. */\n    val noAds  : Boolean = false,\n)", "new": "    /** Прибирає банер/MREC/interstitial. Rewarded лишається — це не покупка. */\n    val noAds  : Boolean = false,\n\n    // ------------------------------------------------------------------------\n    // Звук — повзунки гравця, 0..1\n    // ------------------------------------------------------------------------\n    //\n    //  Тільки те, що крутить ГРАВЕЦЬ. Вага окремого звуку (coff) — авторська,\n    //  живе в коді, у сейв не потрапляє: інакше перебалансування міксу не\n    //  доїхало б до тих, хто вже грає. Формула — AudioMixer.\n    //\n    //  Дефолт 1: гра має звучати на повну одразу після встановлення, а тихіше\n    //  зробить системний регулятор. Нові поля з дефолтом — міграція не потрібна.\n    //\n    /** Майстер: один повзунок на музику й ефекти разом. */\n    val volMaster : Float = 1f,\n    /** Шина музики. */\n    val volMusic  : Float = 1f,\n    /** Шина ефектів. */\n    val volSfx    : Float = 1f,\n)", "oldMarks": [0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0], "id": "3.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/state/GameState.kt", "note": "Потоки гучності + читання/запис у PlayerData.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 22", "old": "    val orbit3Flow = MutableStateFlow(false)\n    val noAdsFlow  = MutableStateFlow(false)\n\n    /** LOAD SIGNAL", "new": "    val orbit3Flow = MutableStateFlow(false)\n    val noAdsFlow  = MutableStateFlow(false)\n\n    // Звук: повзунки гравця, 0..1 (формула — AudioMixer)\n    val volMasterFlow = MutableStateFlow(1f)\n    val volMusicFlow  = MutableStateFlow(1f)\n    val volSfxFlow    = MutableStateFlow(1f)\n\n    /** LOAD SIGNAL", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 0, 0], "id": "4.1"}, {"verb": "add", "where": "біля рядка 48", "old": "        noAdsFlow.value  = data.noAds\n\n        // Старий сейв без pid → народжуємо тут: loadFrom — єдине місце, де\n        // стан гарантовано проходить при кожному запуску, і міграція", "new": "        noAdsFlow.value  = data.noAds\n\n        volMasterFlow.value = data.volMaster\n        volMusicFlow.value  = data.volMusic\n        volSfxFlow.value    = data.volSfx\n\n        // Старий сейв без pid → народжуємо тут: loadFrom — єдине місце, де\n        // стан гарантовано проходить при кожному запуску, і міграція", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "4.2"}, {"verb": "add", "where": "біля рядка 68", "old": "        orbit3 = orbit3Flow.value,\n        noAds  = noAdsFlow.value,\n    )\n", "new": "        orbit3 = orbit3Flow.value,\n        noAds  = noAdsFlow.value,\n\n        volMaster = volMasterFlow.value,\n        volMusic  = volMusicFlow.value,\n        volSfx    = volSfxFlow.value,\n    )\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "4.3"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/model/PlayerModel.kt", "note": "Потоки, знімки й сеттери гучності. saveGame() навмисно не кличемо — повзунок тягнуть пальцем.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 45", "old": "    val noAdsFlow    = state.noAdsFlow\n\n    val isLoadedFlow = state.isLoadedFlow\n", "new": "    val noAdsFlow    = state.noAdsFlow\n\n    val volMasterFlow = state.volMasterFlow\n    val volMusicFlow  = state.volMusicFlow\n    val volSfxFlow    = state.volSfxFlow\n\n    val isLoadedFlow = state.isLoadedFlow\n", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "5.1"}, {"verb": "add", "where": "біля рядка 59", "old": "    val noAds : Boolean get() = state.noAdsFlow.value\n\n    /** Читати тільки ПІСЛЯ isLoadedFlow: до завантаження тут порожньо. */\n    val pid: String get() = state.pidFlow.value", "new": "    val noAds : Boolean get() = state.noAdsFlow.value\n\n    val volMaster: Float get() = state.volMasterFlow.value\n    val volMusic : Float get() = state.volMusicFlow.value\n    val volSfx   : Float get() = state.volSfxFlow.value\n\n    /** Читати тільки ПІСЛЯ isLoadedFlow: до завантаження тут порожньо. */\n    val pid: String get() = state.pidFlow.value", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "5.2"}, {"verb": "add", "where": "біля рядка 71", "old": "        AnalyticsManager.setActiveSkin(ThemeManager.nameOf(id))\n    }\n\n    // ------------------------------------------------------------------------", "new": "        AnalyticsManager.setActiveSkin(ThemeManager.nameOf(id))\n    }\n\n    // ------------------------------------------------------------------------\n    // Audio\n    // ------------------------------------------------------------------------\n    //\n    //  Повзунок тягнуть пальцем — значення міняється десятки разів на секунду.\n    //  Тому saveGame() тут НЕ кличемо: досить автозбереження (30 с) і запису\n    //  на паузі, а диск не молотить під кожен піксель ходу повзунка.\n    //\n    fun setMasterVolume(v: Float) { state.volMasterFlow.value = v.coerceIn(0f, 1f) }\n    fun setMusicVolume (v: Float) { state.volMusicFlow.value  = v.coerceIn(0f, 1f) }\n    fun setSfxVolume   (v: Float) { state.volSfxFlow.value    = v.coerceIn(0f, 1f) }\n\n    // ------------------------------------------------------------------------", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "5.3"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/SoundSynth.kt", "note": "loudestPeak — опора відносного міксу замість магічного множника.", "lang": "kotlin", "hunks": [{"verb": "add", "where": "біля рядка 140", "old": "    private val peaks  = HashMap\u003cSfx, Float>()\n\n    /** Запекти все з каталогу. Кличеться з лоадера — SoundPool довантажує асинхронно. */\n    fun bakeAll(all: List\u003cSfx>) {", "new": "    private val peaks  = HashMap\u003cSfx, Float>()\n\n    /**\n     * Пік найгучнішого рецепта каталогу — опора відносного міксу.\n     *\n     * Кожен wav нормалізовано до повної шкали (усі 16 біт у діло, без шуму\n     * квантування на тихих звуках), тож гучність повертає coff = peak/loudest:\n     * найгучніший звук іде на 1.0, решта — у пропорції прототипу.\n     */\n    var loudestPeak = 1f; private set\n\n    /** Запекти все з каталогу. Кличеться з лоадера — SoundPool довантажує асинхронно. */\n    fun bakeAll(all: List\u003cSfx>) {", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "id": "6.1"}, {"verb": "replace", "where": "біля рядка 159", "old": "            sounds[sfx] = Gdx.audio.newSound(file)\n        }\n        log(\"SoundSynth: ${all.size} sfx, written $written → ${dir.path()}\")\n    }\n", "new": "            sounds[sfx] = Gdx.audio.newSound(file)\n        }\n        loudestPeak = peaks.values.maxOrNull()?.takeIf { it > 0f } ?: 1f\n        log(\"SoundSynth: ${all.size} sfx, written $written, loudest $loudestPeak → ${dir.path()}\")\n    }\n", "oldMarks": [0, 0, 1, 0, 0], "newMarks": [0, 0, 1, 1, 0, 0], "id": "6.2"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/util/SoundUtil.kt", "note": "Гучність через AudioMixer; системна гучність і SYNTH_GAIN прибрані; coff = пік/найгучніший.", "lang": "kotlin", "hunks": [{"verb": "remove", "where": "біля рядка 5", "old": "import com.lewydo.orbitdash.game.content.Sfx\nimport com.lewydo.orbitdash.game.content.SfxCatalog\nimport com.lewydo.orbitdash.game.manager.AudioManager\nimport com.lewydo.orbitdash.game.utils.gdxGame\nimport kotlinx.coroutines.CoroutineScope", "new": "import com.lewydo.orbitdash.game.content.Sfx\nimport com.lewydo.orbitdash.game.content.SfxCatalog\nimport com.lewydo.orbitdash.game.utils.gdxGame\nimport kotlinx.coroutines.CoroutineScope", "oldMarks": [0, 0, 1, 0, 0], "newMarks": [0, 0, 0, 0], "id": "7.1"}, {"verb": "add", "where": "біля рядка 24", "old": "//      «доганяються» — інакше звук відстає від картинки.\n//\n//   Власний scope (як у MusicUtil) + Disposable: самодостатньо, не залежить\n//   від порядку скасування gdxGame.coroutine.", "new": "//      «доганяються» — інакше звук відстає від картинки.\n//\n//   4. ГУЧНІСТЬ — не тут. Фінальне число дає AudioMixer: coff ассета × шина\n//      SFX × майстер × запас. Системної гучності телефона у формулі немає,\n//      її накладає Android поверх.\n//\n//   Власний scope (як у MusicUtil) + Disposable: самодостатньо, не залежить\n//   від порядку скасування gdxGame.coroutine.", "oldMarks": [0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 0, 0], "id": "7.2"}, {"verb": "replace", "where": "біля рядка 30", "old": "class SoundUtil : Disposable {\n\n    private companion object {\n        const val QUEUE_CAPACITY = 8\n        /**\n         * Множник синтезованих звуків: vol прототипу → динамік телефона.\n         *\n         * 3.2 = 1 / 0.31, де 0.31 — пік найгучнішого рецепта (ORBIT3, два шари).\n         * Потрібен, бо гучність приїжджає ДВІЧІ: wav уже нормалізовано до повної\n         * шкали, а coff = vol прототипу (0.06..0.31) тоді вдруге його притискає —\n         * тап виходив на 4 % шкали проти 60 % у старого click.mp3, тобто нечутно.\n         * Множник повертає абсолютний рівень, лишаючи баланс прототипу між звуками.\n         */\n        const val SYNTH_GAIN = 3.2f\n    }\n\n    // ── Синтезовані звуки (SoundSynth) ──────────────────────────────────────", "new": "class SoundUtil : Disposable {\n\n    private companion object { const val QUEUE_CAPACITY = 8 }\n\n    // ── Синтезовані звуки (SoundSynth) ──────────────────────────────────────", "oldMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "7.3"}, {"verb": "replace", "where": "біля рядка 49", "old": "    private val bySfx = HashMap\u003cSfx, AdvancedSound>()\n\n    /** Обгортка над запеченим семплом; coff = vol прототипу (wav нормалізовано). */\n    fun sound(sfx: Sfx): AdvancedSound =\n        bySfx.getOrPut(sfx) { AdvancedSound(synth.sound(sfx), synth.peak(sfx) * SYNTH_GAIN) }\n\n    /** Відтворити подію з каталогу. */", "new": "    private val bySfx = HashMap\u003cSfx, AdvancedSound>()\n\n    /**\n     * Обгортка над запеченим семплом.\n     *\n     * coff = пік рецепта / пік найгучнішого рецепта: найгучніший звук каталогу\n     * іде на 1.0, решта — у пропорції прототипу. Не абсолютний vol із JSX:\n     * wav уже нормалізовано, тож vol удруге притиснув би тап до 4 % шкали.\n     */\n    fun sound(sfx: Sfx): AdvancedSound =\n        bySfx.getOrPut(sfx) { AdvancedSound(synth.sound(sfx), synth.peak(sfx) / synth.loudestPeak) }\n\n    /** Відтворити подію з каталогу. */", "oldMarks": [0, 0, 1, 0, 1, 0, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0], "id": "7.4"}, {"verb": "remove", "where": "біля рядка 59", "old": "    val CLICK     = sound(SfxCatalog.UI_TICK)\n    val CHECK_BOX = sound(SfxCatalog.CHECK_BOX)\n\n    // 0..100\n    var volumeLevel = AudioManager.volumeLevelPercent\n\n    var isPause = (volumeLevel \u003c= 0f)\n\n    // ── Директор ─────────────────────────────────────────────────────────────", "new": "    val CLICK     = sound(SfxCatalog.UI_TICK)\n    val CHECK_BOX = sound(SfxCatalog.CHECK_BOX)\n\n    // ── Директор ─────────────────────────────────────────────────────────────", "oldMarks": [0, 0, 1, 1, 1, 1, 1, 0, 0], "newMarks": [0, 0, 0, 0], "id": "7.5"}, {"verb": "replace", "where": "біля рядка 85", "old": "    /** Відтворити з тротлінгом. GL-потік НЕ блокується. */\n    fun play(advancedSound: AdvancedSound, playCoff: Float = 1f) {\n        if (isPause) return\n\n        val now = System.currentTimeMillis()", "new": "    /** Відтворити з тротлінгом. GL-потік НЕ блокується. */\n    fun play(advancedSound: AdvancedSound, playCoff: Float = 1f) {\n        if (AudioMixer.isSfxSilent) return\n\n        val now = System.currentTimeMillis()", "oldMarks": [0, 0, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "7.6"}, {"verb": "replace", "where": "біля рядка 91", "old": "        advancedSound.lastPlayMs = now\n\n        val volume = ((volumeLevel / 100f) * advancedSound.coff) * playCoff\n        channel.trySend(PlayRequest(advancedSound.sound, volume))\n    }\n", "new": "        advancedSound.lastPlayMs = now\n\n        channel.trySend(PlayRequest(advancedSound.sound, AudioMixer.sfx(advancedSound.coff, playCoff)))\n    }\n", "oldMarks": [0, 0, 1, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "7.7"}, {"verb": "replace", "where": "біля рядка 102", "old": "    private class PlayRequest(val sound: Sound, val volume: Float)\n\n    /** coff — гучність; throttleMs — мін. інтервал між повторами ЦЬОГО звуку. */\n    class AdvancedSound(\n        val sound: Sound,", "new": "    private class PlayRequest(val sound: Sound, val volume: Float)\n\n    /** coff — вага в міксі 0..1 (автор); throttleMs — мін. інтервал між повторами ЦЬОГО звуку. */\n    class AdvancedSound(\n        val sound: Sound,", "oldMarks": [0, 0, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "7.8"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/util/MusicUtil.kt", "note": "Переписано: play(EnumMusic) / stop(), підписка на шину мікшера, мертвий volumeLevelFlow прибрано.", "lang": "kotlin", "hunks": [{"verb": "replace", "where": "біля рядка 1", "old": "package com.lewydo.orbitdash.game.manager.util\n\nimport com.badlogic.gdx.audio.Music\nimport com.badlogic.gdx.utils.Disposable\nimport com.lewydo.orbitdash.game.manager.AudioManager\nimport com.lewydo.orbitdash.game.utils.runGDX\nimport com.lewydo.orbitdash.util.cancelCoroutinesAll\nimport com.lewydo.orbitdash.game.manager.MusicManager\nimport kotlinx.coroutines.CoroutineScope\nimport kotlinx.coroutines.Dispatchers\nimport kotlinx.coroutines.flow.MutableStateFlow\nimport kotlinx.coroutines.launch\nimport kotlin.div\nimport kotlin.times\n\nclass MusicUtil: Disposable {\n\n    private val coroutine = CoroutineScope(Dispatchers.Default)\n\n    val MAIN = MusicManager.EnumMusic.MAIN.data.music\n\n    // 0..100\n    val volumeLevelFlow = MutableStateFlow(AudioManager.volumeLevelPercent)\n\n    var coff = 1f\n\n    private var lastMusic: Music? = null\n    var currentMusic: Music?\n        get() = lastMusic\n        set(value) { runGDX {\n            if (value != null) {\n                if (lastMusic != value) {\n                    lastMusic?.stop()\n                    lastMusic = value\n                    lastMusic?.volume = (volumeLevelFlow.value / 100f) * coff\n                    lastMusic?.play()\n                }\n            } else {\n                lastMusic?.stop()\n                lastMusic = null\n            }\n        } }\n\n    init {\n        coroutine.launch { volumeLevelFlow.collect { level -> runGDX { lastMusic?.volume = (level / 100f) * coff } } }\n    }\n\n    override fun dispose() {\n        cancelCoroutinesAll(coroutine)\n        lastMusic = null\n        currentMusic  = null\n    }\n\n}", "new": "package com.lewydo.orbitdash.game.manager.util\n\nimport com.badlogic.gdx.utils.Disposable\nimport com.lewydo.orbitdash.game.manager.MusicManager\nimport com.lewydo.orbitdash.game.utils.runGDX\nimport com.lewydo.orbitdash.util.cancelCoroutinesAll\nimport kotlinx.coroutines.CoroutineScope\nimport kotlinx.coroutines.Dispatchers\nimport kotlinx.coroutines.launch\n\n// ----------------------------------------------------------------------------\n//  МУЗИКА — ОДНА ДОРІЖКА, ЯКА ЗАВЖДИ ЗНАЄ СВОЮ ГУЧНІСТЬ.\n//\n//  Грає не більше одного треку: другий play() глушить перший. Гучність не\n//  рахується тут — її дає AudioMixer (master × повзунок MUSIC), а трек\n//  домножує власний coff із MusicManager.EnumMusic.\n//\n//  Повзунок тягнуть пальцем — тому не «перечитати при старті треку», а\n//  ПІДПИСКА: collect на шину мікшера ставить volume, поки палець ще на\n//  повзунку. Це і є та причина, через яку гучність живе у Flow, а не в полі.\n// ----------------------------------------------------------------------------\nclass MusicUtil : Disposable {\n\n    private val coroutine = CoroutineScope(Dispatchers.Default)\n\n    // ── Field ───────────────────────────────────────────────────────────────\n\n    /** Що грає зараз. null — тиша. */\n    var current: MusicManager.EnumMusic? = null\n        private set\n\n    private val coff get() = current?.data?.coff ?: 1f\n\n    init {\n        // Шина змінилась (повзунок, майстер) → миттєво на доріжку.\n        coroutine.launch {\n            AudioMixer.musicBusFlow.collect { bus ->\n                runGDX { current?.data?.music?.volume = bus * coff }\n            }\n        }\n    }\n\n    // ── API ─────────────────────────────────────────────────────────────────\n\n    /** Запустити трек. Той самий трек удруге — нічого не робить, не перезапускає. */\n    fun play(music: MusicManager.EnumMusic, looping: Boolean = true) = runGDX {\n        if (current == music) return@runGDX\n        current?.data?.music?.stop()\n        current = music\n        music.data.music.apply {\n            isLooping = looping\n            volume    = AudioMixer.musicBus() * music.data.coff\n            play()\n        }\n    }\n\n    fun stop() = runGDX {\n        current?.data?.music?.stop()\n        current = null\n    }\n\n    /** Гучність доріжки просто зараз — для дебаг-панелі й тестів на пристрої. */\n    val volume: Float get() = current?.data?.music?.volume ?: 0f\n\n    override fun dispose() {\n        cancelCoroutinesAll(coroutine)\n        current = null\n    }\n}", "oldMarks": [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0], "newMarks": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0], "id": "8.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/manager/MusicManager.kt", "note": "coff у самого треку: MAIN = 0.27 — те число з //27f, тільки в правильному місці.", "lang": "kotlin", "hunks": [{"verb": "replace", "where": "біля рядка 18", "old": "\n    enum class EnumMusic(val data: MusicData) {\n        MAIN(MusicData(\"music/main.mp3\")),\n    }\n\n    data class MusicData(\n        val path: String,\n    ) {\n        lateinit var music: Music", "new": "\n    enum class EnumMusic(val data: MusicData) {\n        /** coff 0.27 — трек голосний сам по собі; під ним ще мають читатись ефекти. */\n        MAIN(MusicData(\"music/main.mp3\", coff = 0.27f)),\n    }\n\n    /** coff — вага треку в міксі, 0..1. Авторська, не повзунок гравця (AudioMixer). */\n    data class MusicData(\n        val path: String,\n        val coff: Float = 1f,\n    ) {\n        lateinit var music: Music", "oldMarks": [0, 0, 1, 0, 0, 0, 0, 0, 0], "newMarks": [0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0], "id": "9.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/utils/Settings.kt", "note": "MASTER/MUSIC/SFX_VOLUME над сейвом; IS_MUSIC більше не читається зі стану програвача.", "lang": "kotlin", "hunks": [{"verb": "replace", "where": "біля рядка 10", "old": "        }\n\n    var IS_SOUND: Boolean\n        get() = gdxGame.soundUtil.isPause.not()\n        set(value) {\n            gdxGame.soundUtil.isPause = !value\n        }\n\n    var IS_MUSIC: Boolean\n        get() = gdxGame.musicUtil.currentMusic?.isPlaying ?: false\n        set(value) {\n            if (value) gdxGame.musicUtil.currentMusic?.play()\n            else gdxGame.musicUtil.currentMusic?.pause()\n        }\n}", "new": "        }\n\n    // ------------------------------------------------------------------------\n    // Звук — три повзунки, 0..1\n    // ------------------------------------------------------------------------\n    //\n    //  Джерело правди — сейв (PlayerData), а не стан програвача. Раніше\n    //  IS_MUSIC читався як currentMusic.isPlaying, тобто «налаштування»\n    //  самовільно перемикалось щоразу, коли музику глушила реклама або пауза.\n    //\n    var MASTER_VOLUME: Float\n        get() = gdxGame.modelPlayer.volMaster\n        set(value) { gdxGame.modelPlayer.setMasterVolume(value) }\n\n    var MUSIC_VOLUME: Float\n        get() = gdxGame.modelPlayer.volMusic\n        set(value) { gdxGame.modelPlayer.setMusicVolume(value) }\n\n    var SFX_VOLUME: Float\n        get() = gdxGame.modelPlayer.volSfx\n        set(value) { gdxGame.modelPlayer.setSfxVolume(value) }\n\n    /** Тумблер над повзунком: вимкнути — 0, увімкнути — на повну. */\n    var IS_SOUND: Boolean\n        get() = SFX_VOLUME > 0f\n        set(value) { SFX_VOLUME = if (value) 1f else 0f }\n\n    var IS_MUSIC: Boolean\n        get() = MUSIC_VOLUME > 0f\n        set(value) { MUSIC_VOLUME = if (value) 1f else 0f }\n}", "oldMarks": [0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0], "newMarks": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0], "id": "10.1"}]}, {"path": "app/src/main/java/com/lewydo/orbitdash/game/screens/LoaderScreen.kt", "note": "musicUtil.play(MusicManager.EnumMusic.MAIN) замість currentMusic = MAIN.apply { … }.", "lang": "kotlin", "hunks": [{"verb": "replace", "where": "біля рядка 191", "old": "            gdxGame.soundUtil.play(SfxCatalog.READY)   // з'явилось «TAP TO START»\n\n            gdxGame.musicUtil.apply { currentMusic = MAIN.apply {\n                isLooping = true\n                coff      = 0f//27f\n            } }\n\n            gdxGame.activity.adManager.showBanner()", "new": "            gdxGame.soundUtil.play(SfxCatalog.READY)   // з'явилось «TAP TO START»\n\n            gdxGame.musicUtil.play(MusicManager.EnumMusic.MAIN)\n\n            gdxGame.activity.adManager.showBanner()", "oldMarks": [0, 0, 1, 1, 1, 1, 0, 0], "newMarks": [0, 0, 1, 0, 0], "id": "11.1"}]}], "state": {"submitted": "2026-09-22T11:54:03.825Z", "hunks": {"1.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "2.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "3.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "4.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "4.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "4.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "5.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "5.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "5.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "6.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "6.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.2": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.3": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.4": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.5": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.6": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.7": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "7.8": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "8.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "9.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "10.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}, "11.1": {"choice": "auto", "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z"}}}, "result": {"ok": true, "by": "claude", "at": "2026-09-22T12:00:00.000Z", "note": "усі 23 вставлено; проєкт = лабораторія байт у байт; assembleDebug OK; 42 тести зелені; на e48e5230 — 61 FPS, 41 sfx із кешу, loudest 0.3087, музика вперше реально грає (MediaPlayer state:started), volMaster/volMusic/volSfx = 1.0 у сейві"}}}</script><script id="app">
+(function () {
+  "use strict";
+
+  const data = JSON.parse(document.getElementById("patch-data").textContent);
+  const state = data.state || (data.state = {});
+  state.hunks = state.hunks || {};
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const fmtTime = (iso) => {
+    try { return new Date(iso).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return iso || ""; }
+  };
+
+  const allHunks = [];
+  data.files.forEach((f) => f.hunks.forEach((h) => allHunks.push(h)));
+
+  const submitted = () => !!state.submitted;
+  const hasResults = () => allHunks.some((h) => state.hunks[h.id] && state.hunks[h.id].result);
+
+  // Чернетка вибору до «Готово» — лише в цьому браузері; не вдалось — не страшно
+  const DRAFT_KEY = "patch-draft-" + data.id;
+  function loadDraft() {
+    if (submitted()) return;
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+      Object.keys(d).forEach((id) => {
+        if (allHunks.some((h) => h.id === id)) state.hunks[id] = { choice: d[id] };
+      });
+    } catch (e) { /* немає сховища */ }
+  }
+  function saveDraft() {
+    try {
+      const d = {};
+      Object.keys(state.hunks).forEach((id) => { if (state.hunks[id].choice) d[id] = state.hunks[id].choice; });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) { /* немає сховища */ }
+  }
+
+  // ── підсвітка: блок цілком (коментарі на кілька рядків), потім різання на рядки ──
+  function highlight(text, lang) {
+    const hl = window.hljs;
+    if (!hl || !lang || !hl.getLanguage(lang)) return null;
+    try { return hl.highlight(text, { language: lang, ignoreIllegals: true }).value; }
+    catch (e) { return null; }
+  }
+  function splitHtmlLines(htmlText) {
+    const lines = [];
+    let cur = "";
+    const open = [];
+    const re = /(<span[^>]*>)|(<\/span>)|(\n)|([^<\n]+|<(?!\/?span)[^>]*>)/g;
+    let m;
+    while ((m = re.exec(htmlText))) {
+      if (m[1]) { open.push(m[1]); cur += m[1]; }
+      else if (m[2]) { open.pop(); cur += m[2]; }
+      else if (m[3]) { cur += "</span>".repeat(open.length); lines.push(cur); cur = open.join(""); }
+      else cur += m[4];
+    }
+    lines.push(cur);
+    return lines;
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+
+  function codeBlock(kind, label, text, marks, lang) {
+    const box = el("div", "code " + kind);
+    const head = el("div", "code-label");
+    head.appendChild(el("span", null, label));
+    const btn = el("button", "copy", "Копіювати");
+    btn.type = "button";
+    btn.addEventListener("click", async () => {
+      const ok = await copyText(text);
+      btn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => { btn.textContent = "Копіювати"; }, 1600);
+    });
+    head.appendChild(btn);
+    box.appendChild(head);
+
+    const pre = el("pre");
+    const code = el("code");
+    const hl = highlight(text, lang);
+    const lines = hl != null ? splitHtmlLines(hl) : text.split("\n").map(escapeHtml);
+    code.innerHTML = lines.map((l, i) => {
+      const cls = marks ? (marks[i] ? "ln chg" : "ln ctx") : "ln";
+      return '<span class="' + cls + '">' + (l || "") + "</span>";
+    }).join("");
+    pre.appendChild(code);
+    box.appendChild(pre);
+    return box;
+  }
+
+  const VERB = { replace: "ЗАМІНИТИ", add: "ДОДАТИ", remove: "ВИДАЛИТИ", create: "НОВИЙ ФАЙЛ", delete: "ВИДАЛИТИ ФАЙЛ" };
+
+  function hunkStatus(h) {
+    const s = state.hunks[h.id];
+    if (!s || !s.choice) return el("span", "pill new", "не обрано");
+    if (s.result) {
+      const p = el("span", "pill " + (s.result.ok ? "done" : "fail"), s.result.note || (s.result.ok ? "готово" : "не вийшло"));
+      return p;
+    }
+    if (submitted()) return el("span", "pill pending", s.choice === "auto" ? "Claude вставляє" : "Claude перевіряє");
+    return null;
+  }
+
+  function setChoice(id, choice) {
+    if (submitted()) return;
+    const s = state.hunks[id] || (state.hunks[id] = {});
+    s.choice = s.choice === choice ? null : choice;
+    saveDraft();
+    render();
+  }
+
+  function renderPage() {
+    const root = $("root");
+    const scrollY = window.scrollY;
+    root.textContent = "";
+
+    const head = el("header", "head");
+    const eyebrow = el("div", "eyebrow");
+    eyebrow.appendChild(el("span", "num", "патч " + data.id));
+    if (data.date) eyebrow.appendChild(el("span", null, data.date));
+    head.appendChild(eyebrow);
+    head.appendChild(el("h1", null, data.title));
+    root.appendChild(head);
+
+    // summaryHtml генерує Claude з власного .md — довірений вміст
+    const summary = el("section", "summary");
+    summary.innerHTML = data.summaryHtml || "";
+    root.appendChild(summary);
+
+    const steps = el("section", "steps");
+    const t = el("div", "steps-title");
+    t.appendChild(el("h2", null, "Зміни"));
+    t.appendChild(el("p", null, (data.order ? data.order + " " : "") +
+      "Біля кожної зміни обери, хто її вставляє, потім «Готово» внизу."));
+    steps.appendChild(t);
+
+    const locked = submitted();
+    data.files.forEach((f, fi) => {
+      const card = el("article", "file");
+      const fh = el("div", "file-head");
+      const fid = el("div", "file-id");
+      fid.appendChild(el("span", "idx", String(fi + 1)));
+      fid.appendChild(el("span", "path", f.path));
+      fh.appendChild(fid);
+      if (f.hunks.length > 1) {
+        const all = el("div", "file-all");
+        all.appendChild(el("span", null, "увесь файл:"));
+        [["self", "сам"], ["auto", "авто"]].forEach(([c, label]) => {
+          const b = el("button", "link", label);
+          b.type = "button";
+          b.disabled = locked;
+          b.addEventListener("click", () => {
+            f.hunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = c === "self" ? "manual" : "auto"; });
+            saveDraft(); render();
+          });
+          all.appendChild(b);
+        });
+        fh.appendChild(all);
+      }
+      card.appendChild(fh);
+      if (f.note) card.appendChild(el("p", "file-note", f.note));
+
+      f.hunks.forEach((h) => {
+        const hb = el("div", "hunk");
+        const top = el("div", "hunk-top");
+        const ht = el("div", "hunk-title");
+        ht.appendChild(el("span", "hid", h.id));
+        ht.appendChild(el("span", "verb " + h.verb, VERB[h.verb] || h.verb));
+        if (h.where) ht.appendChild(el("span", "where", h.where));
+        const st = hunkStatus(h);
+        if (st && (locked || !state.hunks[h.id] || !state.hunks[h.id].choice)) ht.appendChild(st);
+        top.appendChild(ht);
+
+        const choice = el("div", "choice");
+        choice.setAttribute("role", "group");
+        choice.setAttribute("aria-label", "Хто вставляє зміну " + h.id);
+        const cur = (state.hunks[h.id] || {}).choice;
+        [["manual", "self", "Вставив сам"], ["auto", "auto", "Вставити автоматично"]].forEach(([val, cls, label]) => {
+          const b = el("button", cls, label);
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(cur === val));
+          b.disabled = locked;
+          b.addEventListener("click", () => setChoice(h.id, val));
+          choice.appendChild(b);
+        });
+        top.appendChild(choice);
+        hb.appendChild(top);
+
+        const lang = h.lang || f.lang;
+        if (h.old != null) hb.appendChild(codeBlock("old", h.verb === "add" ? "Знайти (вже є у файлі)" : "Було", h.old, h.oldMarks, lang));
+        if (h.new != null) hb.appendChild(codeBlock("new", h.verb === "create" ? "Файл цілком" : "Стало", h.new, h.newMarks, lang));
+        card.appendChild(hb);
+      });
+      steps.appendChild(card);
+    });
+    root.appendChild(steps);
+    window.scrollTo(0, scrollY);
+  }
+
+  // ── панель ───────────────────────────────────────────────────────────
+  let artifactApi = null;
+  let busy = false;
+
+  function counts() {
+    let self = 0, auto = 0, none = 0;
+    allHunks.forEach((h) => {
+      const c = (state.hunks[h.id] || {}).choice;
+      if (c === "manual") self++; else if (c === "auto") auto++; else none++;
+    });
+    return { self, auto, none };
+  }
+
+  function renderBar() {
+    const status = $("status"), bulk = $("bulk"), send = $("send");
+    status.textContent = ""; bulk.textContent = "";
+    const c = counts();
+
+    if (state.result) {
+      status.appendChild(el("span", "pill " + (state.result.ok ? "done" : "fail"), state.result.ok ? "Готово" : "Є проблеми"));
+      status.appendChild(el("span", null, fmtTime(state.result.at)));
+      if (state.result.note) status.appendChild(el("span", "note", state.result.note));
+      send.hidden = true;
+      return;
+    }
+
+    const tally = el("span", "tally", "сам " + c.self + " · авто " + c.auto + (c.none ? " · не обрано " + c.none : ""));
+    status.appendChild(tally);
+
+    if (submitted()) {
+      status.appendChild(el("span", "pill pending", "Надіслано"));
+      status.appendChild(el("span", "note", fmtTime(state.submitted) + " — Claude вставить «авто», перевірить «сам» і збере проєкт"));
+      send.hidden = hasResults();
+      send.className = "send ghost";
+      send.textContent = "Змінити вибір";
+      send.disabled = !artifactApi || busy;
+      return;
+    }
+
+    if (!artifactApi) status.appendChild(el("span", "note", "надіслати можна на claude.ai; інакше напиши в чат"));
+    else if (c.none) status.appendChild(el("span", "note", "обери для кожної зміни"));
+
+    bulk.appendChild(el("span", null, "усе одразу:"));
+    [["manual", "усе сам"], ["auto", "усе автоматично"], [null, "очистити"]].forEach(([val, label]) => {
+      const b = el("button", "link", label);
+      b.type = "button";
+      b.addEventListener("click", () => {
+        allHunks.forEach((h) => { (state.hunks[h.id] || (state.hunks[h.id] = {})).choice = val; });
+        saveDraft(); render();
+      });
+      bulk.appendChild(b);
+    });
+
+    send.hidden = false;
+    send.className = "send";
+    send.textContent = c.none ? "Готово — ще " + c.none + " без вибору" : "Готово — надіслати Claude";
+    send.disabled = !artifactApi || busy || c.none > 0;
+  }
+
+  function render() { renderPage(); renderBar(); }
+
+  // Документ = незмінні частини + новий стан; живий DOM не серіалізуємо
+  const HEAD_EXTRA =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>' +
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/glsl.min.js"><\/script>';
+  const BAR =
+    '<div class="bar" id="bar"><div class="bar-inner">' +
+    '<div class="status" id="status"></div><div class="bulk" id="bulk"></div>' +
+    '<button class="send" id="send" type="button">Готово — надіслати Claude</button>' +
+    '</div></div>';
+
+  function buildDocument() {
+    const style = document.getElementById("style").outerHTML;
+    const app = document.getElementById("app").textContent;
+    const json = JSON.stringify(data).replace(/</g, "\\u003c");
+    return "<!doctype html><html lang=\"uk\"><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>" + document.title.replace(/</g, "&lt;") + "</title>" + HEAD_EXTRA + style +
+      "</head><body><main class=\"page\" id=\"root\"></main>" + BAR +
+      "<script id=\"patch-data\" type=\"application/json\">" + json + "<\/script>" +
+      "<script id=\"app\">" + app + "<\/script></body></html>";
+  }
+
+  async function publish() {
+    busy = true; renderBar();
+    try {
+      await artifactApi.publish(buildDocument());
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* немає сховища */ }
+    } catch (e) {
+      busy = false;
+      const code = e && e.code;
+      if (code === "conflict") return;
+      state.submitted = null;
+      render();
+      $("status").appendChild(el("span", "note", code === "not_writer" || code === "not_granted"
+        ? "у тебе немає права змінювати цю сторінку"
+        : "не вдалось надіслати — напиши в чат"));
+    }
+  }
+
+  $("send").addEventListener("click", () => {
+    if (!artifactApi || busy) return;
+    if (submitted()) {           // «Змінити вибір» — поки Claude не почав
+      if (hasResults()) return;
+      state.submitted = null;
+    } else {
+      if (counts().none > 0) return;
+      state.submitted = new Date().toISOString();
+    }
+    publish();
+  });
+
+  loadDraft();
+  render();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("artifact").then((api) => { artifactApi = api; renderBar(); })
+      .catch(() => { artifactApi = null; renderBar(); });
+  }
+})();
+</script></body></html>

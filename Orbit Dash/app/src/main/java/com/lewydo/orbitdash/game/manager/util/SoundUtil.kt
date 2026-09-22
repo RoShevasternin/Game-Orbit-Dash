@@ -4,7 +4,6 @@ import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.utils.Disposable
 import com.lewydo.orbitdash.game.content.Sfx
 import com.lewydo.orbitdash.game.content.SfxCatalog
-import com.lewydo.orbitdash.game.manager.AudioManager
 import com.lewydo.orbitdash.game.utils.gdxGame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,34 +22,32 @@ import kotlinx.coroutines.launch
 //   3. DROP_LATEST при переповненні (8): при спамі зайві скидаються, а не
 //      «доганяються» — інакше звук відстає від картинки.
 //
+//   4. ГУЧНІСТЬ — не тут. Фінальне число дає AudioMixer: coff ассета × шина
+//      SFX × майстер × запас. Системної гучності телефона у формулі немає,
+//      її накладає Android поверх.
+//
 //   Власний scope (як у MusicUtil) + Disposable: самодостатньо, не залежить
 //   від порядку скасування gdxGame.coroutine.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class SoundUtil : Disposable {
 
-    private companion object {
-        const val QUEUE_CAPACITY = 8
-        /**
-         * Множник синтезованих звуків: vol прототипу → динамік телефона.
-         *
-         * 3.2 = 1 / 0.31, де 0.31 — пік найгучнішого рецепта (ORBIT3, два шари).
-         * Потрібен, бо гучність приїжджає ДВІЧІ: wav уже нормалізовано до повної
-         * шкали, а coff = vol прототипу (0.06..0.31) тоді вдруге його притискає —
-         * тап виходив на 4 % шкали проти 60 % у старого click.mp3, тобто нечутно.
-         * Множник повертає абсолютний рівень, лишаючи баланс прототипу між звуками.
-         */
-        const val SYNTH_GAIN = 3.2f
-    }
+    private companion object { const val QUEUE_CAPACITY = 8 }
 
     // ── Синтезовані звуки (SoundSynth) ──────────────────────────────────────
     //  Один AdvancedSound на Sfx: тротлінг живе в ньому, тому кешуємо.
     private val synth = gdxGame.soundSynth
     private val bySfx = HashMap<Sfx, AdvancedSound>()
 
-    /** Обгортка над запеченим семплом; coff = vol прототипу (wav нормалізовано). */
+    /**
+     * Обгортка над запеченим семплом.
+     *
+     * coff = пік рецепта / пік найгучнішого рецепта: найгучніший звук каталогу
+     * іде на 1.0, решта — у пропорції прототипу. Не абсолютний vol із JSX:
+     * wav уже нормалізовано, тож vol удруге притиснув би тап до 4 % шкали.
+     */
     fun sound(sfx: Sfx): AdvancedSound =
-        bySfx.getOrPut(sfx) { AdvancedSound(synth.sound(sfx), synth.peak(sfx) * SYNTH_GAIN) }
+        bySfx.getOrPut(sfx) { AdvancedSound(synth.sound(sfx), synth.peak(sfx) / synth.loudestPeak) }
 
     /** Відтворити подію з каталогу. */
     fun play(sfx: Sfx, playCoff: Float = 1f) = play(sound(sfx), playCoff)
@@ -58,11 +55,6 @@ class SoundUtil : Disposable {
     /** Кнопки й тумблери — теж синтез, як у прототипі; click.mp3 більше не грає. */
     val CLICK     = sound(SfxCatalog.UI_TICK)
     val CHECK_BOX = sound(SfxCatalog.CHECK_BOX)
-
-    // 0..100
-    var volumeLevel = AudioManager.volumeLevelPercent
-
-    var isPause = (volumeLevel <= 0f)
 
     // ── Директор ─────────────────────────────────────────────────────────────
 
@@ -84,14 +76,13 @@ class SoundUtil : Disposable {
 
     /** Відтворити з тротлінгом. GL-потік НЕ блокується. */
     fun play(advancedSound: AdvancedSound, playCoff: Float = 1f) {
-        if (isPause) return
+        if (AudioMixer.isSfxSilent) return
 
         val now = System.currentTimeMillis()
         if (now - advancedSound.lastPlayMs < advancedSound.throttleMs) return
         advancedSound.lastPlayMs = now
 
-        val volume = ((volumeLevel / 100f) * advancedSound.coff) * playCoff
-        channel.trySend(PlayRequest(advancedSound.sound, volume))
+        channel.trySend(PlayRequest(advancedSound.sound, AudioMixer.sfx(advancedSound.coff, playCoff)))
     }
 
     override fun dispose() {
@@ -101,7 +92,7 @@ class SoundUtil : Disposable {
 
     private class PlayRequest(val sound: Sound, val volume: Float)
 
-    /** coff — гучність; throttleMs — мін. інтервал між повторами ЦЬОГО звуку. */
+    /** coff — вага в міксі 0..1 (автор); throttleMs — мін. інтервал між повторами ЦЬОГО звуку. */
     class AdvancedSound(
         val sound: Sound,
         val coff : Float,

@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 class SaveGameStateManager(
@@ -90,12 +91,18 @@ class SaveGameStateManager(
     // Log
     // ------------------------------------------------------------------------
 
+    /**
+     * Дзеркало PlayerData: кожне поле сейву має бути тут. Сенс логу — побачити,
+     * що кругообіг «стан → JSON → стан» нічого не загубив; поле, якого немає в
+     * коробці, з логу не перевіриш. У релізі не друкується — log() мовчить.
+     */
     private fun logState(title: String, data: PlayerData) {
         log("""
         
         ╔════════════════════════════════════════════╗
         ║  $title
         ╠════════════════════════════════════════════╣
+        ║  SCHEMA       : v${data.schemaVersion}
         ║  PID          : ${data.pid}
         ║  SKIN_ID      : ${data.skinId}
         ╟────────────────────────────────────────────╢
@@ -106,7 +113,11 @@ class SaveGameStateManager(
         ╟────────────────────────────────────────────╢
         ║  ORBIT III    : ${if (data.orbit3) "OWNED" else "—"}
         ║  NO ADS       : ${if (data.noAds) "OWNED" else "—"}
+        ╟────────────────────────────────────────────╢
+        ║  SOUND        : master ${pct(data.volMaster)} · music ${pct(data.volMusic)} · sfx ${pct(data.volSfx)}
         ╚════════════════════════════════════════════╝
     """.trimIndent())
     }
+
+    private fun pct(v: Float) = "${(v * 100).roundToInt()} %"
 }

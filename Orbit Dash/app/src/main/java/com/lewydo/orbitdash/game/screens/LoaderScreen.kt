@@ -190,10 +190,7 @@ class LoaderScreen : AdvancedScreen() {
             isFinishProgress = false
             gdxGame.soundUtil.play(SfxCatalog.READY)   // з'явилось «TAP TO START»
 
-            gdxGame.musicUtil.apply { currentMusic = MAIN.apply {
-                isLooping = true
-                coff      = 0f//27f
-            } }
+            gdxGame.musicUtil.play(MusicManager.EnumMusic.MAIN)
 
             gdxGame.activity.adManager.showBanner()
             //animHideScreen { gdxGame.navigationManager.navigate(GameScreen::class.java.name) }
