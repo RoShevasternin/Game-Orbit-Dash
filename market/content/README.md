@@ -8,7 +8,10 @@ tools/                       інструменти монтажу
   build-devlog-01.py         драйвер DEVLOG 01: сирі записи → готовий mp4 + обкладинка
   build-devlog-02.py         драйвер DEVLOG 02: трекер м'яча для крупних планів, кадрова сітка тактів
   build-devlog-03.py         драйвер DEVLOG 03: зрізи по ударах треку (не по тактах), весь геймплей 0.5×, картки «як зроблено»
+  build-devlog-04.py         драйвер DEVLOG 04: сітка 140 BPM (трек свій), звук ролика — із логу подій запису
+  devlog04-audio.py          аудіо DEVLOG 04: sfx із рецептів SfxCatalog за логом OD_SFX + згенерований фонк
   lab-devlog-03.py           лабораторна збірка для запису: автопілот, безсмертя, буст кожні N с, без банку (застосовується до КОПІЇ проєкту)
+  lab-devlog-04.py           те саме + лог OD_SFX (мітка кожної звукової події) і «плеск» OD_CLAP для зведення відео зі звуком
   render-code.swift          картка з кодом (Menlo, підсвітка) → прозорий PNG; для сегментів «як зроблено»
   render-svg.swift           SVG із Figma → PNG з прозорим тлом (qlmanage кладе на біле)
   build-teaser.py            драйвер ролика #1 (18.09, en/uk) — сировини до нього на диску вже немає
@@ -33,10 +36,13 @@ source/                      сировина: не публікується, а
   cards/                     тексти для карток «як зроблено» (render-code.swift)
     devlog-03-shader.txt             radialGradientFS.glsl — уривок
     devlog-03-kotlin.txt             ABall.kt — запікання хвиль магніта
+    devlog-04-kotlin.txt             SfxCatalog.kt — звук як п'ять чисел і драбина гемів
+    devlog-04-mixer.txt              AudioMixer.kt — формула гучності
   music/                     треки під ролики
     phonk-aggressive-drift-night.mp3   Pixabay, alex-morgan, Content License (Shorts/Reels/TikTok)
     brazilian-hype-walen.mp3           freetouse.com, Walen — Brazilian Hype, 130 BPM; атрибуція в описі обов'язкова
     tucked-remix-lewydo.mp3            DEVLOG 03: власний ремікс (Katy Perry — Tucked), 30.14 с, 122.95 BPM; НЕ royalty-free — Content ID можливий
+    phonk-146-generated-lewydo.mp3     DEVLOG 04: згенеровано devlog04-audio.py — 146 BPM, F#m-D-A-E, лід-хук, сайдчейн. Семплів немає — Content ID неможливий
   tuner/                     кадри тюнера 53-spark для сегмента «ми зробили тюнер»
     tuner-53-spark-default.png         повзунки на дефолтах
     tuner-53-spark-tuned.png           ті самі повзунки підкручені

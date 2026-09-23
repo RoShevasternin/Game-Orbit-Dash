@@ -15,15 +15,15 @@ android {
         applicationId = "com.lewydo.orbitdash"
         minSdk      = 24
         targetSdk   = 37
-        versionCode = 10
-        versionName = "1.4.0-test" // test
+        versionCode = 11
+        versionName = "1.4.2" // test
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         debug {
-            isMinifyEnabled = false
+            isMinifyEnabled   = false
             isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

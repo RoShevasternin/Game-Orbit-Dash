@@ -1,0 +1,7 @@
+// AudioMixer.kt
+gain = coff          // asset weight (ours)
+     * curve(bus)    // SFX / MUSIC slider
+     * curve(master) // master slider
+     * headroom
+
+// curve(x) = x*x  — the ear is logarithmic
