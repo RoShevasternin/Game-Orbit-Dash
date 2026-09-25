@@ -1,9 +1,0 @@
-// SfxCatalog.kt — every sound in the game
-val TAP_OUT = Sfx("tap_out",
-    Beep(300f, 0.06f, SQUARE, 0.07f, 200f))
-//      freq  length  wave   volume  slide
-
-// ladder: +1 semitone per gem in a row
-val GEM = List(13) { n ->
-    Beep(semitone(700f, n), 0.08f, SINE, 0.10f, 250f)
-}

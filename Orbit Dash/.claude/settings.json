@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "defaultMode": "plan",
-    "allow": [
-      "Bash(./gradlew assembleDebug)",
-      "Bash(./gradlew installDebug)"
-    ]
-  }
-}
