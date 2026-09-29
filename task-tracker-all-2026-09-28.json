@@ -1,0 +1,487 @@
+{
+  "type": "all-projects",
+  "version": "2.0",
+  "exportDate": "2026-09-28T14:12:05.793Z",
+  "projects": [
+    {
+      "categories": [
+        {
+          "icon": "⚡",
+          "id": 0,
+          "subtitle": "MVP",
+          "title": "СТАРТ"
+        },
+        {
+          "icon": "⚡",
+          "id": 1,
+          "subtitle": "MVP v2",
+          "title": "ОСНОВА"
+        },
+        {
+          "icon": "📱",
+          "id": 2,
+          "subtitle": "v2",
+          "title": "UPDATE v2"
+        },
+        {
+          "icon": "🤔",
+          "id": 3,
+          "subtitle": "50 на 50",
+          "title": "Можливо але не точно"
+        }
+      ],
+      "collapsedCategories": {
+        "0": true,
+        "1": false,
+        "2": false,
+        "3": true
+      },
+      "desc": "Idle Merge Cubes",
+      "icon": "🎮",
+      "id": "proj-imc-seed",
+      "name": "IMC",
+      "tasks": [
+        {
+          "categoryId": 0,
+          "details": "<h4>Статус: ГОТОВО!</h4>",
+          "done": true,
+          "title": "Offline Dialog + x2 Ad ✅"
+        },
+        {
+          "categoryId": 0,
+          "details": "<h4>Статус: ГОТОВО!</h4>",
+          "done": true,
+          "title": "BUY Button Animation ✅"
+        },
+        {
+          "categoryId": 0,
+          "details": "<h4>Статус: ГОТОВО!</h4>",
+          "done": true,
+          "title": "Idle Bar + Collect ✅"
+        },
+        {
+          "categoryId": 0,
+          "details": "<h4>Що зробити:</h4><ul><li>+50 🪙 летить до UI counter</li><li>+10 XP летить до XP bar</li><li>Smooth curve animation</li></ul>",
+          "done": true,
+          "title": "Flying Numbers"
+        },
+        {
+          "categoryId": 0,
+          "details": "Оптимізуй, зроби пул тих лейблів, і зроби між ними відступи що б будь які значення там будуть а між хп та коін лейблами буде відступ що б юзер чітко бачив скільки він отримав монет та хп",
+          "done": true,
+          "title": "Flying Numbers 2"
+        },
+        {
+          "categoryId": 0,
+          "details": "Оптивізовуємо роботу з шейдерами",
+          "done": true,
+          "title": "<h4><strong>🔥ОПТИМІЗАЦІЯ PreRenderable</strong></h4>"
+        },
+        {
+          "categoryId": 0,
+          "details": "Реалізуй Дригання Level Panel та Balance Panel коли FlyingLabel долітають до них і зникають",
+          "done": true,
+          "title": "Flying Numbers 3"
+        },
+        {
+          "categoryId": 0,
+          "details": "Створи ефект розльоту монеток коли буде клік на кнопки COLLECT",
+          "done": true,
+          "title": "Effect - Collect"
+        },
+        {
+          "categoryId": 0,
+          "details": "Зрозуміло",
+          "done": true,
+          "title": "Музика Звуки Вібрації"
+        },
+        {
+          "categoryId": 0,
+          "details": "Реалізуй анімацію серцебиття бренду",
+          "done": true,
+          "title": "Brand Animation"
+        },
+        {
+          "categoryId": 0,
+          "details": "Рука",
+          "done": true,
+          "title": "Tutorial"
+        },
+        {
+          "categoryId": 0,
+          "details": "ОПТИМІЗУЙ FPS",
+          "done": true,
+          "title": "<h4><strong>🔥 ДУЖЕ ВАЖЛИВО! - ОПТИМІЗУЙ FPS</strong></h4>"
+        },
+        {
+          "categoryId": 1,
+          "details": "Підсвіти ігрову панель знизу",
+          "done": true,
+          "title": "Підсвітка Grid"
+        },
+        {
+          "categoryId": 1,
+          "details": "Analitics\nCrashlitics\nEvents",
+          "done": true,
+          "title": "Firebase"
+        },
+        {
+          "categoryId": 1,
+          "details": "<p>AdMob - banner 50dp внизу екрану</p>",
+          "done": true,
+          "title": "Banner Ads"
+        },
+        {
+          "categoryId": 1,
+          "details": "Перероби AAutoSizeLabel з ALabel",
+          "done": true,
+          "title": "AAutoSizeLabel -> ALabel"
+        },
+        {
+          "categoryId": 1,
+          "details": "(закрив бо Claude каже це не дасть оптимізації а тільки нашкодить)\n<p>\n<p>\nПитання: А що якщо не брать кожного разу новий буфер з пулу в залежності від розміру\n\nВідповідь: А просто створи пул з 10 буферів розміром з екран і їх перевикористовувати, тоді ми зможемо динамічно міняти розмір груп ефектів і не буде створюватись кожного разу новий буфер а братиметься той самий",
+          "done": true,
+          "title": "FrameBuffer - (пул буферів розміром з Екран)"
+        },
+        {
+          "categoryId": 1,
+          "details": "<h4>🔄 Merge Bonus — активний збір замість пасивного таймера</h4>\n\n<h4>Суть зміни:</h4>\n<p>\n  Раніше прогрес-бар \"Idle Income\" заповнювався автоматично по таймеру (кожні 10 секунд = повний бар).\n  Тепер бар <b>Merge Bonus</b> заповнюється виключно від мерджів кубів — це змушує юзера активно грати\n  щоб отримати нагороду, а не просто чекати.\n</p>\n\n<h4>Як працює:</h4>\n<ul>\n  <li>Кожен мердж двох кубів додає <b>+1 крок</b> до прогрес-бару</li>\n  <li>Ціль заповнення — <b>рандомна від 10 до 20 мерджів</b> (генерується заново після кожного collect)</li>\n  <li>Коли бар повний → з'являються кнопки <b>Collect</b> і <b>Collect ×2</b></li>\n  <li>Після collect → прогрес скидається + генерується нова рандомна ціль</li>\n</ul>\n\n<h4>Enchanted куби:</h4>\n<p>Будь-який мердж з enchanted кубом (<code>💰⚡💣⭐</code>) <b>заповнює бар повністю</b> одразу — бонус за рідкісний мердж.</p>\n\n<h4>UI:</h4>\n<ul>\n  <li>Бар показує лічильник: <code>7 / 13 merges</code> (де 13 — поточна рандомна ціль)</li>\n  <li>Заголовок панелі: <b>Merge Bonus</b> (замість \"Idle Income\")</li>\n  <li>Collect панель показує кількість монет + підпис <code>merge bonus!</code></li>\n</ul>",
+          "done": true,
+          "title": "Idle Income -> Merge Bonus"
+        },
+        {
+          "categoryId": 1,
+          "details": "<h4>🔼 BUY Level Progression</h4>\n<p>Рівень куба який купується через BUY автоматично зростає залежно від максимального куба досягнутого на панелі.</p>\n<ul>\n  <li>До куба 5 — BUY дає куб <b>рівня 1</b></li>\n  <li>Куб 5–6 → BUY дає куб <b>рівня 2</b></li>\n  <li>Куб 7–8 → BUY дає куб <b>рівня 3</b></li>\n  <li>Куб 9–10 → BUY дає куб <b>рівня 4</b></li>\n  <li>і так далі кожні 2 рівні куба +1 до BUY</li>\n</ul>\n<p>При апгрейді BUY рівня — всі куби на панелі нижче нового рівня автоматично підвищуються до нового BUY рівня. Анімація: кнопка BUY спалахує золотом + <code>BUY upgraded! Lv.X</code> флоатить на екрані.</p>\n<p>Під кнопкою BUY є хінт: <code>🔓 Reach cube X → BUY lv.Y</code> з прогрес-баром до наступного апгрейду.</p>\n<p>Математика: кожен тир потребує рівно ×2 більше натискань BUY ніж попередній (gap між ціллю і BUY рівнем +1 кожен тир).</p>",
+          "done": true,
+          "title": "<h4>🔼 BUY Level Progression</h4>"
+        },
+        {
+          "categoryId": 1,
+          "details": "Перероби його так як в дизайні, і зроби що б плавно заповнювався прогрес і до кінця",
+          "done": true,
+          "title": "ABuyHint"
+        },
+        {
+          "categoryId": 1,
+          "details": "Заміни і додай AutoLayout, видали linear group horizontal vertical та table",
+          "done": true,
+          "title": "AutoLayout & Constraint з T6 | Skinly"
+        },
+        {
+          "categoryId": 1,
+          "details": "Визнач всі необхідні івенти в грі які хочеш відслідковувати та їх параметри, і шли з одного місця EventManager Firebase Event та TikTok Event",
+          "done": true,
+          "title": "EventManager"
+        },
+        {
+          "categoryId": 1,
+          "details": "<div style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 800px;\">\n\n  <h2>🎯 Система досягнень (Goals System)</h2>\n\n  <p>\n    Планується додати панель задач (Goals Panel), яка буде розміщена між <b>TopPanel</b> та <b>GridPanel</b>.\n    Панель показує поточні задачі гравця та винагороди за їх виконання.\n  </p>\n\n  <hr>\n\n  <h3>📌 Приклади задач</h3>\n\n  <ul>\n    <li>Дійди до куба рівня <b>5️⃣</b></li>\n    <li>Розмісти на панелі <b>4 куба рівня 3️⃣</b></li>\n  </ul>\n\n  <p>\n    Біля кожної задачі відображається винагорода (наприклад: <b>+50 🪙</b>), щоб гравець одразу розумів цінність виконання.\n  </p>\n\n  <hr>\n\n  <h3>✅ Поведінка при виконанні</h3>\n\n  <ul>\n    <li>Задача стає сірою</li>\n    <li>Перекреслюється двома червоними лініями (X)</li>\n    <li>Відтворюється звук нагороди (монети)</li>\n    <li>Монети анімаційно летять у панель балансу</li>\n  </ul>\n\n  <hr>\n\n  <h3>🧩 Типи задач</h3>\n\n  <h4>1. Прості</h4>\n  <p>\n    Досягти певного рівня куба:\n  </p>\n  <ul>\n    <li>Рівні: 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣</li>\n  </ul>\n\n  <h4>2. Комбіновані</h4>\n  <p>\n    Розмістити кілька кубів різних рівнів:\n  </p>\n  <ul>\n    <li>2 куби рівня 4️⃣</li>\n    <li>6 кубів рівня 5️⃣</li>\n    <li>1 куб рівня 2️⃣</li>\n  </ul>\n\n  <h4>3. На час ⏱</h4>\n  <p>\n    Досягти цілі за обмежений час:\n  </p>\n  <ul>\n    <li>Дійди до куба рівня <b>7️⃣</b> за <b>60 секунд</b></li>\n  </ul>\n\n  <p>\n    Для таких задач у панелі <b>GOALS 🎯</b> відображається таймер.\n  </p>\n\n  <hr>\n\n  <h3>💡 Додатково</h3>\n\n  <ul>\n    <li>Показ винагороди біля кожної задачі</li>\n    <li>Можливість комбінування різних типів задач</li>\n    <li>Чіткий візуальний фідбек при завершенні</li>\n  </ul>\n\n</div>\n\n<div style=\"font-family: Arial, sans-serif; color: #ffffff; background: #1a1a2e; padding: 20px; border-radius: 16px; width: 420px;\">\n\n  <!-- HEADER -->\n  <div style=\"font-size: 20px; font-weight: bold; margin-bottom: 12px;\">\n    🎯 GOALS\n  </div>\n\n  <!-- SIMPLE GOAL -->\n  <div style=\"background: #222244; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;\">\n    <div>\n      Дійди до куба <b>5️⃣</b>\n    </div>\n    <div style=\"color: gold;\">+50 🪙</div>\n  </div>\n\n  <!-- COMBINED GOAL -->\n  <div style=\"background: #222244; padding: 12px; border-radius: 12px; margin-bottom: 10px;\">\n    <div>Розмісти на панелі:</div>\n    <div style=\"margin-top: 6px;\">\n      • 4 куба <b>3️⃣</b><br>\n      • 2 куби <b>4️⃣</b>\n    </div>\n    <div style=\"margin-top: 8px; color: gold;\">+120 🪙</div>\n  </div>\n\n  <!-- TIME GOAL -->\n  <div style=\"background: #222244; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;\">\n    <div>\n      Дійди до куба <b>7️⃣</b><br>\n      <span style=\"color: #ff7675;\">⏱ 60s</span>\n    </div>\n    <div style=\"color: gold;\">+200 🪙</div>\n  </div>\n\n  <!-- COMPLETED GOAL -->\n  <div style=\"background: #333333; padding: 12px; border-radius: 12px; margin-top: 10px; position: relative; color: #888;\">\n    Дійди до куба <b>3️⃣</b>\n    <div style=\"position: absolute; top: 0; left: 0; right: 0; bottom: 0;\">\n      <div style=\"width: 100%; height: 2px; background: red; transform: rotate(10deg); position: absolute; top: 50%;\"></div>\n      <div style=\"width: 100%; height: 2px; background: red; transform: rotate(-10deg); position: absolute; top: 50%;\"></div>\n    </div>\n  </div>\n\n</div>",
+          "done": true,
+          "title": "Goals System"
+        },
+        {
+          "categoryId": 1,
+          "details": "Треба доробити Complete та Failed.\n\n- COMPLETE - треба анімація появи монеток і що б вони летіли в баланс.\n\n- і треба додати звук Fail та Complete\n\n- є БАГ коли задача на час і дивимось рекламу а потім закриваєм рекламу то час зупинився або перейдемо на наступний екран і повернемось то час ішов далі хоча мав би стати на паузу а при поверненні відновитися",
+          "done": true,
+          "title": "Goals System v2"
+        },
+        {
+          "categoryId": 1,
+          "details": "Додай звуки і вібро на buy UPGRADE",
+          "done": true,
+          "title": "Buy Upgrade | Sound & Vibro"
+        },
+        {
+          "categoryId": 1,
+          "details": "<h4>✨ Enchanted Cubes — 4 Powers</h4>\n<p>10% шанс при BUY. Активується коли мерджиш enchanted куб (з будь-яким того ж рівня).</p>\n<ul>\n  <li><b>💰 Coin Surge</b> — ×5 монет від мерджу + тонни монет летять на панель монет + Merge Bonus заповнюється повністю</li>\n  <li><b>⚡ Shock</b> — всі куби в тому ж рядку і колонці отримують +1 рівень, з кожного летять монети і XP + Merge Bonus заповнюється повністю</li>\n  <li><b>💣 Bomb</b> — ВСІ куби на полі +1 рівень, спалах червоного на весь екран, потім з кожного куба летять монети + XP (з затримкою після вибуху) + Merge Bonus заповнюється повністю</li>\n  <li><b>⭐ Star</b> — результат мерджу +2 рівні замість +1 + Merge Bonus заповнюється повністю</li>\n</ul>\n<p>Якщо мерджаться 2 enchanted куби — спрацьовують обидві сили. Візуал: пульсуюча кольорова рамка + іконка в куті куба.</p>",
+          "done": false,
+          "title": "Enchanted Cubes ✨"
+        },
+        {
+          "categoryId": 1,
+          "details": "Треба виправити бо грід очищається а на кнопці BUY не змінюється куб що купується, типу доходиш до buy рівня 10 очищаєш грід але при купівлі потім має залишатись з куба рівня 10 а воно пише 10 але купує куб першого рівня",
+          "done": false,
+          "title": "Clear Grid"
+        },
+        {
+          "categoryId": 2,
+          "details": "Реклама на х2",
+          "done": true,
+          "title": "Rewarded Ads"
+        },
+        {
+          "categoryId": 2,
+          "details": "<p>Google Play Games таблиця лідерів</p>",
+          "done": false,
+          "title": "Leaderboards"
+        },
+        {
+          "categoryId": 2,
+          "details": "При мердж дрижить екран",
+          "done": false,
+          "title": "Camera Shake"
+        },
+        {
+          "categoryId": 2,
+          "details": "<p>Фонові бульбашки - клік = невелика винагорода</p>",
+          "done": false,
+          "title": "Clickable Bubbles"
+        },
+        {
+          "categoryId": 2,
+          "details": "<p>FCM - нагадування про idle earnings</p>",
+          "done": false,
+          "title": "Push Notifications"
+        },
+        {
+          "categoryId": 2,
+          "details": "<p>IAP - coin packs, starter pack, remove ads</p>",
+          "done": false,
+          "title": "IAP"
+        },
+        {
+          "categoryId": 0,
+          "details": "Button\nCheckBox",
+          "done": true,
+          "title": "<h4>UPDATE from Rbux Counter</h4>"
+        },
+        {
+          "categoryId": 3,
+          "details": "<p>7-денний календар винагород</p>",
+          "done": false,
+          "title": "Daily Login"
+        }
+      ]
+    },
+    {
+      "categories": [
+        {
+          "icon": "📋",
+          "id": 0,
+          "subtitle": "MVP",
+          "title": "📋 Основа"
+        },
+        {
+          "icon": "💥",
+          "id": 1,
+          "subtitle": "Тепер партікл ЕФФЕКТИ створюємо в Claude Tuner",
+          "title": "Claude Tuner Particle"
+        },
+        {
+          "id": 2,
+          "title": "Ідеї",
+          "subtitle": "Описуємо ідеї",
+          "icon": "💡"
+        }
+      ],
+      "collapsedCategories": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "desc": "Orbit Dash [game v2]",
+      "icon": "🚀",
+      "id": "proj-1787405352761-989",
+      "name": "Orbit Dash",
+      "tasks": [
+        {
+          "categoryId": 0,
+          "details": "<h4>✨ Робимо Дизайн Гри в Figma!</h4>\n\nhttps://www.figma.com/design/WMH6Wm1NVhx9CI4MYD2Lnx/VELDAN?node-id=5305-2651&p=f&t=cXnCP5nnGHyGIXCM-0",
+          "done": true,
+          "title": "🎨 Figma Design"
+        },
+        {
+          "categoryId": 0,
+          "details": "Пройти Закритий тест 12 юзерів на 14 днів",
+          "done": true,
+          "title": "Пройти Closed Test в PlayMarket"
+        },
+        {
+          "categoryId": 0,
+          "details": "Зробити панель GameGud",
+          "done": true,
+          "title": "GameHud"
+        },
+        {
+          "categoryId": 0,
+          "details": "Перший реліз в PlayMarket",
+          "done": true,
+          "title": "Публікація в PlayMarket"
+        },
+        {
+          "categoryId": 0,
+          "details": "Повноцінно реалізувати OrbitFild як він і буде в релізі",
+          "done": true,
+          "title": "OrbitFild"
+        },
+        {
+          "categoryId": 0,
+          "details": "увімкнути R8 fullMode=true",
+          "done": true,
+          "title": "R8 enable"
+        },
+        {
+          "categoryId": 0,
+          "details": "Реалізуй спайк як у Figma",
+          "done": true,
+          "title": "ASpike"
+        },
+        {
+          "categoryId": 0,
+          "details": "Зробити що б набрані очки і геми зберігались",
+          "done": true,
+          "title": "🔸 Підрахунок гемів і очок"
+        },
+        {
+          "categoryId": 0,
+          "details": "<h2>🏆 Лідери</h2>\n\n<ol>\n  <li>\n    <strong>🥇 Лідер за очками</strong><br>\n    Гравець із найбільшою кількістю набраних очок.\n  </li>\n\n  <li>\n    <strong>⚡ Лідер за майстерністю</strong><br>\n    Гравець, який найбільше разів ухилився від шипа на близькій відстані.\n    Рейтинг визначається за загальною кількістю комбо за всі зіграні рани.\n  </li>\n\n  <li>\n    <strong>💀 Антилідер за програшами</strong><br>\n    Гравець із найбільшою кількістю програних ранів.\n    Тут першими опиняються користувачі, які програють найчастіше.\n  </li>\n\n  <li>\n    <strong>💎 Найбагатший гравець</strong><br>\n    Гравець із найбільшою кількістю гемів.\n  </li>\n</ol>",
+          "done": true,
+          "title": "Liderboards"
+        },
+        {
+          "categoryId": 0,
+          "details": "Реалізувати механіку комбо як в JSX де біля шипа комбо обєкт який треба взяти і ухилитись бо воно небезпечно близько до шипа, так і отримаєш комбо.",
+          "done": true,
+          "title": "COMBO - ASpark"
+        },
+        {
+          "categoryId": 0,
+          "details": "реалізувати комбо рогрес і комбо іскри над мячем",
+          "done": true,
+          "title": "COMBO ABall"
+        },
+        {
+          "categoryId": 0,
+          "details": "реалізувати міжсторінкову рекламу, у випадках коли юзер пограв 2 чи 3 рани або якось подумай коли його показувати що б юзерам не заважало, і ще треба буде додати рекламу при відкритті гри вона заробляє доволі багато я помітив.",
+          "done": false,
+          "title": "Ads - Interstitial and AppOpen"
+        },
+        {
+          "categoryId": 0,
+          "details": "Реалізувати панель результату після смерті.",
+          "done": false,
+          "title": "Result Panel"
+        },
+        {
+          "categoryId": 1,
+          "details": "Combo Particle Effect реалізувати коли мяч ловить іскру.",
+          "done": true,
+          "title": "Effect - combo"
+        },
+        {
+          "categoryId": 1,
+          "details": "Реалізуй вінєтки бустерів",
+          "done": true,
+          "title": "Вінєтки бустерів"
+        },
+        {
+          "categoryId": 1,
+          "details": "Реалізувати звуки",
+          "done": true,
+          "title": "Звуки"
+        },
+        {
+          "categoryId": 1,
+          "details": "Реалізуй ХВИЛЮ - Еффект для PULS бустера",
+          "done": true,
+          "title": "Еффект для PULS бустера"
+        },
+        {
+          "categoryId": 0,
+          "details": "Додати нативну рекламу на екрані результату знизу як в JSX і може зявляться ще місця де її можна додати.",
+          "done": false,
+          "title": "Ad Native"
+        },
+        {
+          "categoryId": 0,
+          "details": "Реалізуй кнопку сеттінгс на екрані MENU, а сам екран сеттінгс відкривається як не окремий Screen а як діалог на ввесь екран типу блюримо фон і зупиняєм те що на фоні і це типу як екран по верх екрана в тему яку обере юзер і там є повзунки звук музика гучність і чекбокс увімк вимк звук музику, і вібро бокс, і кнопка ABOUT US про розробника і кнопка CLOSE.",
+          "done": false,
+          "title": "⚙️ SETTINGS"
+        },
+        {
+          "categoryId": 1,
+          "details": "треба ефект руйнування щитом шипа і ефект коли мяч руйнується об шип",
+          "done": true,
+          "title": "Еффукт DESTROY Ball and Spike"
+        },
+        {
+          "categoryId": 1,
+          "details": "ефект збору гема, розлітаються міні геми або частинки",
+          "done": true,
+          "title": "Ефект Gem"
+        },
+        {
+          "categoryId": 1,
+          "details": "реалізувати ефект зміни орбіти коли пригає мяч з орбіти на орбіту іде хвиля в місці КУДИ гем пригнув",
+          "done": true,
+          "title": "Ефект зміни орбіти Ball"
+        },
+        {
+          "categoryId": 1,
+          "details": "реалізувати ефект що б за мячем був слід як в прототипі",
+          "done": false,
+          "title": "Ефект слід мяча"
+        },
+        {
+          "categoryId": 2,
+          "title": "Музика - зірки - аналітика",
+          "details": "Зроби відкриття музичних рівнів не за зірки а за геми це ж логічно так буде ще моьивація їх заробляти, а зірки прибрати думаю можна, чисто прогрес скільки пройшов рівня він ніби то вже й є.\n\nЦі рівні що є удосконалимо і вони відкриті й будуть бо це тестовий формат, а 1 зробимо новий його можна відкрити за геми.\n\nЩе треба налаштувати аналітику по музичним рівням що б побачити чи в них взагалі грають, скільки, які, і чи проходять.",
+          "done": true
+        },
+        {
+          "categoryId": 2,
+          "title": "Окрема кнопка LEVELS - рівень рейтинг",
+          "details": "Треба не окрему кнопку левелс бо це й так забагато, а коли натискає на плей то вибір Безкінечний ран чи Левелс, це думаю зручніше і кращий UX.\n\nЩе всю музику думаю краще ти генеруватимеш в тебе добре вийшло та і так можна використовувати будь де без покупки прав і ліцензій.\n\nЩе я думаю лишити поки оці рівні що ти зробив а останнім зробити панельку як рівень тільки то буде не рівень а там буде текст щось типу \"якщо сподобалась гра і хочеш більше рівнів постав зірочки і напиши у відгуку що хочеш бульше рівнів, тоді я реалізую ще рівнів, ще можете написати варіант вдею рівня\" і кнопку яку юзер клікає і відкриває Play market гри і може постівити зірочки і відгук.",
+          "done": false
+        }
+      ]
+    },
+    {
+      "categories": [
+        {
+          "icon": "⛳",
+          "id": 0,
+          "subtitle": "Початок",
+          "title": "Start"
+        },
+        {
+          "id": 1,
+          "title": "Ідеї",
+          "subtitle": "Ідеї",
+          "icon": "💡"
+        }
+      ],
+      "collapsedCategories": {},
+      "desc": "Збирай Піксельні Арти (купа равнів)",
+      "icon": "🎨",
+      "id": "proj-1789540698873-726",
+      "name": "CubePix",
+      "tasks": [
+        {
+          "categoryId": 0,
+          "details": "Створи LibGDX проект",
+          "done": false,
+          "title": "Створити проект"
+        },
+        {
+          "categoryId": 0,
+          "details": "Викласти закритий тест в маркет\nназбирати 12 тестерів\nпочекати 14 днів",
+          "done": false,
+          "title": "Пройти Closed Test в Play Market"
+        },
+        {
+          "categoryId": 0,
+          "details": "Згенеруй дизайн в Figma",
+          "done": false,
+          "title": "Figma Design"
+        },
+        {
+          "categoryId": 1,
+          "title": "Туторіал + шрифти",
+          "details": "1. Туторіал - треба якось явно продемонструвати чим відрізняється золотий куб навіщо він (бо він то дає більше очок але я дав дівчині яка не грала в гру і вона не зрозумла навіщо золотий куб), ще треба в туторіалі явно пояснити цепочку і що воно дає бо теж дівчина не зрозуміла що що б досягти цепочку треба клікати сусідні куби. (Може це чисто дівчина не зрозуміла а інші юзери зрозуміють то от треба придумати чи пояснюємо якось це чи лишаємо) але по правилам «Мозг игрока. Как нейронауки и UX влияют на дизайн видеоигр» Селии Ходент туторіал це важлива частина і він має бути з суттю і практичний.\n\n2. Шрифти треба зробити не піксельними але з гострими кутами так як наші куби і решта піксельні гострі, то шрифт буде не піксельним для гарного читання і розуміння але гострим в тематиці гри.",
+          "done": true
+        }
+      ]
+    }
+  ]
+}
