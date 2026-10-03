@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lewydo — Studio &amp; Brand</title>
+<meta name="description" content="How Lewydo builds games: every new idea ships in the browser prototype first, then gets ported to the engine. Plus the studio brand basics — palette, type, emblem.">
+
+<meta property="og:title" content="Lewydo — Studio &amp; Brand">
+<meta property="og:description" content="Prototype first, port second. The studio's working rule and brand basics.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://roshevasternin.github.io/Game-Orbit-Dash/brand.html">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%232b3060' stroke-width='5'/%3E%3Ccircle cx='32' cy='6' r='7' fill='%2300e5ff'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:      #0e1024;
+    --ring:    #2b3060;
+    --player:  #00e5ff;
+    --gem:     #ffd54a;
+    --spike:   #ff3d68;
+    --text:    #ffffff;
+    --dim:     rgba(255,255,255,0.55);
+    --faint:   rgba(255,255,255,0.30);
+    --card:    rgba(255,255,255,0.045);
+    --border:  rgba(255,255,255,0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: radial-gradient(circle at 50% 10%, #1c2044 0%, var(--bg) 55%, #080a18 100%);
+    color: var(--text);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .stars span {
+    position: absolute; background: #fff; border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite;
+  }
+  @keyframes twinkle { 0%,100% { opacity: .15; } 50% { opacity: .7; } }
+
+  main { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── HEAD ─────────────────────────────────────────────── */
+  .top { padding: 56px 0 10px; }
+  .back {
+    font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: 3px;
+    color: var(--faint); text-decoration: none; text-transform: uppercase;
+  }
+  .back:hover { color: var(--player); }
+
+  .eyebrow {
+    font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: 5px;
+    color: var(--faint); text-transform: uppercase; margin: 44px 0 18px;
+  }
+
+  h1 {
+    font-family: "Unbounded", sans-serif; font-weight: 900; line-height: 1.0;
+    font-size: clamp(38px, 7vw, 62px); letter-spacing: 0.04em;
+  }
+  h1 .a { color: var(--player); text-shadow: 0 0 30px rgba(0,229,255,0.6); }
+
+  .lede { margin-top: 22px; font-size: 16.5px; line-height: 1.65; color: var(--dim); max-width: 620px; }
+  .lede b { color: var(--text); font-weight: 700; }
+
+  h2 {
+    font-family: "Unbounded", sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 2.4px; margin: 0 0 18px; color: var(--text);
+  }
+  h2 .n { color: var(--faint); margin-right: 10px; font-family: "Space Mono", monospace; font-weight: 400; }
+
+  section { padding: 44px 0; border-top: 1px solid var(--border); }
+  section:first-of-type { border-top: 0; }
+
+  p { font-size: 15.5px; line-height: 1.68; color: var(--dim); }
+  p + p { margin-top: 14px; }
+  p b, li b { color: var(--text); font-weight: 700; }
+  code {
+    font-family: "Space Mono", monospace; font-size: 13px;
+    color: var(--player); background: rgba(0,229,255,0.08);
+    padding: 2px 6px; border-radius: 5px;
+  }
+
+  /* ── THE RULE ─────────────────────────────────────────── */
+  .rule {
+    background: var(--card); border: 1px solid rgba(0,229,255,0.30); border-radius: 22px;
+    padding: 32px 28px; box-shadow: 0 0 40px rgba(0,229,255,0.09);
+  }
+  .rule .big {
+    font-family: "Unbounded", sans-serif; font-weight: 700;
+    font-size: clamp(19px, 3.4vw, 25px); line-height: 1.38; letter-spacing: 0.01em;
+  }
+  .rule .big .hi { color: var(--player); }
+  .rule p { margin-top: 18px; }
+
+  /* ── LOOP ─────────────────────────────────────────────── */
+  .loop { list-style: none; display: grid; gap: 12px; }
+  .loop li {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 20px 18px 56px; position: relative;
+    font-size: 15px; line-height: 1.6; color: var(--dim);
+  }
+  .loop li::before {
+    content: counter(step); counter-increment: step;
+    position: absolute; left: 18px; top: 17px;
+    font-family: "Space Mono", monospace; font-weight: 700; font-size: 14px;
+    color: var(--player); width: 24px; height: 24px; border-radius: 50%;
+    border: 1.5px solid rgba(0,229,255,0.45);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .loop { counter-reset: step; }
+  .loop li strong { color: var(--text); font-weight: 700; }
+
+  /* ── LISTS ────────────────────────────────────────────── */
+  .plain { list-style: none; display: grid; gap: 11px; }
+  .plain li {
+    font-size: 15px; line-height: 1.6; color: var(--dim);
+    padding-left: 22px; position: relative;
+  }
+  .plain li::before {
+    content: ""; position: absolute; left: 2px; top: 9px;
+    width: 7px; height: 7px; border-radius: 2px; transform: rotate(45deg);
+    background: var(--gem); box-shadow: 0 0 9px rgba(255,213,74,0.55);
+  }
+  .plain.no li::before { background: var(--spike); box-shadow: 0 0 9px rgba(255,61,104,0.5); }
+
+  .note {
+    margin-top: 20px; font-size: 14px; line-height: 1.6;
+    color: var(--faint); border-left: 2px solid var(--border); padding-left: 16px;
+  }
+
+  /* ── BRAND ────────────────────────────────────────────── */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 12px; }
+  .sw {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px; text-align: left;
+  }
+  .sw i { display: block; height: 42px; border-radius: 9px; margin-bottom: 11px; }
+  .sw b { display: block; font-family: "Unbounded", sans-serif; font-size: 11px; letter-spacing: 1.4px; }
+  .sw span { display: block; font-family: "Space Mono", monospace; font-size: 11px; color: var(--faint); margin-top: 4px; }
+
+  .type { display: grid; gap: 14px; margin-top: 24px; }
+  .type div { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+  .type .s { font-family: "Space Mono", monospace; font-size: 11px; letter-spacing: 2.4px; color: var(--faint); display: block; margin-bottom: 8px; }
+  .type .unb { font-family: "Unbounded", sans-serif; font-weight: 900; font-size: 21px; letter-spacing: 0.04em; }
+  .type .sg  { font-family: "Space Grotesk", sans-serif; font-size: 17px; }
+  .type .sm  { font-family: "Space Mono", monospace; font-size: 15px; letter-spacing: 1.5px; }
+
+  .emblem { position: relative; width: 112px; height: 112px; margin: 4px 0 24px; filter: drop-shadow(0 0 20px rgba(0,229,255,0.45)); }
+  .emblem .r1, .emblem .r2 { position: absolute; border: 3px solid var(--ring); border-radius: 50%; }
+  .emblem .r1 { inset: 0; }
+  .emblem .r2 { inset: 23px; }
+  .emblem .o1 { position: absolute; inset: 0; animation: spin 7s linear infinite; }
+  .emblem .o2 { position: absolute; inset: 23px; animation: spin 10s linear infinite reverse; }
+  .emblem .player {
+    position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--player); top: -8px; left: 50%; margin-left: -8px;
+    box-shadow: 0 0 13px var(--player), 0 0 28px rgba(0,229,255,0.6);
+  }
+  .emblem .gem {
+    position: absolute; width: 11px; height: 11px; border-radius: 2px;
+    background: var(--gem); transform: rotate(45deg);
+    top: -6px; left: 50%; margin-left: -6px; box-shadow: 0 0 11px var(--gem);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── PASTE BLOCK ──────────────────────────────────────── */
+  pre {
+    background: rgba(0,0,0,0.34); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; overflow-x: auto; margin-top: 18px;
+    font-family: "Space Mono", monospace; font-size: 12.5px; line-height: 1.72;
+    color: rgba(255,255,255,0.78); white-space: pre-wrap; word-break: break-word;
+  }
+
+  /* ── FOOTER ───────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 34px 24px 48px; text-align: center; position: relative; z-index: 1; margin-top: 30px;
+  }
+  footer nav { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  footer a { color: var(--dim); text-decoration: none; font-size: 14px; }
+  footer a:hover { color: var(--player); }
+  footer .pkg { font-family: "Space Mono", monospace; font-size: 11px; letter-spacing: 3px; color: var(--faint); }
+
+  a:focus-visible { outline: 2px solid var(--player); outline-offset: 3px; border-radius: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .emblem .o1, .emblem .o2, .stars span { animation: none; }
+  }
+  @media (max-width: 560px) {
+    main, footer { padding-left: 16px; padding-right: 16px; }
+    .rule { padding: 24px 20px; }
+    .loop li { padding: 16px 16px 16px 50px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars" aria-hidden="true"></div>
+
+<main>
+  <div class="top"><a class="back" href="index.html">← Orbit Dash</a></div>
+
+  <div class="eyebrow">Lewydo Studio</div>
+  <h1>HOW WE<br><span class="a">BUILD</span></h1>
+
+  <p class="lede">One rule shapes every project in this studio, and it is not about code style.
+  It is about <b>where a new idea is allowed to be born</b>. This page is the canonical copy —
+  every game we make points back here.</p>
+
+  <section>
+    <h2><span class="n">01</span>THE RULE</h2>
+    <div class="rule">
+      <p class="big">Everything new is built in the <span class="hi">prototype</span> first.
+      Nothing new goes <span class="hi">straight into the game</span>. We port from the
+      prototype to the engine — never the other way around.</p>
+      <p>A new feature, screen, UX flow, mechanic, tuned number or sound starts life in the
+      browser prototype — a single-file build we open on a phone in seconds. Only once it
+      has been played and approved does it become an engine patch.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>WHY</h2>
+    <p><b>It is faster to see.</b> The prototype runs in a browser tab. There is no build,
+    no install, no device cable — the owner opens a link and plays the change within a minute
+    of it being written.</p>
+    <p><b>It is faster to write.</b> One file, one language, no asset pipeline. Ten iterations
+    of an idea cost less in the prototype than one in the engine.</p>
+    <p><b>The prototype is the reference, the game is its copy.</b> This is the real reason.
+    Anything added to the engine behind the prototype's back is something the prototype does
+    not know about — and the moment that happens the two drift apart. Our parity checks compare
+    the engine against the prototype frame by frame and value by value; a divergence that was
+    never a decision is the most expensive kind of bug we have, because nothing is wrong,
+    the two answers are simply different.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>THE LOOP</h2>
+    <ol class="loop">
+      <li><strong>Build it in the prototype.</strong> Fully, not as a stub — real layout,
+      real states, real animation and sound. The prototype is a reference, so it has to be
+      good enough to copy.</li>
+      <li><strong>Bump the build tag and publish.</strong> Every publish gets a version, so
+      it is always obvious whether the tab is showing the new one.</li>
+      <li><strong>Play it.</strong> Automated walkthroughs catch the regressions; the owner
+      plays the link and decides. Rejected here costs nothing.</li>
+      <li><strong>Port it to the engine</strong> and re-run the parity checks until the game
+      matches the prototype.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>WHERE THE RULE DOES NOT APPLY</h2>
+    <p>The prototype is a web page. Some things have no counterpart there and belong to the
+    engine by nature — these go straight into the game, no detour:</p>
+    <ul class="plain">
+      <li>the <b>port itself</b>, and fixing a divergence — the prototype is right, the game catches up;</li>
+      <li><b>platform and build</b>: Gradle, manifest, signing, release artifacts;</li>
+      <li><b>services</b>: ads, analytics, crash reporting, leaderboards, store review;</li>
+      <li><b>performance and rendering</b>: frame pacing, shaders, pooling, GL context loss;</li>
+      <li><b>engine tests</b>, documentation, store and marketing material.</li>
+    </ul>
+    <p class="note">Unsure whether something is new work or a port? Ask. Guessing is how the
+    two copies drift.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>BRAND BASICS</h2>
+
+    <div class="emblem" aria-hidden="true">
+      <div class="r1"></div>
+      <div class="r2"></div>
+      <div class="o1"><div class="player"></div></div>
+      <div class="o2"><div class="gem"></div></div>
+    </div>
+
+    <p>Two rings, a player on the outer orbit, a gem on the inner one — the emblem is the game
+    itself, not a logo drawn next to it. Everything on our surfaces is built out of real game
+    entities: the same rings, the same gems, the same spikes.</p>
+
+    <div class="swatches" style="margin-top:24px">
+      <div class="sw"><i style="background:#0e1024;border:1px solid var(--border)"></i><b>SPACE</b><span>#0e1024</span></div>
+      <div class="sw"><i style="background:#2b3060"></i><b>RING</b><span>#2b3060</span></div>
+      <div class="sw"><i style="background:#00e5ff;box-shadow:0 0 22px rgba(0,229,255,.5)"></i><b>PLAYER</b><span>#00e5ff</span></div>
+      <div class="sw"><i style="background:#ffd54a;box-shadow:0 0 22px rgba(255,213,74,.45)"></i><b>GEM</b><span>#ffd54a</span></div>
+      <div class="sw"><i style="background:#ff3d68;box-shadow:0 0 22px rgba(255,61,104,.4)"></i><b>SPIKE</b><span>#ff3d68</span></div>
+    </div>
+
+    <div class="type">
+      <div><span class="s">DISPLAY · UNBOUNDED 700/900</span><div class="unb">ORBIT DASH</div></div>
+      <div><span class="s">TEXT · SPACE GROTESK</span><div class="sg">Two orbits. One tap. Switch lanes, bank the gems.</div></div>
+      <div><span class="s">DATA · SPACE MONO</span><div class="sm">FREE · OFFLINE · SINGLE PLAYER</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>FOR OUR OTHER PROJECTS</h2>
+    <p>This page is the studio-wide copy, so a project that cannot see the game repository can
+    still read the rule. Paste the block below into a new project's own rules file and keep the
+    link, so there is one source of truth and not a dozen paraphrases.</p>
+<pre>## Як ми працюємо — правило студії Lewydo
+
+**Спочатку прототип, потім перенос. Нічого нового одразу в грі.**
+Нова фіча, екран, UX, механіка, число чи звук — спершу в прототипі,
+прогін і тест у браузері, і лише потім патч у код гри.
+
+**Прототип — еталон, гра — його копія, не навпаки.** Зроблене в грі
+в обхід прототипу прототип не знає → паритет ламається.
+
+Просять щось **нове** напряму в код гри — **спершу нагадати це правило**,
+не кидатись робити. Наполіг — робити, але прямо сказати, що прототип
+розійдеться, і запропонувати дозаписати зміну в прототип окремим кроком.
+
+Правило не про все. Платформа і збірка, сервіси (реклама, аналітика,
+краш-репорти, лідерборди), продуктивність і рендер, шейдери, тести рушія,
+документація й market — цього в прототипі немає, тут одразу гра. Сам
+перенос і виправлення розбіжності з прототипом — теж гра.
+Не зрозуміло, нове це чи перенос — питати.
+
+Канонічна копія: https://roshevasternin.github.io/Game-Orbit-Dash/brand.html</pre>
+  </section>
+</main>
+
+<footer>
+  <nav>
+    <a href="index.html">Orbit Dash</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash">Google Play</a>
+  </nav>
+  <div class="pkg">© 2026 Lewydo</div>
+</footer>
+
+<script>
+  // Зорі: той самий генератор, що на головній (MENU_STARS у грі)
+  (function () {
+    const holder = document.getElementById('stars');
+    const n = 44;
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      const s = 1 + Math.random() * 2.4;
+      html += '<span style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' +
+        (Math.random() * 100).toFixed(1) + '%;width:' + s.toFixed(1) + 'px;height:' + s.toFixed(1) +
+        'px;--d:' + (2 + Math.random() * 3).toFixed(1) + 's"></span>';
+    }
+    holder.innerHTML = html;
+  })();
+</script>
+
+</body>
+</html>
