@@ -1,0 +1,18 @@
+Copyright (c) 2026 Lewydo™ (Vladyslav Rosheva, Liliia Rosheva). All rights reserved.
+
+This repository contains the built website of the game Orbit Dash, including a
+browser build of the game itself.
+
+The game, its source code, artwork, music, sound and the Lewydo™ brand are the
+property of Lewydo. They are published here only so that the site can be served
+from GitHub Pages and the game can be played in a browser.
+
+You may not copy, redistribute, modify, reverse engineer, republish or use any
+part of this repository — including the game build and the artwork, music and
+brand assets inside it — in your own projects or products.
+
+The Lewydo brand kit has its own terms: https://roshevasternin.github.io/brand/
+Third-party components keep their own licences; the fonts under assets/fonts/
+are used under the SIL Open Font License 1.1.
+
+For permission, write to roshevasternin@gmail.com.

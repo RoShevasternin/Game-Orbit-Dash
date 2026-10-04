@@ -1,249 +1,762 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Orbit Dash — One-Tap Neon Arcade</title>
-<meta name="description" content="Switch orbits with one tap. Dodge spikes, collect gems, unlock Orbit III and climb the global ranks. Free neon arcade game for Android.">
-
-<meta property="og:title" content="Orbit Dash — One-Tap Neon Arcade">
-<meta property="og:description" content="Switch orbits with one tap. Dodge spikes, collect gems, climb the ranks.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-t="meta.title">Orbit Dash — one-tap neon arcade</title>
+<meta name="description" data-ta="content:meta.desc" content="Two orbits, one tap. Dodge the spikes, collect the gems and ride levels built on our own music. Free on Android — and playable right in your browser.">
+<meta name="theme-color" content="#0e1024">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://roshevasternin.github.io/Game-Orbit-Dash/">
+<link rel="alternate" hreflang="en" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=en">
+<link rel="alternate" hreflang="uk" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=uk">
+<link rel="alternate" hreflang="id" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=id">
+<link rel="alternate" hreflang="de" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=de">
+<link rel="alternate" hreflang="es" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=es">
+<link rel="alternate" hreflang="fr" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=fr">
+<link rel="alternate" hreflang="it" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=it">
+<link rel="alternate" hreflang="nl" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=nl">
+<link rel="alternate" hreflang="pl" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=pl">
+<link rel="alternate" hreflang="pt" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=pt">
+<link rel="alternate" hreflang="vi" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=vi">
+<link rel="alternate" hreflang="tr" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=tr">
+<link rel="alternate" hreflang="ko" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=ko">
+<link rel="alternate" hreflang="ja" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=ja">
+<link rel="alternate" hreflang="zh-TW" href="https://roshevasternin.github.io/Game-Orbit-Dash/?lang=zh-TW">
+<link rel="alternate" hreflang="x-default" href="https://roshevasternin.github.io/Game-Orbit-Dash/">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Orbit Dash">
 <meta property="og:url" content="https://roshevasternin.github.io/Game-Orbit-Dash/">
-
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%232b3060' stroke-width='5'/%3E%3Ccircle cx='32' cy='6' r='7' fill='%2300e5ff'/%3E%3C/svg%3E">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
+<meta property="og:title" data-ta="content:meta.title" content="Orbit Dash — one-tap neon arcade">
+<meta property="og:description" data-ta="content:meta.desc" content="Two orbits, one tap. Dodge the spikes, collect the gems and ride levels built on our own music.">
+<meta property="og:image" content="https://roshevasternin.github.io/Game-Orbit-Dash/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Orbit Dash","description":"Two orbits, one tap. Dodge the spikes, collect the gems and ride levels built on our own music. Free on Android — and playable right in your browser.","url":"https://roshevasternin.github.io/Game-Orbit-Dash/","image":"https://roshevasternin.github.io/Game-Orbit-Dash/og.png","applicationCategory":"GameApplication","operatingSystem":"Android, Web browser","genre":["Arcade","Rhythm"],"inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"Lewydo","url":"https://roshevasternin.github.io/"},"publisher":{"@type":"Organization","name":"Lewydo","url":"https://roshevasternin.github.io/"}}</script>
 <style>
-  :root {
-    --bg:      #0e1024;
-    --ring:    #2b3060;
-    --player:  #00e5ff;
-    --gem:     #ffd54a;
-    --spike:   #ff3d68;
-    --text:    #ffffff;
-    --dim:     rgba(255,255,255,0.55);
-    --faint:   rgba(255,255,255,0.30);
-    --card:    rgba(255,255,255,0.045);
-    --border:  rgba(255,255,255,0.10);
-  }
+:root{
+  --bg:#0e1024; --deep:#060816; --ring:#2b3060;
+  --player:#00e5ff; --gem:#ffd54a; --spike:#ff3d68;
+  --text:#ffffff; --dim:rgba(255,255,255,.62); --faint:rgba(255,255,255,.34);
+  --card:rgba(255,255,255,.045); --line:rgba(255,255,255,.1);
+  --gap:clamp(56px,9vw,104px);
+  --disp:"Unbounded",system-ui,sans-serif;
+  --body:"Exo 2",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--body);
+  font-size:16px; line-height:1.6; overflow-x:hidden;
+  -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;
+}
+img,canvas,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--player);outline-offset:3px;border-radius:6px}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* небо гри — під усією сторінкою */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(70% 55% at 50% 18%,#1c2044 0%,var(--bg) 55%,var(--deep) 100%)}
+.sky i{position:absolute;background:#fff;border-radius:50%;animation:tw var(--d,3s) ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.14}50%{opacity:.72}}
+@media (prefers-reduced-motion:reduce){.sky i{animation:none;opacity:.4}}
 
-  body {
-    background: radial-gradient(circle at 50% 28%, #1c2044 0%, var(--bg) 55%, #080a18 100%);
-    color: var(--text);
-    font-family: "Space Grotesk", system-ui, sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+.wrap{position:relative;z-index:1;width:100%;max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+.skip{position:absolute;left:-9999px;top:0;background:var(--player);color:#04121a;padding:10px 16px;border-radius:0 0 10px 0;font-weight:700;z-index:99}
+.skip:focus{left:0}
 
-  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-  .stars span {
-    position: absolute; background: #fff; border-radius: 50%;
-    animation: twinkle var(--d, 3s) ease-in-out infinite;
-  }
-  @keyframes twinkle { 0%,100% { opacity: .15; } 50% { opacity: .7; } }
+/* ── шапка ─────────────────────────────────────────────── */
+header{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
+  background:rgba(8,10,26,.76);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:12px;min-height:60px}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:900;
+  font-size:14px;letter-spacing:.11em;white-space:nowrap}
+.logo .o{color:var(--player)} .logo .d{color:var(--gem)}
+.logo .mk{width:26px;height:26px;flex:none;position:relative}
+.logo .mk i{position:absolute;border:2px solid var(--ring);border-radius:50%}
+.logo .mk i:first-child{inset:0}.logo .mk i:nth-child(2){inset:7px}
+.logo .mk b{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--player);
+  top:-2px;left:50%;margin-left:-3.5px;box-shadow:0 0 8px var(--player)}
+nav.sections{display:none;margin-left:auto;gap:clamp(12px,2vw,26px)}
+nav.sections a{font-size:14px;color:var(--dim)}
+nav.sections a:hover{color:var(--text)}
+.bar .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+nav.sections+.right{margin-left:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--body);font-weight:700;border:0;cursor:pointer;white-space:nowrap;
+  border-radius:14px;padding:12px 18px;font-size:15px;transition:transform .14s ease,box-shadow .14s ease,background .14s ease}
+.btn:active{transform:scale(.97)}
+.btn-play{background:var(--player);color:#04121a;box-shadow:0 0 26px rgba(0,229,255,.34)}
+.btn-play:hover{box-shadow:0 0 38px rgba(0,229,255,.5)}
+.btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:rgba(255,255,255,.3)}
+.btn-sm{padding:9px 14px;font-size:13.5px;border-radius:12px}
+.btn svg{width:18px;height:18px;flex:none}
 
-  main { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+/* перемикач мов */
+.lang{position:relative}
+.lang>button{display:inline-flex;align-items:center;gap:7px;background:var(--card);
+  border:1px solid var(--line);color:var(--text);border-radius:12px;padding:8px 11px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.08em;cursor:pointer}
+.lang>button:hover{border-color:rgba(255,255,255,.3)}
+.lang menu{position:absolute;right:0;top:calc(100% + 8px);display:none;list-style:none;
+  background:#11142c;border:1px solid var(--line);border-radius:14px;padding:6px;
+  max-height:min(60vh,380px);overflow-y:auto;box-shadow:0 18px 44px rgba(0,0,0,.55);min-width:170px}
+.lang[open] menu{display:block}
+.lang menu button{display:flex;width:100%;align-items:center;gap:9px;background:none;border:0;
+  color:var(--dim);font-family:var(--body);font-size:14px;padding:8px 10px;border-radius:9px;cursor:pointer;text-align:left}
+.lang menu button:hover{background:rgba(255,255,255,.07);color:var(--text)}
+.lang menu button[aria-current=true]{color:var(--player)}
 
-  /* ── HERO ─────────────────────────────────────────────── */
-  .hero { min-height: 92vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 72px 0 48px; }
+/* ── герой ─────────────────────────────────────────────── */
+.hero{padding:clamp(34px,6vw,66px) 0 var(--gap)}
+.hero-grid{display:grid;gap:clamp(30px,5vw,52px);align-items:center}
+.badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.17em;text-transform:uppercase;color:var(--player);
+  border:1px solid rgba(0,229,255,.34);background:rgba(0,229,255,.07);
+  border-radius:999px;padding:6px 13px}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--player);box-shadow:0 0 9px var(--player)}
+h1{font-family:var(--disp);font-weight:900;line-height:.92;letter-spacing:.055em;
+  font-size:clamp(46px,12vw,92px);margin:20px 0 0}
+h1 .o{color:var(--player);text-shadow:0 0 36px rgba(0,229,255,.7),0 0 9px rgba(0,229,255,.5);display:block}
+h1 .d{color:var(--gem);text-shadow:0 0 36px rgba(255,213,74,.6),0 0 9px rgba(255,213,74,.45);display:block}
+.lead{font-family:var(--disp);font-weight:700;font-size:clamp(17px,2.6vw,22px);margin-top:20px;line-height:1.3}
+.sub{color:var(--dim);margin-top:14px;max-width:46ch;font-size:clamp(15px,1.7vw,17px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--card)}
+.cta{display:flex;flex-wrap:wrap;gap:11px;margin-top:26px}
+.cta .btn{flex:1 1 210px}
 
-  .eyebrow {
-    font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: 5px;
-    color: var(--faint); text-transform: uppercase; margin-bottom: 40px;
-  }
+/* міні-гра */
+.play-box{position:relative;border-radius:26px;overflow:hidden;
+  border:1px solid rgba(0,229,255,.2);background:linear-gradient(180deg,rgba(18,22,52,.9),rgba(8,10,26,.9));
+  box-shadow:0 0 50px rgba(0,229,255,.1),inset 0 0 70px rgba(0,229,255,.05)}
+.play-box canvas{width:100%;aspect-ratio:1/1;touch-action:manipulation;cursor:pointer;background:transparent}
+.hud{position:absolute;inset:14px 16px auto;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--faint);pointer-events:none}
+.hud b{color:var(--gem);font-weight:700}
+.hud .sc{color:var(--player)}
+.tip{position:absolute;inset:auto 0 0;padding:13px 16px 16px;text-align:center;
+  font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--player);background:linear-gradient(180deg,transparent,rgba(6,8,22,.9));pointer-events:none}
+.tip.hide{opacity:0;transition:opacity .3s ease}
 
-  /* Емблема — та сама, що в лоадері гри */
-  .emblem { position: relative; width: 190px; height: 190px; margin-bottom: 40px; filter: drop-shadow(0 0 26px rgba(0,229,255,0.5)); }
-  .emblem .r1, .emblem .r2 { position: absolute; border: 4px solid var(--ring); border-radius: 50%; }
-  .emblem .r1 { inset: 0; }
-  .emblem .r2 { inset: 38px; }
-  .emblem .o1 { position: absolute; inset: 0; animation: spin 7s linear infinite; }
-  .emblem .o2 { position: absolute; inset: 38px; animation: spin 10s linear infinite reverse; }
-  .emblem .player {
-    position: absolute; width: 26px; height: 26px; border-radius: 50%;
-    background: var(--player); top: -13px; left: 50%; margin-left: -13px;
-    box-shadow: 0 0 20px var(--player), 0 0 44px rgba(0,229,255,0.6);
-  }
-  .emblem .gem {
-    position: absolute; width: 17px; height: 17px; border-radius: 3px;
-    background: var(--gem); transform: rotate(45deg);
-    top: -9px; left: 50%; margin-left: -9px;
-    box-shadow: 0 0 16px var(--gem);
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── загальні секції ───────────────────────────────────── */
+section{padding:var(--gap) 0;position:relative;z-index:1;scroll-margin-top:72px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+h2{font-family:var(--disp);font-weight:900;letter-spacing:.03em;line-height:1.08;
+  font-size:clamp(26px,4.6vw,42px);margin:14px 0 0}
+.section-lead{color:var(--dim);margin-top:14px;max-width:62ch;font-size:clamp(15px,1.7vw,17px)}
+.grid{display:grid;gap:14px;margin-top:clamp(26px,4vw,40px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px;
+  transition:border-color .2s ease,transform .2s ease}
+.card:hover{transform:translateY(-3px);border-color:var(--glow,var(--player))}
+.card h3{font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.085em;margin:16px 0 8px}
+.card p{color:var(--dim);font-size:14.5px}
+.card .ic{height:40px;display:flex;align-items:center}
 
-  h1 { font-family: "Unbounded", sans-serif; font-weight: 900; line-height: 0.95; font-size: clamp(52px, 9vw, 96px); letter-spacing: 0.06em; }
-  h1 .orbit { color: var(--player); text-shadow: 0 0 34px rgba(0,229,255,0.75), 0 0 8px rgba(0,229,255,0.5); }
-  h1 .dash  { color: var(--gem);    text-shadow: 0 0 34px rgba(255,213,74,0.65), 0 0 8px rgba(255,213,74,0.45); display: block; }
+/* як грати */
+.steps{counter-reset:s}
+.step{position:relative;padding-left:60px}
+.step::before{counter-increment:s;content:counter(s,decimal-leading-zero);
+  position:absolute;left:20px;top:22px;font-family:var(--mono);font-weight:700;font-size:13px;color:var(--player)}
+.step h3{margin-top:0}
 
-  .tagline { margin-top: 26px; font-size: clamp(16px, 2.4vw, 20px); color: var(--dim); max-width: 460px; }
-  .tagline b { color: var(--text); font-weight: 700; }
+/* рівні */
+.lv{display:flex;align-items:center;gap:12px;min-width:0;background:var(--card);
+  border:1px solid var(--line);border-radius:18px;padding:13px 14px}
+.lv .n{font-family:var(--mono);font-size:12px;color:var(--faint);width:22px;flex:none}
+@media (max-width:359px){.lv .n{display:none}}
+.lv .t{flex:1;min-width:0}
+.lv .t b{display:block;font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.07em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv .meta{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);
+  letter-spacing:.07em;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv .dots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:7px}
+.lv .dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18)}
+.lv .dots i.on{background:var(--spike);box-shadow:0 0 6px rgba(255,61,104,.7)}
+.lv button{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid rgba(0,229,255,.34);
+  background:rgba(0,229,255,.08);color:var(--player);cursor:pointer;display:grid;place-items:center;
+  transition:transform .14s ease,background .14s ease}
+.lv button:hover{background:rgba(0,229,255,.17)}
+.lv button:active{transform:scale(.93)}
+.lv button svg{width:16px;height:16px}
+.lv.on{border-color:rgba(0,229,255,.45);box-shadow:0 0 24px rgba(0,229,255,.13)}
+.lv .pb{display:block;height:3px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:7px;overflow:hidden}
+.lv .pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--player),var(--gem))}
+.note{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:16px;letter-spacing:.06em}
 
-  .cta {
-    display: inline-flex; align-items: center; gap: 14px;
-    margin-top: 40px; padding: 18px 34px; border-radius: 20px;
-    background: var(--player); color: var(--bg); text-decoration: none;
-    font-family: "Unbounded", sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 2px;
-    box-shadow: 0 0 34px rgba(0,229,255,0.45);
-    transition: transform .15s ease, box-shadow .15s ease;
-  }
-  .cta:hover  { transform: translateY(-2px); box-shadow: 0 0 48px rgba(0,229,255,0.65); }
-  .cta:active { transform: scale(0.97); }
-  .cta svg { width: 22px; height: 22px; }
+/* скриншоти */
+.shots{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  margin-top:clamp(26px,4vw,40px);padding-bottom:10px;scrollbar-width:thin}
+.shots img{width:min(66vw,246px);flex:none;scroll-snap-align:center;border-radius:18px;
+  border:1px solid var(--line);background:#0b0d1d}
 
-  .meta {
-    margin-top: 22px; font-family: "Space Mono", monospace;
-    font-size: 12px; letter-spacing: 3px; color: var(--faint);
-  }
+/* грати */
+.playcta{text-align:center;border:1px solid rgba(0,229,255,.2);border-radius:26px;
+  padding:clamp(30px,5vw,54px) clamp(20px,4vw,40px);
+  background:radial-gradient(70% 100% at 50% 0,rgba(0,229,255,.1),transparent 70%),var(--card)}
+.playcta h2{margin-top:10px}
+.playcta .section-lead{margin-left:auto;margin-right:auto}
+.playcta .cta{justify-content:center;margin-top:26px}
+.playcta .cta .btn{flex:0 1 250px}
 
-  /* ── FEATURES ─────────────────────────────────────────── */
-  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; padding: 24px 0 64px; }
+/* студія — знак Lewydo за стандартом бренду */
+.studio{text-align:center}
+.studio .lw-lockup{margin:0 auto}
+.studio-text{color:var(--dim);max-width:44ch;margin:26px auto 0;font-size:clamp(15px,1.7vw,17px)}
+.studio-thanks{font-weight:700;color:var(--text);margin-top:10px}
+.studio .cta{justify-content:center;max-width:430px;margin-left:auto;margin-right:auto}
 
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-    padding: 24px 20px; transition: border-color .2s ease, transform .2s ease;
-  }
-  .card:hover { transform: translateY(-3px); border-color: var(--glow, var(--player)); box-shadow: 0 0 26px color-mix(in srgb, var(--glow, var(--player)) 22%, transparent); }
+/* підвал */
+footer{border-top:1px solid var(--line);padding:34px 0 46px;position:relative;z-index:1}
+footer nav{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:center}
+footer nav a{color:var(--dim);font-size:14px}
+footer nav a:hover{color:var(--player)}
+footer .fine{text-align:center;margin-top:16px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.1em;color:var(--faint);line-height:1.9}
 
-  .card .icon { height: 34px; margin-bottom: 16px; display: flex; align-items: center; }
-  .card h3 { font-family: "Unbounded", sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.6px; margin-bottom: 8px; }
-  .card p  { font-size: 13.5px; line-height: 1.5; color: var(--dim); }
+@media (min-width:720px){
+  .grid.g3{grid-template-columns:repeat(3,1fr)}
+  .grid.g2{grid-template-columns:repeat(2,1fr)}
+  .lv-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:980px){
+  nav.sections{display:flex}
+  .hero-grid{grid-template-columns:1.05fr .95fr}
+  .hero-grid .play-box{order:2}
+  .grid.g4{grid-template-columns:repeat(4,1fr)}
+}
 
-  /* мікро-гліфи фіч — з ігрових сутностей */
-  .g-ring  { width: 28px; height: 28px; border: 3px solid var(--player); border-radius: 50%; position: relative; box-shadow: 0 0 12px rgba(0,229,255,0.5); }
-  .g-ring::after { content: ""; position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--player); top: -6px; left: 50%; margin-left: -4.5px; }
-  .g-rings { width: 30px; height: 30px; border: 2px solid var(--gem); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(255,213,74,0.4); }
-  .g-rings::before { content: ""; width: 14px; height: 14px; border: 2px solid var(--gem); border-radius: 50%; }
-  .g-gem   { width: 16px; height: 16px; background: var(--gem); transform: rotate(45deg); border-radius: 3px; box-shadow: 0 0 14px var(--gem); }
-  .g-skin  { display: flex; gap: 5px; }
-  .g-skin i { width: 12px; height: 12px; border-radius: 50%; }
-  .g-streak { display: flex; gap: 4px; align-items: center; }
-  .g-streak i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.16); }
-  .g-streak i.on { background: var(--gem); box-shadow: 0 0 8px var(--gem); }
-  .g-rank { font-family: "Space Mono", monospace; font-weight: 700; font-size: 20px; color: var(--player); text-shadow: 0 0 14px rgba(0,229,255,0.7); }
+.lw{--lw-u:clamp(.6px,.18vw + .48px,.92px)}
+.lw-lockup{display:flex;flex-direction:column;align-items:center;width:calc(208 * var(--lw-u));height:calc(322 * var(--lw-u))}
+.lw-logo{position:relative;display:block;flex:none;width:calc(208 * var(--lw-u));height:calc(208 * var(--lw-u))}
+.lw-back,.lw-front{position:absolute;display:block;transform-origin:50% 50%}
+.lw-back{left:0;top:0;width:100%;height:100%}
+.lw-front{left:16.346%;top:16.346%;width:67.308%;height:67.308%}
+.lw-name{display:block;flex:none;width:calc(208 * var(--lw-u));height:calc(74 * var(--lw-u))}
+.lw-slogan{display:block;flex:none;width:calc(208 * var(--lw-u));height:calc(19 * var(--lw-u))}
+.lw-line{display:block;flex:none;width:calc(146 * var(--lw-u));height:calc(1 * var(--lw-u));min-height:1px;margin-top:calc(20 * var(--lw-u))}
+.lw-beating .lw-front{animation:lwHeart 440ms linear 1}
+.lw-beating .lw-back{animation:lwGlow 450ms linear 1 forwards}
+@keyframes lwHeart{0%{transform:scale(1);animation-timing-function:cubic-bezier(.61,1,.88,1)}22.727%{transform:scale(1.13);animation-timing-function:cubic-bezier(.12,0,.39,0)}
+  50%{transform:scale(1);animation-timing-function:cubic-bezier(.61,1,.88,1)}72.727%{transform:scale(1.07);animation-timing-function:cubic-bezier(.12,0,.39,0)}100%{transform:scale(1)}}
+@keyframes lwGlow{0%,11.111%{transform:scale(1);animation-timing-function:cubic-bezier(.61,1,.88,1)}37.778%{transform:scale(1.15);animation-timing-function:cubic-bezier(.12,0,.39,0)}100%{transform:scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.lw-beating .lw-front,.lw-beating .lw-back{animation:none}}
 
-  /* ── HOW ──────────────────────────────────────────────── */
-  .how {
-    text-align: center; padding: 8px 0 84px;
-    font-family: "Space Mono", monospace; letter-spacing: 4px; font-size: 14px; color: var(--dim);
-  }
-  .how b { color: var(--text); }
-  .how .hint { animation: pulse 2.4s ease-in-out infinite; display: inline-block; }
-  @keyframes pulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+/* мікро-гліфи карток — із сутностей гри */
+.g-ring{width:30px;height:30px;border:3px solid var(--player);border-radius:50%;position:relative;box-shadow:0 0 13px rgba(0,229,255,.5)}
+.g-ring::after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:var(--player);top:-6px;left:50%;margin-left:-4.5px}
+.g-rings{width:32px;height:32px;border:2px solid var(--gem);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 13px rgba(255,213,74,.4)}
+.g-rings::before{content:"";width:15px;height:15px;border:2px solid var(--gem);border-radius:50%}
+.g-wave{display:flex;align-items:flex-end;gap:3px;height:26px}
+.g-wave::before,.g-wave::after{content:"";width:4px;border-radius:2px;background:#ff3ec8;box-shadow:0 0 9px #ff3ec8}
+.g-wave::before{height:26px}.g-wave::after{height:13px}
+.g-skin{display:flex;gap:5px}
+.g-skin i{width:13px;height:13px;border-radius:50%}
+.g-streak{display:flex;gap:4px;align-items:center}
+.g-streak i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.16)}
+.g-streak i.on{background:var(--gem);box-shadow:0 0 8px var(--gem)}
+.g-rank{font-family:var(--mono);font-weight:700;font-size:21px;color:var(--player);text-shadow:0 0 14px rgba(0,229,255,.7)}
 
-  /* ── FOOTER ───────────────────────────────────────────── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 34px 24px 44px; text-align: center; position: relative; z-index: 1;
-  }
-  footer nav { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
-  footer a { color: var(--dim); text-decoration: none; font-size: 14px; }
-  footer a:hover { color: var(--player); }
-  footer .pkg { font-family: "Space Mono", monospace; font-size: 11px; letter-spacing: 3px; color: var(--faint); }
-
-  a:focus-visible, .cta:focus-visible { outline: 2px solid var(--player); outline-offset: 3px; border-radius: 6px; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .emblem .o1, .emblem .o2, .stars span, .how .hint { animation: none; }
-  }
-  @media (max-width: 560px) {
-    .hero { min-height: 86vh; }
-    .features { grid-template-columns: 1fr 1fr; }
-  }
 </style>
 </head>
 <body>
+<a class="skip" href="#main" data-t="skip">Skip to content</a>
+<div class="sky" id="sky" aria-hidden="true"></div>
 
-<div class="stars" id="stars" aria-hidden="true"></div>
-
-<main>
-  <section class="hero">
-    <div class="eyebrow">One-tap neon arcade</div>
-
-    <div class="emblem" aria-hidden="true">
-      <div class="r1"></div>
-      <div class="r2"></div>
-      <div class="o1"><div class="player"></div></div>
-      <div class="o2"><div class="gem"></div></div>
-    </div>
-
-    <h1><span class="orbit">ORBIT</span><span class="dash">DASH</span></h1>
-
-    <p class="tagline">Two orbits. One tap. <b>Switch lanes</b>, graze the spikes for combo,
-    bank the gems before they get you.</p>
-
-    <a class="cta" href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 2.5v19l11-9.5L4 2.5zm12.6 8.1 3.6 3.1c.9.5.9 1.7 0 2.2l-3.6 2 -2.8-2.4 2.8-4.9zM16.6 10.6 6.8 2.2l9.8 5.6v2.8z" opacity="0"/><path d="M3.6 1.8c-.4.2-.6.6-.6 1.1v18.2c0 .5.2.9.6 1.1l9.9-10.2L3.6 1.8zm11.3 8.8 2.6-1.5-2.3-1.3-8.9-5.1 8.6 7.9zm0 2.8-8.6 7.9 11.2-6.4-2.6-1.5zm4.2-2.4-2.9 1.7v.7l2.9 1.7c1.2.7 1.2-4.8 0-4.1z"/></svg>
-      Get it on Google Play
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#top" aria-label="Orbit Dash">
+      <span class="mk" aria-hidden="true"><i></i><i></i><b></b></span>
+      <span><span class="o">ORBIT</span> <span class="d">DASH</span></span>
     </a>
+    <nav class="sections" data-ta="aria-label:nav.label" aria-label="Site sections">
+      <a href="#how" data-t="nav.how">How to play</a>
+      <a href="#features" data-t="nav.feat">Features</a>
+      <a href="#levels" data-t="nav.levels">Levels</a>
+      <a href="#shots" data-t="nav.shots">Screenshots</a>
+      <a href="#studio" data-t="nav.studio">Studio</a>
+    </nav>
+    <div class="right">
+      <a class="btn btn-play btn-sm" href="play/"><span data-t="cta.playShort">Play</span></a>
+      <div class="lang" id="lang">
+        <button type="button" aria-haspopup="true" aria-expanded="false" data-ta="aria-label:cta.lang" aria-label="Language">
+          <span id="langNow">EN</span>
+          <svg viewBox="0 0 10 6" width="10" height="6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <menu id="langList"></menu>
+      </div>
+    </div>
+  </div>
+</header>
 
-    <div class="meta">FREE · OFFLINE · SINGLE PLAYER</div>
-  </section>
+<main id="main">
+<span id="top"></span>
 
-  <section class="features" aria-label="Game features">
-    <div class="card" style="--glow:#00e5ff">
-      <div class="icon"><span class="g-ring"></span></div>
-      <h3>ONE TAP</h3>
-      <p>Tap to jump between orbits. Easy to learn, brutal to master — the ring only speeds up.</p>
+<!-- ── ГЕРОЙ ─────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="badge" data-t="hero.badge">Out now on Google Play</span>
+      <h1><span class="o">ORBIT</span><span class="d">DASH</span></h1>
+      <p class="lead" data-t="hero.lead">Two orbits. One tap.</p>
+      <p class="sub" data-t="hero.sub">Tap to switch lanes, graze the spikes for combo, and bank the gems before they get you. Easy to learn — the ring only speeds up.</p>
+      <div class="chips">
+        <span class="chip" data-t="chip.free">Free</span>
+        <span class="chip" data-t="chip.offline">Works offline</span>
+        <span class="chip" data-t="chip.oneTap">One-tap controls</span>
+      </div>
+      <div class="cta">
+        <a class="btn btn-play" href="play/">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3.5v17l14-8.5z"/></svg>
+          <span data-t="cta.play">Play in your browser</span>
+        </a>
+        <a class="btn btn-ghost" href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.6 1.8c-.4.2-.6.6-.6 1.1v18.2c0 .5.2.9.6 1.1l9.9-10.2L3.6 1.8zm11.3 8.8 2.6-1.5-2.3-1.3-8.9-5.1 8.6 7.9zm0 2.8-8.6 7.9 11.2-6.4-2.6-1.5zm4.2-2.4-2.9 1.7v.7l2.9 1.7c1.2.7 1.2-4.8 0-4.1z"/></svg>
+          <span data-t="cta.gp">Get it on Google Play</span>
+        </a>
+      </div>
     </div>
-    <div class="card" style="--glow:#ffd54a">
-      <div class="icon"><span class="g-rings"></span></div>
-      <h3>ORBIT III</h3>
-      <p>Unlock the third ring. It comes online mid-run — and every gem on it counts ×2.</p>
-    </div>
-    <div class="card" style="--glow:#ff3ec8">
-      <div class="icon"><span class="g-skin">
-        <i style="background:#00e5ff"></i><i style="background:#ff3ec8"></i><i style="background:#a86bff"></i><i style="background:#ffe27a"></i>
-      </span></div>
-      <h3>NEON SKINS</h3>
-      <p>8 palettes and 7 permanent upgrades. Magnet, shield, combo keeper — build your run.</p>
-    </div>
-    <div class="card" style="--glow:#ffd54a">
-      <div class="icon"><span class="g-streak">
-        <i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i>
-      </span></div>
-      <h3>DAILY MISSIONS</h3>
-      <p>Three fresh missions every day. Keep the streak alive — day seven pays the most.</p>
-    </div>
-    <div class="card" style="--glow:#00e5ff">
-      <div class="icon"><span class="g-rank">#1</span></div>
-      <h3>GLOBAL RANKS</h3>
-      <p>Every new best goes straight to the leaderboard. Beat your friends, then the world.</p>
-    </div>
-  </section>
 
-  <p class="how"><span class="hint"><b>TAP</b> = SWITCH ORBIT</span></p>
+    <div class="play-box">
+      <div class="hud"><span class="sc"><span data-t="hero.score">Score</span> <b id="odScore">0</b></span><span><span data-t="hero.best">Best</span> <b id="odBest">0</b></span></div>
+      <canvas id="od" tabindex="0" role="button" data-ta="aria-label:hero.aria" aria-label="Orbit Dash mini-game. Tap it or press Space to switch orbits"></canvas>
+      <div class="tip" id="odTip" data-t="hero.try">Tap the ring to play</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ЯК ГРАТИ ──────────────────────────────────────────── -->
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow" data-t="nav.how">How to play</p>
+    <h2 data-t="how.title">How to play</h2>
+    <div class="grid g3 steps">
+      <div class="card step" style="--glow:#00e5ff"><h3 data-t="how.1.t">Tap to switch</h3><p data-t="how.1.d">Your ball runs along a ring. One tap anywhere and it jumps to the other orbit. That is the whole control scheme.</p></div>
+      <div class="card step" style="--glow:#ff3d68"><h3 data-t="how.2.t">Graze for combo</h3><p data-t="how.2.d">Pass close to a spike without touching it and your combo climbs. The closer you dare, the richer every gem becomes.</p></div>
+      <div class="card step" style="--glow:#ffd54a"><h3 data-t="how.3.t">Bank the gems</h3><p data-t="how.3.d">Gems you pick up become ◆ — they buy skins, permanent upgrades and new levels. Hit a spike and the run ends, so know when to stop.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── МОЖЛИВОСТІ ────────────────────────────────────────── -->
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow" data-t="nav.feat">Features</p>
+    <h2 data-t="feat.title">What's inside</h2>
+    <div class="grid g3">
+      <div class="card" style="--glow:#00e5ff"><div class="ic"><span class="g-ring"></span></div><h3 data-t="feat.tap.t">One tap, no mercy</h3><p data-t="feat.tap.d">Learn it in a second, chase it for weeks. The ring never stops speeding up.</p></div>
+      <div class="card" style="--glow:#ffd54a"><div class="ic"><span class="g-rings"></span></div><h3 data-t="feat.o3.t">Orbit III</h3><p data-t="feat.o3.d">Unlock the third ring. It comes online mid-run — and every gem on it counts double.</p></div>
+      <div class="card" style="--glow:#ff3ec8"><div class="ic"><span class="g-wave"></span></div><h3 data-t="feat.levels.t">Levels on our own music</h3><p data-t="feat.levels.d">Five hand-built levels, each cut to its own track. Every jump lands on the beat.</p></div>
+      <div class="card" style="--glow:#a86bff"><div class="ic"><span class="g-skin"><i style="background:#00e5ff"></i><i style="background:#ff3ec8"></i><i style="background:#a86bff"></i><i style="background:#ffe27a"></i></span></div><h3 data-t="feat.skins.t">Neon skins &amp; upgrades</h3><p data-t="feat.skins.d">Eight palettes and seven permanent upgrades: magnet, shield, combo keeper — build your run.</p></div>
+      <div class="card" style="--glow:#ffd54a"><div class="ic"><span class="g-streak"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></span></div><h3 data-t="feat.daily.t">Daily missions</h3><p data-t="feat.daily.d">Three fresh missions every day. Keep the streak alive — day seven pays the most.</p></div>
+      <div class="card" style="--glow:#00e5ff"><div class="ic"><span class="g-rank">#1</span></div><h3 data-t="feat.ranks.t">Global ranks</h3><p data-t="feat.ranks.d">Every new best goes straight to the leaderboard. Beat your friends, then the world.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── РІВНІ Й МУЗИКА ────────────────────────────────────── -->
+<section id="levels">
+  <div class="wrap">
+    <p class="eyebrow" data-t="nav.levels">Levels</p>
+    <h2 data-t="levels.title">Five levels, five tracks</h2>
+    <p class="section-lead" data-t="levels.lead">All the music in Orbit Dash is ours — written, played and mixed for this game. Press play and hear what a level sounds like.</p>
+    <div class="grid lv-grid" id="lvList"><div class="lv" data-audio="audio/first-light.preview.mp3"><span class="n">01</span><span class="t"><b>FIRST LIGHT</b><span class="meta">SYNTHWAVE · 104 BPM · 1:12<span class="dots" aria-hidden="true"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span></span><span class="pb"><i></i></span></span><button type="button"></button></div><div class="lv" data-audio="audio/slow-orbit.preview.mp3"><span class="n">02</span><span class="t"><b>SLOW ORBIT</b><span class="meta">LO-FI · 84 BPM · 1:36<span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i></span></span><span class="pb"><i></i></span></span><button type="button"></button></div><div class="lv" data-audio="audio/neon-drift.preview.mp3"><span class="n">03</span><span class="t"><b>NEON DRIFT</b><span class="meta">PHONK · 140 BPM · 1:32<span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></span><span class="pb"><i></i></span></span><button type="button"></button></div><div class="lv" data-audio="audio/hyperlane.preview.mp3"><span class="n">04</span><span class="t"><b>HYPERLANE</b><span class="meta">DARKSYNTH · 160 BPM · 1:26<span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="pb"><i></i></span></span><button type="button"></button></div><div class="lv" data-audio="audio/starborn.preview.mp3"><span class="n">05</span><span class="t"><b>STARBORN</b><span class="meta">CINEMATIC BASS · 130 BPM · 1:24<span class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></span></span><span class="pb"><i></i></span></span><button type="button"></button></div></div>
+    <p class="note" data-t="levels.note">Short previews. The full tracks are in the game.</p>
+  </div>
+</section>
+
+<!-- ── СКРИНШОТИ ─────────────────────────────────────────── -->
+<section id="shots">
+  <div class="wrap">
+    <p class="eyebrow" data-t="nav.shots">Screenshots</p>
+    <h2 data-t="shots.title">Screenshots</h2>
+  </div>
+  <div class="wrap"><div class="shots"><img src="assets/shots/menu.webp" width="360" height="800" alt="" decoding="async"><img src="assets/shots/run.webp" width="360" height="800" alt="" decoding="async"><img src="assets/shots/levels.webp" width="360" height="800" alt="" decoding="async"><img src="assets/shots/level.webp" width="360" height="800" alt="" decoding="async"><img src="assets/shots/shop.webp" width="360" height="800" alt="" decoding="async"></div></div>
+</section>
+
+<!-- ── ГРАТИ ─────────────────────────────────────────────── -->
+<section id="play">
+  <div class="wrap">
+    <div class="playcta">
+      <p class="eyebrow" data-t="cta.playShort">Play</p>
+      <h2 data-t="play.title">Play it right now</h2>
+      <p class="section-lead" data-t="play.lead">The whole game runs in your browser — phone or desktop, nothing to install. Your progress stays in this browser; the Android app keeps its own.</p>
+      <div class="cta">
+        <a class="btn btn-play" href="play/">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3.5v17l14-8.5z"/></svg>
+          <span data-t="cta.play">Play in your browser</span>
+        </a>
+        <a class="btn btn-ghost" href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash" target="_blank" rel="noopener"><span data-t="cta.gp">Get it on Google Play</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── СТУДІЯ ────────────────────────────────────────────── -->
+<section id="studio" class="studio">
+  <div class="wrap">
+    <p class="eyebrow" data-t="nav.studio">Studio</p>
+    <h2 data-t="studio.title">The studio behind it</h2>
+    <div style="margin-top:34px"><div class="lw lw-lockup"><div class="lw-logo"><img class="lw-back" src="assets/brand/brand_back.webp" alt=""><img class="lw-front" src="assets/brand/brand_front.webp" alt=""></div><img class="lw-name" src="assets/brand/lewydo.webp" alt="Lewydo"><img class="lw-slogan" src="assets/brand/slogan.webp" alt="Love What You Do"><img class="lw-line" src="assets/brand/brand_line.webp" alt=""></div></div>
+    <p class="studio-text" data-t="studio.text">Lewydo is a two-person indie game studio from Ukraine. Vlad codes, Lilya designs. Together we make the games we love to play.</p>
+    <p class="studio-text studio-thanks" data-t="studio.thanks">Thank you for playing!</p>
+    <div class="cta">
+      <a class="btn btn-ghost" href="https://roshevasternin.github.io/" target="_blank" rel="noopener"><span data-t="studio.site">Our website</span></a>
+      <a class="btn btn-ghost" href="https://play.google.com/store/apps/dev?id=5953840215091948966" target="_blank" rel="noopener"><span data-t="studio.games">Our games on Google Play</span></a>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer>
-  <nav>
-    <a href="privacy.html">Privacy Policy</a>
-    <a href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash">Google Play</a>
-  </nav>
-  <div class="pkg">com.lewydo.orbitdash · © 2026 Lewydo</div>
+  <div class="wrap">
+    <nav>
+      <a href="play/" data-t="cta.play">Play in your browser</a>
+      <a href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash" target="_blank" rel="noopener" data-t="cta.gp">Get it on Google Play</a>
+      <a href="privacy.html" data-t="foot.privacy">Privacy</a>
+      <a href="https://roshevasternin.github.io/brand/" target="_blank" rel="noopener" data-t="foot.brand">Brand</a>
+      <a href="https://roshevasternin.github.io/" target="_blank" rel="noopener">Lewydo</a>
+    </nav>
+    <p class="fine">
+      <span data-t="foot.noTrack">No ads, no analytics, no cookies on this site.</span><br>
+      © 2026 Lewydo™ · Love What You Do · <span data-t="foot.rights">All rights reserved.</span><br>
+      com.lewydo.orbitdash
+    </p>
+  </div>
 </footer>
 
 <script>
-  // Зорі: генеруємо один раз, як MENU_STARS у грі
-  (function () {
-    const holder = document.getElementById('stars');
-    const n = 44;
-    let html = '';
-    for (let i = 0; i < n; i++) {
-      const s = 1 + Math.random() * 2.4;
-      html += '<span style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' +
-        (Math.random() * 100).toFixed(1) + '%;width:' + s.toFixed(1) + 'px;height:' + s.toFixed(1) +
-        'px;--d:' + (2 + Math.random() * 3).toFixed(1) + 's"></span>';
-    }
-    holder.innerHTML = html;
-  })();
+window.OD_STRINGS = {"_about":"Тексти сайту 15 мовами — генерує site/tools/strings_src.py. Руками не правити.","en":{"meta.title":"Orbit Dash — one-tap neon arcade","meta.desc":"Two orbits, one tap. Dodge the spikes, collect the gems and ride levels built on our own music. Free on Android — and playable right in your browser.","skip":"Skip to content","nav.label":"Site sections","nav.how":"How to play","nav.feat":"Features","nav.levels":"Levels","nav.shots":"Screenshots","nav.studio":"Studio","cta.play":"Play in your browser","cta.playShort":"Play","cta.gp":"Get it on Google Play","cta.lang":"Language","hero.badge":"Out now on Google Play","hero.lead":"Two orbits. One tap.","hero.sub":"Tap to switch lanes, graze the spikes for combo, and bank the gems before they get you. Easy to learn — the ring only speeds up.","hero.try":"Tap the ring to play","hero.again":"Tap to try again","hero.aria":"Orbit Dash mini-game. Tap it or press Space to switch orbits","hero.score":"Score","hero.best":"Best","chip.free":"Free","chip.offline":"Works offline","chip.oneTap":"One-tap controls","how.title":"How to play","how.1.t":"Tap to switch","how.1.d":"Your ball runs along a ring. One tap anywhere and it jumps to the other orbit. That is the whole control scheme.","how.2.t":"Graze for combo","how.2.d":"Pass close to a spike without touching it and your combo climbs. The closer you dare, the richer every gem becomes.","how.3.t":"Bank the gems","how.3.d":"Gems you pick up become ◆ — they buy skins, permanent upgrades and new levels. Hit a spike and the run ends, so know when to stop.","feat.title":"What's inside","feat.tap.t":"One tap, no mercy","feat.tap.d":"Learn it in a second, chase it for weeks. The ring never stops speeding up.","feat.o3.t":"Orbit III","feat.o3.d":"Unlock the third ring. It comes online mid-run — and every gem on it counts double.","feat.levels.t":"Levels on our own music","feat.levels.d":"Five hand-built levels, each cut to its own track. Every jump lands on the beat.","feat.skins.t":"Neon skins & upgrades","feat.skins.d":"Eight palettes and seven permanent upgrades: magnet, shield, combo keeper — build your run.","feat.daily.t":"Daily missions","feat.daily.d":"Three fresh missions every day. Keep the streak alive — day seven pays the most.","feat.ranks.t":"Global ranks","feat.ranks.d":"Every new best goes straight to the leaderboard. Beat your friends, then the world.","levels.title":"Five levels, five tracks","levels.lead":"All the music in Orbit Dash is ours — written, played and mixed for this game. Press play and hear what a level sounds like.","levels.listen":"Play preview","levels.stop":"Stop","levels.note":"Short previews. The full tracks are in the game.","shots.title":"Screenshots","play.title":"Play it right now","play.lead":"The whole game runs in your browser — phone or desktop, nothing to install. Your progress stays in this browser; the Android app keeps its own.","play.loading":"Loading…","play.back":"Back to the site","studio.title":"The studio behind it","studio.site":"Our website","studio.games":"Our games on Google Play","foot.privacy":"Privacy","foot.brand":"Brand","foot.rights":"All rights reserved.","foot.noTrack":"No ads, no analytics, no cookies on this site.","studio.text":"Lewydo is a two-person indie game studio from Ukraine. Vlad codes, Lilya designs. Together we make the games we love to play.","studio.thanks":"Thank you for playing!"},"uk":{"meta.title":"Orbit Dash — неонова аркада в один дотик","meta.desc":"Дві орбіти, один дотик. Ухиляйся від шипів, збирай кристали й проходь рівні на нашій власній музиці. Безкоштовно на Android — і просто в браузері.","skip":"До вмісту","nav.label":"Розділи сайту","nav.how":"Як грати","nav.feat":"Можливості","nav.levels":"Рівні","nav.shots":"Скриншоти","nav.studio":"Студія","cta.play":"Грати в браузері","cta.playShort":"Грати","cta.gp":"Завантажити в Google Play","cta.lang":"Мова","hero.badge":"Уже в Google Play","hero.lead":"Дві орбіти. Один дотик.","hero.sub":"Торкнися, щоб перескочити на іншу орбіту, пролітай на волосок від шипів заради комбо й неси кристали в банк, поки щастить. Навчитись легко — кільце лише розганяється.","hero.try":"Торкнися кільця, щоб грати","hero.again":"Торкнися, щоб спробувати ще","hero.aria":"Міні-гра Orbit Dash. Торкнися або натисни Пробіл, щоб змінити орбіту","hero.score":"Рахунок","hero.best":"Рекорд","chip.free":"Безкоштовно","chip.offline":"Працює офлайн","chip.oneTap":"Керування одним дотиком","how.title":"Як грати","how.1.t":"Торкнись — і ти на іншій","how.1.d":"М'яч біжить по кільцю. Один дотик будь-де — і він перестрибує на іншу орбіту. Це все керування.","how.2.t":"Пролітай упритул","how.2.d":"Пройди повз шип, не зачепивши його, — і комбо росте. Що ближче наважишся, то дорожчий кожен кристал.","how.3.t":"Неси кристали в банк","how.3.d":"Підібрані кристали стають ◆ — за них купуються скіни, постійні апгрейди й нові рівні. Зачепив шип — ран закінчено, тож знай, коли спинитись.","feat.title":"Що всередині","feat.tap.t":"Один дотик, жодної поблажки","feat.tap.d":"Зрозумієш за секунду, ганятимешся тижнями. Кільце не припиняє розганятись.","feat.o3.t":"Orbit III","feat.o3.d":"Відкрий третє кільце. Воно вмикається посеред рану — і кожен кристал на ньому йде вдвічі.","feat.levels.t":"Рівні на нашій музиці","feat.levels.d":"П'ять рівнів, зроблених руками, кожен — під свій трек. Кожен стрибок лягає в біт.","feat.skins.t":"Неонові скіни й апгрейди","feat.skins.d":"Вісім палітр і сім постійних апгрейдів: магніт, щит, утримувач комбо — збирай свій ран.","feat.daily.t":"Щоденні місії","feat.daily.d":"Три нові місії щодня. Тримай серію — сьомий день платить найбільше.","feat.ranks.t":"Світовий рейтинг","feat.ranks.d":"Кожен новий рекорд летить просто в таблицю. Обійди друзів, потім світ.","levels.title":"П'ять рівнів, п'ять треків","levels.lead":"Уся музика в Orbit Dash — наша: написана, зіграна й зведена саме для цієї гри. Натисни й послухай, як звучить рівень.","levels.listen":"Послухати","levels.stop":"Зупинити","levels.note":"Короткі уривки. Повні треки — у грі.","shots.title":"Скриншоти","play.title":"Грай просто зараз","play.lead":"Уся гра працює просто в браузері — на телефоні чи ПК, нічого встановлювати. Прогрес лишається в цьому браузері; у застосунку Android свій.","play.loading":"Завантаження…","play.back":"Назад на сайт","studio.title":"Студія, що її зробила","studio.site":"Наш сайт","studio.games":"Наші ігри в Google Play","foot.privacy":"Приватність","foot.brand":"Бренд","foot.rights":"Усі права захищено.","foot.noTrack":"На цьому сайті немає реклами, аналітики й cookie.","studio.text":"Lewydo — інді-студія з двох людей з України. Влад пише код, Ліля робить дизайн. Разом ми робимо ігри, у які самі любимо грати.","studio.thanks":"Дякуємо, що граєте!"},"id":{"meta.title":"Orbit Dash — arkade neon satu ketuk","meta.desc":"Dua orbit, satu ketukan. Hindari duri, kumpulkan permata, dan mainkan level yang dibangun di atas musik kami sendiri. Gratis di Android — dan bisa dimainkan langsung di browser.","skip":"Lewati ke konten","nav.label":"Bagian situs","nav.how":"Cara bermain","nav.feat":"Fitur","nav.levels":"Level","nav.shots":"Tangkapan layar","nav.studio":"Studio","cta.play":"Main di browser","cta.playShort":"Main","cta.gp":"Dapatkan di Google Play","cta.lang":"Bahasa","hero.badge":"Sudah ada di Google Play","hero.lead":"Dua orbit. Satu ketukan.","hero.sub":"Ketuk untuk berpindah jalur, serempet duri demi kombo, dan amankan permata sebelum mereka menghabisimu. Mudah dipelajari — cincinnya hanya makin cepat.","hero.try":"Ketuk cincin untuk bermain","hero.again":"Ketuk untuk coba lagi","hero.aria":"Mini-game Orbit Dash. Ketuk atau tekan Spasi untuk berpindah orbit","hero.score":"Skor","hero.best":"Terbaik","chip.free":"Gratis","chip.offline":"Jalan offline","chip.oneTap":"Kontrol satu ketukan","how.title":"Cara bermain","how.1.t":"Ketuk untuk berpindah","how.1.d":"Bolamu berlari di sebuah cincin. Satu ketukan di mana saja dan ia melompat ke orbit lain. Hanya itu kontrolnya.","how.2.t":"Serempet demi kombo","how.2.d":"Lewat dekat duri tanpa menyentuhnya dan kombomu naik. Makin berani dekat, makin berharga tiap permata.","how.3.t":"Amankan permatanya","how.3.d":"Permata yang kamu ambil menjadi ◆ — untuk membeli skin, peningkatan permanen, dan level baru. Kena duri, ronde berakhir, jadi tahu kapan berhenti.","feat.title":"Apa isinya","feat.tap.t":"Satu ketukan, tanpa ampun","feat.tap.d":"Paham dalam sedetik, dikejar berminggu-minggu. Cincinnya tak pernah berhenti makin cepat.","feat.o3.t":"Orbit III","feat.o3.d":"Buka cincin ketiga. Ia menyala di tengah ronde — dan tiap permata di sana bernilai dua kali.","feat.levels.t":"Level di atas musik kami","feat.levels.d":"Lima level buatan tangan, masing-masing dipotong untuk lagunya sendiri. Tiap lompatan jatuh tepat pada ketukan.","feat.skins.t":"Skin neon & peningkatan","feat.skins.d":"Delapan palet dan tujuh peningkatan permanen: magnet, perisai, penjaga kombo — rakit rondemu.","feat.daily.t":"Misi harian","feat.daily.d":"Tiga misi baru setiap hari. Jaga rentetannya — hari ketujuh membayar paling banyak.","feat.ranks.t":"Peringkat global","feat.ranks.d":"Tiap rekor baru langsung masuk papan peringkat. Kalahkan temanmu, lalu dunia.","levels.title":"Lima level, lima lagu","levels.lead":"Semua musik di Orbit Dash milik kami — ditulis, dimainkan, dan dimiks untuk game ini. Tekan putar dan dengarkan bunyi sebuah level.","levels.listen":"Putar cuplikan","levels.stop":"Hentikan","levels.note":"Cuplikan singkat. Lagu lengkapnya ada di dalam game.","shots.title":"Tangkapan layar","play.title":"Mainkan sekarang juga","play.lead":"Seluruh game berjalan di browser — ponsel atau desktop, tanpa instalasi. Progresmu tersimpan di browser ini; aplikasi Android punya progres sendiri.","play.loading":"Memuat…","play.back":"Kembali ke situs","studio.title":"Studio di baliknya","studio.site":"Situs kami","studio.games":"Game kami di Google Play","foot.privacy":"Privasi","foot.brand":"Merek","foot.rights":"Hak cipta dilindungi.","foot.noTrack":"Tanpa iklan, tanpa analitik, tanpa cookie di situs ini.","studio.text":"Lewydo adalah studio game indie dua orang dari Ukraina. Vlad menulis kode, Lilya mendesain. Bersama, kami membuat game yang kami sendiri suka mainkan.","studio.thanks":"Terima kasih sudah bermain!"},"de":{"meta.title":"Orbit Dash — Neon-Arcade mit einem Tipp","meta.desc":"Zwei Orbits, ein Tipp. Weiche den Stacheln aus, sammle Edelsteine und spiele Level auf unserer eigenen Musik. Kostenlos für Android — und direkt im Browser spielbar.","skip":"Zum Inhalt springen","nav.label":"Seitenbereiche","nav.how":"So wird gespielt","nav.feat":"Features","nav.levels":"Level","nav.shots":"Screenshots","nav.studio":"Studio","cta.play":"Im Browser spielen","cta.playShort":"Spielen","cta.gp":"Bei Google Play laden","cta.lang":"Sprache","hero.badge":"Jetzt bei Google Play","hero.lead":"Zwei Orbits. Ein Tipp.","hero.sub":"Tippe, um die Bahn zu wechseln, streife die Stacheln für Combos und bring die Edelsteine heim, solange es gut geht. Schnell gelernt — der Ring wird nur schneller.","hero.try":"Tippe auf den Ring zum Spielen","hero.again":"Tippen für neuen Versuch","hero.aria":"Orbit-Dash-Minispiel. Tippen oder Leertaste drücken, um den Orbit zu wechseln","hero.score":"Punkte","hero.best":"Bestwert","chip.free":"Kostenlos","chip.offline":"Offline spielbar","chip.oneTap":"Steuerung mit einem Tipp","how.title":"So wird gespielt","how.1.t":"Tippen zum Wechseln","how.1.d":"Deine Kugel läuft auf einem Ring. Ein Tipp irgendwo, und sie springt in den anderen Orbit. Mehr Steuerung gibt es nicht.","how.2.t":"Streifen für Combo","how.2.d":"Zieh dicht an einem Stachel vorbei, ohne ihn zu berühren, und deine Combo steigt. Je näher du dich traust, desto mehr ist jeder Edelstein wert.","how.3.t":"Edelsteine sichern","how.3.d":"Aufgesammelte Edelsteine werden zu ◆ — damit kaufst du Skins, dauerhafte Upgrades und neue Level. Ein Stachel beendet den Lauf, also wisse, wann Schluss ist.","feat.title":"Was drin steckt","feat.tap.t":"Ein Tipp, keine Gnade","feat.tap.d":"In einer Sekunde verstanden, wochenlang gejagt. Der Ring hört nie auf, schneller zu werden.","feat.o3.t":"Orbit III","feat.o3.d":"Schalte den dritten Ring frei. Er geht mitten im Lauf an — und jeder Edelstein darauf zählt doppelt.","feat.levels.t":"Level auf unserer Musik","feat.levels.d":"Fünf handgebaute Level, jedes auf seinen eigenen Track geschnitten. Jeder Sprung sitzt im Beat.","feat.skins.t":"Neon-Skins & Upgrades","feat.skins.d":"Acht Paletten und sieben dauerhafte Upgrades: Magnet, Schild, Combo-Halter — bau dir deinen Lauf.","feat.daily.t":"Tägliche Missionen","feat.daily.d":"Drei neue Missionen pro Tag. Halte die Serie — Tag sieben zahlt am besten.","feat.ranks.t":"Globale Ränge","feat.ranks.d":"Jeder neue Bestwert geht direkt in die Bestenliste. Schlag deine Freunde, dann die Welt.","levels.title":"Fünf Level, fünf Tracks","levels.lead":"Die gesamte Musik in Orbit Dash ist unsere eigene — geschrieben, eingespielt und gemischt für dieses Spiel. Drück Play und hör, wie ein Level klingt.","levels.listen":"Vorschau abspielen","levels.stop":"Stopp","levels.note":"Kurze Ausschnitte. Die vollen Tracks stecken im Spiel.","shots.title":"Screenshots","play.title":"Spiel es sofort","play.lead":"Das ganze Spiel läuft im Browser — Handy oder Desktop, nichts zu installieren. Dein Fortschritt bleibt in diesem Browser; die Android-App hat ihren eigenen.","play.loading":"Lädt…","play.back":"Zurück zur Website","studio.title":"Das Studio dahinter","studio.site":"Unsere Website","studio.games":"Unsere Spiele bei Google Play","foot.privacy":"Datenschutz","foot.brand":"Marke","foot.rights":"Alle Rechte vorbehalten.","foot.noTrack":"Keine Werbung, keine Analyse, keine Cookies auf dieser Seite.","studio.text":"Lewydo ist ein Indie-Studio aus der Ukraine – wir sind zu zweit. Vlad programmiert, Lilya gestaltet. Zusammen machen wir die Spiele, die wir selbst gern spielen.","studio.thanks":"Danke fürs Spielen!"},"es":{"meta.title":"Orbit Dash — arcade neón de un toque","meta.desc":"Dos órbitas, un toque. Esquiva los pinchos, recoge gemas y juega niveles construidos sobre nuestra propia música. Gratis en Android y jugable en tu navegador.","skip":"Saltar al contenido","nav.label":"Secciones del sitio","nav.how":"Cómo jugar","nav.feat":"Características","nav.levels":"Niveles","nav.shots":"Capturas","nav.studio":"Estudio","cta.play":"Jugar en el navegador","cta.playShort":"Jugar","cta.gp":"Consíguelo en Google Play","cta.lang":"Idioma","hero.badge":"Ya en Google Play","hero.lead":"Dos órbitas. Un toque.","hero.sub":"Toca para cambiar de órbita, roza los pinchos para subir el combo y guarda las gemas mientras puedas. Fácil de aprender: el anillo solo acelera.","hero.try":"Toca el anillo para jugar","hero.again":"Toca para intentarlo otra vez","hero.aria":"Minijuego de Orbit Dash. Toca o pulsa Espacio para cambiar de órbita","hero.score":"Puntos","hero.best":"Récord","chip.free":"Gratis","chip.offline":"Funciona sin conexión","chip.oneTap":"Control de un toque","how.title":"Cómo jugar","how.1.t":"Toca para cambiar","how.1.d":"Tu bola corre por un anillo. Un toque en cualquier sitio y salta a la otra órbita. Ese es todo el control.","how.2.t":"Roza para el combo","how.2.d":"Pasa cerca de un pincho sin tocarlo y tu combo sube. Cuanto más te atreves, más vale cada gema.","how.3.t":"Guarda las gemas","how.3.d":"Las gemas que recoges se convierten en ◆: compran skins, mejoras permanentes y niveles nuevos. Tocar un pincho acaba la partida, así que sabe cuándo parar.","feat.title":"Qué hay dentro","feat.tap.t":"Un toque, sin piedad","feat.tap.d":"Lo entiendes en un segundo y lo persigues durante semanas. El anillo nunca deja de acelerar.","feat.o3.t":"Orbit III","feat.o3.d":"Desbloquea el tercer anillo. Se enciende a mitad de partida y cada gema en él cuenta doble.","feat.levels.t":"Niveles sobre nuestra música","feat.levels.d":"Cinco niveles hechos a mano, cada uno cortado a su propia pista. Cada salto cae en el beat.","feat.skins.t":"Skins neón y mejoras","feat.skins.d":"Ocho paletas y siete mejoras permanentes: imán, escudo, guardián de combo. Arma tu partida.","feat.daily.t":"Misiones diarias","feat.daily.d":"Tres misiones nuevas cada día. Mantén la racha: el séptimo día paga más.","feat.ranks.t":"Clasificación mundial","feat.ranks.d":"Cada récord nuevo va directo a la tabla. Gana a tus amigos y luego al mundo.","levels.title":"Cinco niveles, cinco pistas","levels.lead":"Toda la música de Orbit Dash es nuestra: escrita, tocada y mezclada para este juego. Dale a reproducir y escucha cómo suena un nivel.","levels.listen":"Escuchar","levels.stop":"Parar","levels.note":"Fragmentos cortos. Las pistas completas están en el juego.","shots.title":"Capturas de pantalla","play.title":"Juega ahora mismo","play.lead":"El juego entero corre en tu navegador: móvil u ordenador, sin instalar nada. Tu progreso se queda en este navegador; la app de Android tiene el suyo.","play.loading":"Cargando…","play.back":"Volver al sitio","studio.title":"El estudio detrás","studio.site":"Nuestro sitio","studio.games":"Nuestros juegos en Google Play","foot.privacy":"Privacidad","foot.brand":"Marca","foot.rights":"Todos los derechos reservados.","foot.noTrack":"Sin anuncios, sin analíticas, sin cookies en este sitio.","studio.text":"Lewydo es un estudio indie de dos personas de Ucrania. Vlad programa, Lilya diseña. Juntos hacemos los juegos a los que nos encanta jugar.","studio.thanks":"Gracias por jugar!"},"fr":{"meta.title":"Orbit Dash — arcade néon en un tap","meta.desc":"Deux orbites, un tap. Esquive les piques, ramasse les gemmes et joue des niveaux bâtis sur notre propre musique. Gratuit sur Android — et jouable dans ton navigateur.","skip":"Aller au contenu","nav.label":"Sections du site","nav.how":"Comment jouer","nav.feat":"Fonctionnalités","nav.levels":"Niveaux","nav.shots":"Captures","nav.studio":"Studio","cta.play":"Jouer dans le navigateur","cta.playShort":"Jouer","cta.gp":"Disponible sur Google Play","cta.lang":"Langue","hero.badge":"Déjà sur Google Play","hero.lead":"Deux orbites. Un tap.","hero.sub":"Tape pour changer d'orbite, frôle les piques pour le combo et mets les gemmes à l'abri tant que ça passe. Vite appris — l'anneau ne fait qu'accélérer.","hero.try":"Tape l'anneau pour jouer","hero.again":"Tape pour réessayer","hero.aria":"Mini-jeu Orbit Dash. Tape ou appuie sur Espace pour changer d'orbite","hero.score":"Score","hero.best":"Record","chip.free":"Gratuit","chip.offline":"Fonctionne hors ligne","chip.oneTap":"Commande en un tap","how.title":"Comment jouer","how.1.t":"Tape pour changer","how.1.d":"Ta bille file sur un anneau. Un tap n'importe où et elle saute sur l'autre orbite. C'est toute la commande.","how.2.t":"Frôle pour le combo","how.2.d":"Passe au ras d'une pique sans la toucher et ton combo monte. Plus tu oses, plus chaque gemme vaut cher.","how.3.t":"Mets les gemmes à l'abri","how.3.d":"Les gemmes ramassées deviennent des ◆ : elles achètent des skins, des améliorations permanentes et de nouveaux niveaux. Une pique met fin à la partie, sache t'arrêter.","feat.title":"Ce qu'il y a dedans","feat.tap.t":"Un tap, sans pitié","feat.tap.d":"Compris en une seconde, poursuivi pendant des semaines. L'anneau n'arrête jamais d'accélérer.","feat.o3.t":"Orbit III","feat.o3.d":"Débloque le troisième anneau. Il s'allume en pleine partie, et chaque gemme dessus compte double.","feat.levels.t":"Des niveaux sur notre musique","feat.levels.d":"Cinq niveaux faits main, chacun taillé sur son morceau. Chaque saut tombe sur le beat.","feat.skins.t":"Skins néon et améliorations","feat.skins.d":"Huit palettes et sept améliorations permanentes : aimant, bouclier, garde-combo — compose ta partie.","feat.daily.t":"Missions quotidiennes","feat.daily.d":"Trois nouvelles missions chaque jour. Garde la série — le septième jour paie le plus.","feat.ranks.t":"Classement mondial","feat.ranks.d":"Chaque nouveau record file au classement. Bats tes amis, puis le monde.","levels.title":"Cinq niveaux, cinq morceaux","levels.lead":"Toute la musique d'Orbit Dash est la nôtre : écrite, jouée et mixée pour ce jeu. Appuie sur lecture et écoute à quoi ressemble un niveau.","levels.listen":"Écouter l'extrait","levels.stop":"Arrêter","levels.note":"Courts extraits. Les morceaux complets sont dans le jeu.","shots.title":"Captures d'écran","play.title":"Joue tout de suite","play.lead":"Le jeu entier tourne dans ton navigateur — mobile ou ordinateur, rien à installer. Ta progression reste dans ce navigateur ; l'appli Android garde la sienne.","play.loading":"Chargement…","play.back":"Retour au site","studio.title":"Le studio derrière","studio.site":"Notre site","studio.games":"Nos jeux sur Google Play","foot.privacy":"Confidentialité","foot.brand":"Marque","foot.rights":"Tous droits réservés.","foot.noTrack":"Pas de pubs, pas d'analytique, pas de cookies sur ce site.","studio.text":"Lewydo est un studio de jeux indépendant de deux personnes, en Ukraine. Vlad code, Lilya fait le design. Ensemble, nous créons les jeux auxquels nous adorons jouer.","studio.thanks":"Merci de jouer !"},"it":{"meta.title":"Orbit Dash — arcade neon con un tocco","meta.desc":"Due orbite, un tocco. Schiva le spine, raccogli le gemme e gioca livelli costruiti sulla nostra musica. Gratis su Android — e giocabile nel browser.","skip":"Vai al contenuto","nav.label":"Sezioni del sito","nav.how":"Come si gioca","nav.feat":"Caratteristiche","nav.levels":"Livelli","nav.shots":"Screenshot","nav.studio":"Studio","cta.play":"Gioca nel browser","cta.playShort":"Gioca","cta.gp":"Scarica su Google Play","cta.lang":"Lingua","hero.badge":"Già su Google Play","hero.lead":"Due orbite. Un tocco.","hero.sub":"Tocca per cambiare orbita, sfiora le spine per il combo e porta a casa le gemme finché puoi. Si impara subito — l'anello accelera e basta.","hero.try":"Tocca l'anello per giocare","hero.again":"Tocca per riprovare","hero.aria":"Mini-gioco Orbit Dash. Tocca o premi Spazio per cambiare orbita","hero.score":"Punti","hero.best":"Record","chip.free":"Gratis","chip.offline":"Funziona offline","chip.oneTap":"Comando con un tocco","how.title":"Come si gioca","how.1.t":"Tocca per cambiare","how.1.d":"La tua sfera corre su un anello. Un tocco ovunque e salta sull'altra orbita. Il comando è tutto qui.","how.2.t":"Sfiora per il combo","how.2.d":"Passa vicino a una spina senza toccarla e il combo sale. Più osi, più ogni gemma vale.","how.3.t":"Metti al sicuro le gemme","how.3.d":"Le gemme raccolte diventano ◆: comprano skin, potenziamenti permanenti e nuovi livelli. Una spina chiude la corsa, quindi sappi quando fermarti.","feat.title":"Cosa c'è dentro","feat.tap.t":"Un tocco, nessuna pietà","feat.tap.d":"Lo capisci in un secondo, lo insegui per settimane. L'anello non smette mai di accelerare.","feat.o3.t":"Orbit III","feat.o3.d":"Sblocca il terzo anello. Si accende a metà corsa e ogni gemma lì vale il doppio.","feat.levels.t":"Livelli sulla nostra musica","feat.levels.d":"Cinque livelli fatti a mano, ognuno tagliato sulla sua traccia. Ogni salto cade sul beat.","feat.skins.t":"Skin neon e potenziamenti","feat.skins.d":"Otto palette e sette potenziamenti permanenti: calamita, scudo, salva-combo — costruisci la tua corsa.","feat.daily.t":"Missioni giornaliere","feat.daily.d":"Tre missioni nuove ogni giorno. Tieni viva la serie — il settimo giorno paga di più.","feat.ranks.t":"Classifica mondiale","feat.ranks.d":"Ogni nuovo record va dritto in classifica. Batti gli amici, poi il mondo.","levels.title":"Cinque livelli, cinque tracce","levels.lead":"Tutta la musica di Orbit Dash è nostra: scritta, suonata e mixata per questo gioco. Premi play e senti com'è un livello.","levels.listen":"Ascolta l'anteprima","levels.stop":"Ferma","levels.note":"Brevi anteprime. Le tracce complete sono nel gioco.","shots.title":"Screenshot","play.title":"Giocalo subito","play.lead":"Il gioco intero gira nel browser — telefono o computer, niente da installare. I progressi restano in questo browser; l'app Android ha i suoi.","play.loading":"Caricamento…","play.back":"Torna al sito","studio.title":"Lo studio dietro","studio.site":"Il nostro sito","studio.games":"I nostri giochi su Google Play","foot.privacy":"Privacy","foot.brand":"Brand","foot.rights":"Tutti i diritti riservati.","foot.noTrack":"Nessuna pubblicità, nessuna analitica, nessun cookie su questo sito.","studio.text":"Lewydo è uno studio indie di due persone dall’Ucraina. Vlad programma, Lilya disegna. Insieme creiamo i giochi a cui amiamo giocare.","studio.thanks":"Grazie di giocare!"},"nl":{"meta.title":"Orbit Dash — neon-arcade met één tik","meta.desc":"Twee banen, één tik. Ontwijk de pieken, verzamel edelstenen en speel levels op onze eigen muziek. Gratis op Android — en speelbaar in je browser.","skip":"Naar de inhoud","nav.label":"Site-secties","nav.how":"Hoe te spelen","nav.feat":"Kenmerken","nav.levels":"Levels","nav.shots":"Schermafbeeldingen","nav.studio":"Studio","cta.play":"Speel in je browser","cta.playShort":"Spelen","cta.gp":"Ontdek het op Google Play","cta.lang":"Taal","hero.badge":"Nu op Google Play","hero.lead":"Twee banen. Eén tik.","hero.sub":"Tik om van baan te wisselen, scheer langs de pieken voor combo en breng de edelstenen binnen zolang het kan. Zo geleerd — de ring wordt alleen sneller.","hero.try":"Tik op de ring om te spelen","hero.again":"Tik om opnieuw te proberen","hero.aria":"Orbit Dash-minigame. Tik of druk op de spatiebalk om van baan te wisselen","hero.score":"Score","hero.best":"Record","chip.free":"Gratis","chip.offline":"Werkt offline","chip.oneTap":"Besturing met één tik","how.title":"Hoe te spelen","how.1.t":"Tik om te wisselen","how.1.d":"Je bal loopt over een ring. Eén tik waar dan ook en hij springt naar de andere baan. Meer besturing is er niet.","how.2.t":"Scheer langs voor combo","how.2.d":"Scheer rakelings langs een piek zonder hem te raken en je combo loopt op. Hoe dichter je durft, hoe meer elke edelsteen waard is.","how.3.t":"Zet de edelstenen veilig","how.3.d":"Opgepakte edelstenen worden ◆ — daarmee koop je skins, permanente upgrades en nieuwe levels. Raak je een piek, dan is de run voorbij; weet wanneer je stopt.","feat.title":"Wat erin zit","feat.tap.t":"Eén tik, geen genade","feat.tap.d":"In een seconde geleerd, weken achterna gejaagd. De ring versnelt eindeloos door.","feat.o3.t":"Orbit III","feat.o3.d":"Ontgrendel de derde ring. Hij komt midden in de run online — en elke edelsteen erop telt dubbel.","feat.levels.t":"Levels op onze eigen muziek","feat.levels.d":"Vijf handgemaakte levels, elk op zijn eigen track gesneden. Elke sprong valt op de beat.","feat.skins.t":"Neon-skins & upgrades","feat.skins.d":"Acht paletten en zeven permanente upgrades: magneet, schild, combobewaarder — bouw je run.","feat.daily.t":"Dagelijkse missies","feat.daily.d":"Elke dag drie nieuwe missies. Houd de reeks vol — dag zeven betaalt het best.","feat.ranks.t":"Wereldranglijst","feat.ranks.d":"Elk nieuw record gaat regelrecht naar de ranglijst. Versla je vrienden, daarna de wereld.","levels.title":"Vijf levels, vijf tracks","levels.lead":"Alle muziek in Orbit Dash is van onszelf — geschreven, gespeeld en gemixt voor deze game. Druk op play en hoor hoe een level klinkt.","levels.listen":"Voorbeeld afspelen","levels.stop":"Stoppen","levels.note":"Korte fragmenten. De volledige tracks zitten in de game.","shots.title":"Schermafbeeldingen","play.title":"Speel het nu meteen","play.lead":"De hele game draait in je browser — telefoon of desktop, niets te installeren. Je voortgang blijft in deze browser; de Android-app heeft zijn eigen.","play.loading":"Laden…","play.back":"Terug naar de site","studio.title":"De studio erachter","studio.site":"Onze website","studio.games":"Onze games op Google Play","foot.privacy":"Privacy","foot.brand":"Merk","foot.rights":"Alle rechten voorbehouden.","foot.noTrack":"Geen advertenties, geen analytics, geen cookies op deze site.","studio.text":"Lewydo is een indiegamestudio van twee mensen uit Oekraïne. Vlad programmeert, Lilya ontwerpt. Samen maken we de games die we zelf graag spelen.","studio.thanks":"Bedankt voor het spelen!"},"pl":{"meta.title":"Orbit Dash — neonowa zręcznościówka na jedno dotknięcie","meta.desc":"Dwie orbity, jedno dotknięcie. Omijaj kolce, zbieraj kryształy i graj poziomy zbudowane na naszej własnej muzyce. Za darmo na Androida — i prosto w przeglądarce.","skip":"Przejdź do treści","nav.label":"Sekcje strony","nav.how":"Jak grać","nav.feat":"Możliwości","nav.levels":"Poziomy","nav.shots":"Zrzuty ekranu","nav.studio":"Studio","cta.play":"Zagraj w przeglądarce","cta.playShort":"Graj","cta.gp":"Pobierz z Google Play","cta.lang":"Język","hero.badge":"Już w Google Play","hero.lead":"Dwie orbity. Jedno dotknięcie.","hero.sub":"Dotknij, by zmienić orbitę, muskaj kolce dla combo i odkładaj kryształy, póki się udaje. Łatwo się nauczyć — pierścień tylko przyspiesza.","hero.try":"Dotknij pierścienia, by zagrać","hero.again":"Dotknij, by spróbować znów","hero.aria":"Minigra Orbit Dash. Dotknij lub naciśnij spację, by zmienić orbitę","hero.score":"Wynik","hero.best":"Rekord","chip.free":"Za darmo","chip.offline":"Działa offline","chip.oneTap":"Sterowanie jednym dotknięciem","how.title":"Jak grać","how.1.t":"Dotknij, by przeskoczyć","how.1.d":"Twoja kula biegnie po pierścieniu. Jedno dotknięcie gdziekolwiek i przeskakuje na drugą orbitę. To całe sterowanie.","how.2.t":"Muskaj dla combo","how.2.d":"Przemknij tuż obok kolca, nie dotykając go, a combo rośnie. Im bliżej się odważysz, tym cenniejszy każdy kryształ.","how.3.t":"Odłóż kryształy","how.3.d":"Zebrane kryształy stają się ◆ — kupują skiny, stałe ulepszenia i nowe poziomy. Kolec kończy bieg, więc wiedz, kiedy przestać.","feat.title":"Co w środku","feat.tap.t":"Jedno dotknięcie, bez litości","feat.tap.d":"Zrozumiesz w sekundę, będziesz gonić tygodniami. Pierścień nie przestaje przyspieszać.","feat.o3.t":"Orbit III","feat.o3.d":"Odblokuj trzeci pierścień. Włącza się w połowie biegu, a każdy kryształ na nim liczy się podwójnie.","feat.levels.t":"Poziomy na naszej muzyce","feat.levels.d":"Pięć poziomów robionych ręcznie, każdy skrojony pod swój utwór. Każdy skok pada w rytm.","feat.skins.t":"Neonowe skiny i ulepszenia","feat.skins.d":"Osiem palet i siedem stałych ulepszeń: magnes, tarcza, strażnik combo — zbuduj swój bieg.","feat.daily.t":"Codzienne misje","feat.daily.d":"Trzy nowe misje każdego dnia. Utrzymaj serię — siódmy dzień płaci najwięcej.","feat.ranks.t":"Światowy ranking","feat.ranks.d":"Każdy nowy rekord trafia prosto do tabeli. Pokonaj znajomych, potem świat.","levels.title":"Pięć poziomów, pięć utworów","levels.lead":"Cała muzyka w Orbit Dash jest nasza — napisana, zagrana i zmiksowana pod tę grę. Włącz i posłuchaj, jak brzmi poziom.","levels.listen":"Posłuchaj","levels.stop":"Zatrzymaj","levels.note":"Krótkie fragmenty. Pełne utwory są w grze.","shots.title":"Zrzuty ekranu","play.title":"Zagraj od razu","play.lead":"Cała gra działa w przeglądarce — telefon albo komputer, nic nie trzeba instalować. Postęp zostaje w tej przeglądarce; aplikacja na Androida ma własny.","play.loading":"Ładowanie…","play.back":"Powrót na stronę","studio.title":"Studio, które za tym stoi","studio.site":"Nasza strona","studio.games":"Nasze gry w Google Play","foot.privacy":"Prywatność","foot.brand":"Marka","foot.rights":"Wszelkie prawa zastrzeżone.","foot.noTrack":"Na tej stronie nie ma reklam, analityki ani ciasteczek.","studio.text":"Lewydo to dwuosobowe niezależne studio gier z Ukrainy. Vlad programuje, Lilya projektuje. Razem robimy gry, w które sami uwielbiamy grać.","studio.thanks":"Dziękujemy, że grasz!"},"pt":{"meta.title":"Orbit Dash — arcade neon de um toque","meta.desc":"Duas órbitas, um toque. Desvia dos espinhos, apanha as gemas e joga níveis construídos sobre a nossa própria música. Grátis no Android — e jogável no navegador.","skip":"Ir para o conteúdo","nav.label":"Secções do site","nav.how":"Como jogar","nav.feat":"Funcionalidades","nav.levels":"Níveis","nav.shots":"Capturas","nav.studio":"Estúdio","cta.play":"Jogar no navegador","cta.playShort":"Jogar","cta.gp":"Disponível no Google Play","cta.lang":"Idioma","hero.badge":"Já no Google Play","hero.lead":"Duas órbitas. Um toque.","hero.sub":"Toca para mudar de órbita, raspa nos espinhos para o combo e guarda as gemas enquanto dá. Aprende-se num instante — o anel só acelera.","hero.try":"Toca no anel para jogar","hero.again":"Toca para tentar outra vez","hero.aria":"Mini-jogo Orbit Dash. Toca ou carrega em Espaço para mudar de órbita","hero.score":"Pontos","hero.best":"Recorde","chip.free":"Grátis","chip.offline":"Funciona offline","chip.oneTap":"Controlo com um toque","how.title":"Como jogar","how.1.t":"Toca para mudar","how.1.d":"A tua bola corre num anel. Um toque em qualquer sítio e salta para a outra órbita. O controlo é só isto.","how.2.t":"Raspa para o combo","how.2.d":"Passa rente a um espinho sem lhe tocar e o combo sobe. Quanto mais ousares, mais vale cada gema.","how.3.t":"Guarda as gemas","how.3.d":"As gemas que apanhas tornam-se ◆ — compram skins, melhorias permanentes e níveis novos. Um espinho acaba a corrida, por isso sabe quando parar.","feat.title":"O que há dentro","feat.tap.t":"Um toque, sem piedade","feat.tap.d":"Percebes num segundo e persegues durante semanas. O anel nunca deixa de acelerar.","feat.o3.t":"Orbit III","feat.o3.d":"Desbloqueia o terceiro anel. Entra a meio da corrida — e cada gema nele conta a dobrar.","feat.levels.t":"Níveis sobre a nossa música","feat.levels.d":"Cinco níveis feitos à mão, cada um talhado para a sua faixa. Cada salto cai na batida.","feat.skins.t":"Skins néon e melhorias","feat.skins.d":"Oito paletas e sete melhorias permanentes: íman, escudo, guardião de combo — monta a tua corrida.","feat.daily.t":"Missões diárias","feat.daily.d":"Três missões novas todos os dias. Mantém a sequência — o sétimo dia paga mais.","feat.ranks.t":"Classificações mundiais","feat.ranks.d":"Cada novo recorde vai direto para a tabela. Vence os amigos e depois o mundo.","levels.title":"Cinco níveis, cinco faixas","levels.lead":"Toda a música de Orbit Dash é nossa — escrita, tocada e misturada para este jogo. Carrega em reproduzir e ouve como soa um nível.","levels.listen":"Ouvir excerto","levels.stop":"Parar","levels.note":"Pequenos excertos. As faixas completas estão no jogo.","shots.title":"Capturas de ecrã","play.title":"Joga já","play.lead":"O jogo inteiro corre no navegador — telemóvel ou computador, sem instalar nada. O teu progresso fica neste navegador; a app Android tem o dela.","play.loading":"A carregar…","play.back":"Voltar ao site","studio.title":"O estúdio por trás","studio.site":"O nosso site","studio.games":"Os nossos jogos no Google Play","foot.privacy":"Privacidade","foot.brand":"Marca","foot.rights":"Todos os direitos reservados.","foot.noTrack":"Sem anúncios, sem analítica, sem cookies neste site.","studio.text":"Lewydo é um estúdio indie de duas pessoas da Ucrânia. Vlad programa, Lilya faz o design. Juntos fazemos os jogos que adoramos jogar.","studio.thanks":"Obrigado por jogar!"},"vi":{"meta.title":"Orbit Dash — game arcade neon một chạm","meta.desc":"Hai quỹ đạo, một chạm. Né gai, nhặt ngọc và chơi các màn được dựng trên nhạc do chính chúng tôi viết. Miễn phí trên Android — và chơi được ngay trên trình duyệt.","skip":"Tới nội dung","nav.label":"Các mục của trang","nav.how":"Cách chơi","nav.feat":"Tính năng","nav.levels":"Màn chơi","nav.shots":"Ảnh chụp","nav.studio":"Studio","cta.play":"Chơi trên trình duyệt","cta.playShort":"Chơi","cta.gp":"Tải trên Google Play","cta.lang":"Ngôn ngữ","hero.badge":"Đã có trên Google Play","hero.lead":"Hai quỹ đạo. Một chạm.","hero.sub":"Chạm để đổi quỹ đạo, lướt sát gai để tăng combo và cất ngọc vào kho khi còn kịp. Dễ học — chiếc vòng chỉ ngày một nhanh hơn.","hero.try":"Chạm vào vòng để chơi","hero.again":"Chạm để thử lại","hero.aria":"Trò chơi nhỏ Orbit Dash. Chạm hoặc nhấn phím cách để đổi quỹ đạo","hero.score":"Điểm","hero.best":"Kỷ lục","chip.free":"Miễn phí","chip.offline":"Chơi ngoại tuyến","chip.oneTap":"Điều khiển một chạm","how.title":"Cách chơi","how.1.t":"Chạm để đổi","how.1.d":"Quả cầu của bạn chạy trên một vòng. Chạm bất kỳ đâu là nó nhảy sang quỹ đạo kia. Toàn bộ điều khiển chỉ có vậy.","how.2.t":"Lướt sát để combo","how.2.d":"Lướt sát một chiếc gai mà không chạm vào, combo của bạn sẽ tăng. Càng dám sát, mỗi viên ngọc càng giá trị.","how.3.t":"Cất ngọc vào kho","how.3.d":"Ngọc bạn nhặt được sẽ thành ◆ — dùng mua skin, nâng cấp vĩnh viễn và màn chơi mới. Chạm gai là kết thúc lượt, nên hãy biết điểm dừng.","feat.title":"Bên trong có gì","feat.tap.t":"Một chạm, không khoan nhượng","feat.tap.d":"Hiểu trong một giây, đuổi theo hàng tuần. Chiếc vòng không bao giờ ngừng tăng tốc.","feat.o3.t":"Orbit III","feat.o3.d":"Mở khóa vòng thứ ba. Nó bật lên giữa lượt chơi — và mỗi viên ngọc trên đó được tính đôi.","feat.levels.t":"Màn chơi trên nhạc của chúng tôi","feat.levels.d":"Năm màn chơi dựng thủ công, mỗi màn cắt theo bản nhạc riêng. Mọi cú nhảy đều rơi đúng nhịp.","feat.skins.t":"Skin neon & nâng cấp","feat.skins.d":"Tám bảng màu và bảy nâng cấp vĩnh viễn: nam châm, khiên, giữ combo — tự dựng lượt chơi của bạn.","feat.daily.t":"Nhiệm vụ hằng ngày","feat.daily.d":"Ba nhiệm vụ mới mỗi ngày. Giữ chuỗi liên tục — ngày thứ bảy thưởng nhiều nhất.","feat.ranks.t":"Bảng xếp hạng toàn cầu","feat.ranks.d":"Mỗi kỷ lục mới lên thẳng bảng xếp hạng. Vượt bạn bè, rồi vượt cả thế giới.","levels.title":"Năm màn, năm bản nhạc","levels.lead":"Toàn bộ nhạc trong Orbit Dash là của chúng tôi — tự viết, tự chơi và tự mix cho trò chơi này. Bấm phát để nghe một màn chơi vang lên thế nào.","levels.listen":"Nghe thử","levels.stop":"Dừng","levels.note":"Đoạn nghe thử ngắn. Bản đầy đủ có trong trò chơi.","shots.title":"Ảnh chụp màn hình","play.title":"Chơi ngay bây giờ","play.lead":"Toàn bộ trò chơi chạy ngay trên trình duyệt — điện thoại hay máy tính, không cần cài đặt. Tiến trình lưu trong trình duyệt này; ứng dụng Android có tiến trình riêng.","play.loading":"Đang tải…","play.back":"Quay lại trang","studio.title":"Studio đứng sau","studio.site":"Trang của chúng tôi","studio.games":"Trò chơi của chúng tôi trên Google Play","foot.privacy":"Quyền riêng tư","foot.brand":"Thương hiệu","foot.rights":"Bảo lưu mọi quyền.","foot.noTrack":"Trang này không có quảng cáo, không phân tích, không cookie.","studio.text":"Lewydo là studio game indie hai người đến từ Ukraina. Vlad viết code, Lilya thiết kế. Cùng nhau, chúng tôi làm những trò chơi mà chính mình yêu thích.","studio.thanks":"Cảm ơn bạn đã chơi!"},"tr":{"meta.title":"Orbit Dash — tek dokunuşluk neon arcade","meta.desc":"İki yörünge, tek dokunuş. Dikenlerden kaç, mücevherleri topla ve kendi müziğimiz üzerine kurulu bölümleri oyna. Android'de ücretsiz — ve doğrudan tarayıcında oynanır.","skip":"İçeriğe geç","nav.label":"Site bölümleri","nav.how":"Nasıl oynanır","nav.feat":"Özellikler","nav.levels":"Bölümler","nav.shots":"Ekran görüntüleri","nav.studio":"Stüdyo","cta.play":"Tarayıcıda oyna","cta.playShort":"Oyna","cta.gp":"Google Play'den indir","cta.lang":"Dil","hero.badge":"Google Play'de yayında","hero.lead":"İki yörünge. Tek dokunuş.","hero.sub":"Şerit değiştirmek için dokun, kombo için dikenleri sıyır ve fırsat varken mücevherleri kasaya at. Öğrenmesi kolay — halka yalnızca hızlanır.","hero.try":"Oynamak için halkaya dokun","hero.again":"Yeniden denemek için dokun","hero.aria":"Orbit Dash mini oyunu. Yörünge değiştirmek için dokun veya Boşluk tuşuna bas","hero.score":"Puan","hero.best":"Rekor","chip.free":"Ücretsiz","chip.offline":"Çevrimdışı çalışır","chip.oneTap":"Tek dokunuş kontrol","how.title":"Nasıl oynanır","how.1.t":"Dokun ve geç","how.1.d":"Topun bir halka üzerinde koşar. Herhangi bir yere tek dokunuş, diğer yörüngeye atlar. Kontrolün tamamı bu.","how.2.t":"Kombo için sıyır","how.2.d":"Bir dikene değmeden yakınından geç, kombon yükselsin. Ne kadar yaklaşmaya cesaret edersen her mücevher o kadar değerli olur.","how.3.t":"Mücevherleri kasaya at","how.3.d":"Topladığın mücevherler ◆ olur — kostüm, kalıcı yükseltme ve yeni bölüm alır. Dikene değersen tur biter, bu yüzden ne zaman duracağını bil.","feat.title":"İçinde ne var","feat.tap.t":"Tek dokunuş, acımasız","feat.tap.d":"Bir saniyede öğrenirsin, haftalarca peşinden koşarsın. Halka hızlanmayı hiç bırakmaz.","feat.o3.t":"Orbit III","feat.o3.d":"Üçüncü halkayı aç. Turun ortasında devreye girer ve üzerindeki her mücevher iki kat sayılır.","feat.levels.t":"Kendi müziğimiz üzerine bölümler","feat.levels.d":"Elle kurulmuş beş bölüm, her biri kendi parçasına göre kesilmiş. Her sıçrayış ritme oturur.","feat.skins.t":"Neon kostümler ve yükseltmeler","feat.skins.d":"Sekiz palet ve yedi kalıcı yükseltme: mıknatıs, kalkan, kombo koruyucu — turunu kendin kur.","feat.daily.t":"Günlük görevler","feat.daily.d":"Her gün üç yeni görev. Seriyi sürdür — yedinci gün en çok ödüyor.","feat.ranks.t":"Küresel sıralama","feat.ranks.d":"Her yeni rekor doğrudan sıralamaya gider. Önce arkadaşlarını, sonra dünyayı geç.","levels.title":"Beş bölüm, beş parça","levels.lead":"Orbit Dash'teki tüm müzik bize ait — bu oyun için yazıldı, çalındı ve miksle hazırlandı. Oynat'a bas ve bir bölümün nasıl duyulduğunu dinle.","levels.listen":"Önizlemeyi çal","levels.stop":"Durdur","levels.note":"Kısa önizlemeler. Parçaların tamamı oyunun içinde.","shots.title":"Ekran görüntüleri","play.title":"Hemen şimdi oyna","play.lead":"Oyunun tamamı tarayıcıda çalışır — telefon ya da bilgisayar, kurulum yok. İlerlemen bu tarayıcıda kalır; Android uygulamasının kendi ilerlemesi vardır.","play.loading":"Yükleniyor…","play.back":"Siteye dön","studio.title":"Arkasındaki stüdyo","studio.site":"Web sitemiz","studio.games":"Google Play'deki oyunlarımız","foot.privacy":"Gizlilik","foot.brand":"Marka","foot.rights":"Tüm hakları saklıdır.","foot.noTrack":"Bu sitede reklam, analitik ve çerez yok.","studio.text":"Lewydo, Ukrayna’dan iki kişilik bağımsız bir oyun stüdyosu. Vlad kodluyor, Lilya tasarlıyor. Birlikte oynamayı sevdiğimiz oyunları yapıyoruz.","studio.thanks":"Oynadığın için teşekkürler!"},"ko":{"meta.title":"Orbit Dash — 한 번의 탭으로 즐기는 네온 아케이드","meta.desc":"두 개의 궤도, 한 번의 탭. 가시를 피하고 보석을 모으며 우리가 직접 만든 음악 위에 지은 레벨을 즐기세요. 안드로이드에서 무료 — 브라우저에서도 바로 플레이.","skip":"본문으로 건너뛰기","nav.label":"사이트 섹션","nav.how":"플레이 방법","nav.feat":"특징","nav.levels":"레벨","nav.shots":"스크린샷","nav.studio":"스튜디오","cta.play":"브라우저에서 플레이","cta.playShort":"플레이","cta.gp":"Google Play에서 받기","cta.lang":"언어","hero.badge":"Google Play 출시","hero.lead":"두 개의 궤도. 한 번의 탭.","hero.sub":"탭해서 궤도를 바꾸고, 가시를 아슬아슬하게 스쳐 콤보를 쌓고, 잡히기 전에 보석을 챙기세요. 배우기는 쉽지만 링은 점점 빨라집니다.","hero.try":"링을 탭하면 시작","hero.again":"탭해서 다시 도전","hero.aria":"Orbit Dash 미니 게임. 탭하거나 스페이스바를 눌러 궤도를 바꾸세요","hero.score":"점수","hero.best":"최고 기록","chip.free":"무료","chip.offline":"오프라인 지원","chip.oneTap":"원 탭 조작","how.title":"플레이 방법","how.1.t":"탭으로 전환","how.1.d":"공이 링을 따라 달립니다. 아무 곳이나 한 번 탭하면 반대쪽 궤도로 점프합니다. 조작은 이게 전부입니다.","how.2.t":"스치며 콤보","how.2.d":"가시에 닿지 않고 바짝 스쳐 지나가면 콤보가 올라갑니다. 더 가까이 갈수록 보석 하나하나의 값어치가 커집니다.","how.3.t":"보석을 챙기세요","how.3.d":"주운 보석은 ◆가 되어 스킨과 영구 업그레이드, 새 레벨을 살 수 있습니다. 가시에 닿으면 런이 끝나니 멈출 때를 아세요.","feat.title":"무엇이 들어 있나","feat.tap.t":"한 번의 탭, 자비는 없다","feat.tap.d":"배우는 데 1초, 쫓는 데 몇 주. 링은 결코 가속을 멈추지 않습니다.","feat.o3.t":"Orbit III","feat.o3.d":"세 번째 링을 해제하세요. 런 도중에 켜지며, 그 위의 보석은 두 배로 계산됩니다.","feat.levels.t":"우리가 만든 음악 위의 레벨","feat.levels.d":"손으로 만든 다섯 개의 레벨, 각자의 트랙에 맞춰 재단되었습니다. 모든 점프가 비트에 떨어집니다.","feat.skins.t":"네온 스킨과 업그레이드","feat.skins.d":"여덟 가지 팔레트와 일곱 가지 영구 업그레이드: 자석, 방패, 콤보 유지 — 당신만의 런을 설계하세요.","feat.daily.t":"일일 미션","feat.daily.d":"매일 새로운 미션 세 개. 연속 기록을 이어가세요 — 7일째가 가장 큽니다.","feat.ranks.t":"글로벌 랭킹","feat.ranks.d":"새로운 최고 기록은 곧바로 리더보드로. 친구를 이기고, 그다음은 세계입니다.","levels.title":"다섯 레벨, 다섯 트랙","levels.lead":"Orbit Dash의 모든 음악은 저희가 직접 이 게임을 위해 쓰고, 연주하고, 믹싱했습니다. 재생을 눌러 레벨의 소리를 들어보세요.","levels.listen":"미리 듣기","levels.stop":"정지","levels.note":"짧은 미리듣기입니다. 전체 트랙은 게임 안에 있습니다.","shots.title":"스크린샷","play.title":"지금 바로 플레이","play.lead":"게임 전체가 브라우저에서 실행됩니다 — 휴대폰이든 PC든 설치할 것이 없습니다. 진행 상황은 이 브라우저에 남으며, 안드로이드 앱은 별도로 관리됩니다.","play.loading":"불러오는 중…","play.back":"사이트로 돌아가기","studio.title":"만든 스튜디오","studio.site":"저희 웹사이트","studio.games":"Google Play의 저희 게임","foot.privacy":"개인정보","foot.brand":"브랜드","foot.rights":"모든 권리 보유.","foot.noTrack":"이 사이트에는 광고, 분석, 쿠키가 없습니다.","studio.text":"Lewydo는 우크라이나의 2인 인디 게임 스튜디오예요. Vlad는 코드를, Lilya는 디자인을 맡아요. 우리가 즐겨 하는 게임을 함께 만들어요.","studio.thanks":"플레이해 주셔서 고마워요!"},"ja":{"meta.title":"Orbit Dash — ワンタップのネオンアーケード","meta.desc":"2つの軌道、ワンタップ。スパイクをかわし、ジェムを集め、自作の音楽で組んだレベルを駆け抜けよう。Androidで無料 — ブラウザでもそのまま遊べます。","skip":"本文へスキップ","nav.label":"サイトのセクション","nav.how":"遊び方","nav.feat":"特徴","nav.levels":"レベル","nav.shots":"スクリーンショット","nav.studio":"スタジオ","cta.play":"ブラウザで遊ぶ","cta.playShort":"プレイ","cta.gp":"Google Play で手に入れよう","cta.lang":"言語","hero.badge":"Google Play で配信中","hero.lead":"2つの軌道。ワンタップ。","hero.sub":"タップで軌道を切り替え、スパイクをかすめてコンボを稼ぎ、やられる前にジェムを持ち帰ろう。操作は簡単 — リングは加速するだけ。","hero.try":"リングをタップでプレイ","hero.again":"タップでもう一度","hero.aria":"Orbit Dash ミニゲーム。タップまたはスペースキーで軌道を切り替えます","hero.score":"スコア","hero.best":"ベスト","chip.free":"無料","chip.offline":"オフライン対応","chip.oneTap":"ワンタップ操作","how.title":"遊び方","how.1.t":"タップで切り替え","how.1.d":"ボールはリングの上を走ります。どこでも1回タップすれば、もう一方の軌道へジャンプ。操作はこれだけです。","how.2.t":"かすめてコンボ","how.2.d":"スパイクに触れずぎりぎりをすり抜けるとコンボが伸びます。攻めるほど、ジェム1つの価値も上がります。","how.3.t":"ジェムを持ち帰る","how.3.d":"拾ったジェムは◆になり、スキンや永続アップグレード、新しいレベルと交換できます。スパイクに当たればランは終了 — 引き際も腕のうち。","feat.title":"中身","feat.tap.t":"ワンタップ、容赦なし","feat.tap.d":"理解は一瞬、やり込みは何週間も。リングは加速をやめません。","feat.o3.t":"Orbit III","feat.o3.d":"3つ目のリングを解放。ラン中盤に出現し、その上のジェムは2倍になります。","feat.levels.t":"自作音楽のレベル","feat.levels.d":"手作りの5レベル。それぞれ専用の楽曲に合わせて刻まれ、すべてのジャンプがビートに乗ります。","feat.skins.t":"ネオンスキンとアップグレード","feat.skins.d":"8つのパレットと7つの永続アップグレード。マグネット、シールド、コンボキーパー — 自分のランを組み立てよう。","feat.daily.t":"デイリーミッション","feat.daily.d":"毎日3つの新しいミッション。連続記録を途切れさせないで — 7日目が一番おいしい。","feat.ranks.t":"世界ランキング","feat.ranks.d":"自己ベストはそのままリーダーボードへ。まず友だち、次は世界。","levels.title":"5つのレベル、5つの楽曲","levels.lead":"Orbit Dash の音楽はすべて自作 — このゲームのために書き、演奏し、ミックスしました。再生を押して、レベルの音を聴いてみてください。","levels.listen":"試聴する","levels.stop":"停止","levels.note":"短い試聴です。フル尺はゲーム内に。","shots.title":"スクリーンショット","play.title":"今すぐ遊ぶ","play.lead":"ゲーム全体がブラウザで動きます — スマホでもPCでも、インストール不要。進行状況はこのブラウザに保存され、Androidアプリとは別管理です。","play.loading":"読み込み中…","play.back":"サイトに戻る","studio.title":"開発スタジオ","studio.site":"私たちのサイト","studio.games":"Google Play の私たちのゲーム","foot.privacy":"プライバシー","foot.brand":"ブランド","foot.rights":"All rights reserved.","foot.noTrack":"このサイトに広告・解析・Cookie はありません。","studio.text":"Lewydo はウクライナの2人組インディーゲームスタジオです。Vlad がコードを書き、Lilya がデザインを担当。自分たちが大好きなゲームを一緒に作っています。","studio.thanks":"遊んでくれてありがとう！"},"zh-TW":{"meta.title":"Orbit Dash — 一指操作的霓虹街機","meta.desc":"兩條軌道，一次輕點。閃避尖刺、收集寶石，挑戰以我們原創音樂打造的關卡。Android 免費下載，也能直接在瀏覽器遊玩。","skip":"跳至內容","nav.label":"網站區塊","nav.how":"玩法","nav.feat":"特色","nav.levels":"關卡","nav.shots":"螢幕截圖","nav.studio":"工作室","cta.play":"在瀏覽器遊玩","cta.playShort":"遊玩","cta.gp":"在 Google Play 取得","cta.lang":"語言","hero.badge":"已在 Google Play 上架","hero.lead":"兩條軌道。一次輕點。","hero.sub":"輕點切換軌道，擦過尖刺累積連擊，趁還來得及把寶石收進口袋。上手很快 — 但圓環只會越轉越快。","hero.try":"輕點圓環開始遊玩","hero.again":"輕點再試一次","hero.aria":"Orbit Dash 小遊戲。輕點或按空白鍵切換軌道","hero.score":"分數","hero.best":"最佳","chip.free":"免費","chip.offline":"可離線遊玩","chip.oneTap":"一指操作","how.title":"玩法","how.1.t":"輕點切換","how.1.d":"你的小球沿著圓環奔跑。在任意位置輕點一下，它就會跳到另一條軌道。操作就這麼簡單。","how.2.t":"擦身而過累積連擊","how.2.d":"緊貼尖刺而不碰到，連擊就會往上疊。越敢靠近，每顆寶石就越值錢。","how.3.t":"把寶石收進口袋","how.3.d":"撿到的寶石會變成 ◆，可以換造型、永久升級和新關卡。撞到尖刺這一輪就結束，所以要懂得見好就收。","feat.title":"內容一覽","feat.tap.t":"一指操作，毫不留情","feat.tap.d":"一秒就懂，追上好幾週。圓環永遠不會停止加速。","feat.o3.t":"Orbit III","feat.o3.d":"解鎖第三條軌道。它會在途中開啟，上面的每顆寶石都算雙倍。","feat.levels.t":"以原創音樂打造的關卡","feat.levels.d":"五個手工打造的關卡，各自對應一首曲子。每一次跳躍都踩在節拍上。","feat.skins.t":"霓虹造型與升級","feat.skins.d":"八種配色與七項永久升級：磁鐵、護盾、連擊保存 — 打造屬於你的玩法。","feat.daily.t":"每日任務","feat.daily.d":"每天三個全新任務。保持連續紀錄 — 第七天獎勵最豐厚。","feat.ranks.t":"全球排行","feat.ranks.d":"每次刷新紀錄都會直接上傳排行榜。先贏朋友，再贏全世界。","levels.title":"五個關卡，五首曲子","levels.lead":"Orbit Dash 的所有音樂都是我們自己的 — 為這款遊戲創作、演奏並混音。按下播放，聽聽一個關卡的聲音。","levels.listen":"試聽","levels.stop":"停止","levels.note":"僅為片段試聽，完整曲目收錄在遊戲中。","shots.title":"螢幕截圖","play.title":"立即開玩","play.lead":"整款遊戲都能在瀏覽器執行 — 手機或電腦皆可，無需安裝。進度會留在這個瀏覽器；Android 應用程式則各自保存。","play.loading":"載入中…","play.back":"返回網站","studio.title":"幕後工作室","studio.site":"我們的網站","studio.games":"我們在 Google Play 的遊戲","foot.privacy":"隱私權","foot.brand":"品牌","foot.rights":"版權所有。","foot.noTrack":"本網站沒有廣告、分析追蹤或 Cookie。","studio.text":"Lewydo 是來自烏克蘭的兩人獨立遊戲工作室。Vlad 寫程式，Lilya 負責設計。我們一起做自己愛玩的遊戲。","studio.thanks":"謝謝你的遊玩！"}};
+window.OD_LANGS = ["en", "uk", "id", "de", "es", "fr", "it", "nl", "pl", "pt", "vi", "tr", "ko", "ja", "zh-TW"];
 </script>
+<script>/* ─────────────────────────────────────────────────────────────────────────────
+   Сайт Orbit Dash — уся поведінка сторінки. Вбудовується в index.html збіркою.
+   Жодних сторонніх запитів: шрифти, картинки й звук лежать на самому сайті.
+   ───────────────────────────────────────────────────────────────────────────── */
+(function () {
+  "use strict";
+  var S = window.OD_STRINGS || {}, LANGS = window.OD_LANGS || [];
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ── 1. МОВА ───────────────────────────────────────────────────────────────
+     ?lang=xx → вибір відвідувача → мова пристрою → англійська.
+     Ключ сховища — той самий, що на сайті студії й CubePix: вибір мандрує між сайтами. */
+  var KEY = "lewydo:lang";
+  var NAMES = { en: "English", uk: "Українська", id: "Bahasa Indonesia", de: "Deutsch",
+    es: "Español", fr: "Français", it: "Italiano", nl: "Nederlands", pl: "Polski",
+    pt: "Português", vi: "Tiếng Việt", tr: "Türkçe", ko: "한국어", ja: "日本語", "zh-TW": "繁體中文" };
+
+  function stored(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  function pickLang() {
+    var q = new URLSearchParams(location.search).get("lang");
+    if (q && S[q]) return q;
+    var saved = stored(KEY);
+    if (saved && S[saved]) return saved;
+    var list = navigator.languages || [navigator.language || "en"];
+    for (var i = 0; i < list.length; i++) {
+      var tag = String(list[i]);
+      if (S[tag]) return tag;                                  // точний збіг (zh-TW)
+      var base = tag.split("-")[0];
+      if (S[base]) return base;
+      if (base === "zh") return "zh-TW";
+    }
+    return "en";
+  }
+
+  function apply(lang) {
+    var d = S[lang] || S.en || {};
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-t]").forEach(function (el) {
+      var v = d[el.getAttribute("data-t")];
+      if (v != null) el.textContent = v;
+    });
+    document.querySelectorAll("[data-ta]").forEach(function (el) {
+      el.getAttribute("data-ta").split(";").forEach(function (pair) {
+        var i = pair.indexOf(":");
+        if (i < 0) return;
+        var v = d[pair.slice(i + 1).trim()];
+        if (v != null) el.setAttribute(pair.slice(0, i).trim(), v);
+      });
+    });
+    var now = document.getElementById("langNow");
+    if (now) now.textContent = lang.toUpperCase();
+    document.querySelectorAll("#langList button").forEach(function (b) {
+      b.setAttribute("aria-current", b.dataset.lang === lang ? "true" : "false");
+    });
+  }
+
+  var cur = pickLang();
+
+  (function buildLangMenu() {
+    var box = document.getElementById("lang"), list = document.getElementById("langList");
+    if (!box || !list) return;
+    var btn = box.querySelector("button");
+    LANGS.forEach(function (code) {
+      var b = document.createElement("button");
+      b.type = "button"; b.dataset.lang = code; b.textContent = NAMES[code] || code;
+      b.addEventListener("click", function () {
+        cur = code; store(KEY, code); apply(code);
+        box.removeAttribute("open"); btn.setAttribute("aria-expanded", "false");
+        var u = new URL(location.href); u.searchParams.set("lang", code);
+        history.replaceState(null, "", u);
+      });
+      list.appendChild(b);
+    });
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = box.hasAttribute("open");
+      if (open) box.removeAttribute("open"); else box.setAttribute("open", "");
+      btn.setAttribute("aria-expanded", String(!open));
+    });
+    document.addEventListener("click", function () {
+      box.removeAttribute("open"); btn.setAttribute("aria-expanded", "false");
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { box.removeAttribute("open"); btn.setAttribute("aria-expanded", "false"); }
+    });
+  })();
+
+  apply(cur);
+
+  /* ── 2. ЗОРІ ───────────────────────────────────────────────────────────── */
+  (function stars() {
+    var sky = document.getElementById("sky");
+    if (!sky) return;
+    var html = "";
+    for (var i = 0; i < 60; i++) {
+      var s = (1 + Math.random() * 2.2).toFixed(1);
+      html += '<i style="left:' + (Math.random() * 100).toFixed(1) + "%;top:" +
+        (Math.random() * 100).toFixed(1) + "%;width:" + s + "px;height:" + s +
+        "px;--d:" + (2 + Math.random() * 3).toFixed(1) + 's"></i>';
+    }
+    sky.innerHTML = html;
+  })();
+
+  /* ── 3. МІНІ-ГРА ───────────────────────────────────────────────────────────
+     Чесна мініатюра механіки гри, а не порт рушія: м'яч біжить по кільцю,
+     тап перекидає його на сусіднє, шипи вбивають на своєму кільці й дають
+     комбо, коли пролітаєш упритул по сусідньому, кристали йдуть у рахунок.
+     Співвідношення кілець — як у грі (190 / 320). */
+  (function mini() {
+    var cv = document.getElementById("od");
+    if (!cv) return;
+    var ctx = cv.getContext("2d"), tip = document.getElementById("odTip");
+    var scoreEl = document.getElementById("odScore"), bestEl = document.getElementById("odBest");
+    var COL = { ring: "#2b3060", player: "#00e5ff", gem: "#ffd54a", spike: "#ff3d68" };
+    var RATIO = 190 / 320;                               // внутрішнє кільце від зовнішнього, як у грі
+
+    var S0 = 0, cx = 0, cy = 0, rOut = 0, rIn = 0, dpr = 1;
+    function size() {
+      var r = cv.getBoundingClientRect();
+      if (!r.width) return;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+      S0 = Math.min(r.width, r.height); cx = r.width / 2; cy = r.height / 2;
+      rOut = S0 * 0.37; rIn = rOut * RATIO;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    var best = +(stored("od:miniBest") || 0);
+    bestEl.textContent = best;
+
+    var st, started = false;
+    function reset(demo) {
+      st = { demo: !!demo, ring: 1, a: -Math.PI / 2, w: 1.5, t: 0, hop: 1, dead: 0,
+             score: 0, combo: 0, spikes: [], gems: [], sparks: [], spin: 0 };
+      for (var i = 0; i < 5; i++) st.spikes.push({ r: i % 2, a: (i / 5) * Math.PI * 2 + 0.6 });
+      for (var j = 0; j < 4; j++) st.gems.push({ r: j % 2, a: (j / 4) * Math.PI * 2 + 2.1, got: 0 });
+      scoreEl.textContent = 0;
+    }
+    reset(true);
+
+    function tap() {
+      if (st.dead > 0) { if (st.dead > 0.45) { reset(false); started = true; setTip("hero.try", 1); } return; }
+      if (!started) { started = true; st.demo = false; setTip(null); }
+      st.ring = st.ring ? 0 : 1; st.hop = 0;
+    }
+    function setTip(key, hide) {
+      if (!tip) return;
+      if (key) { var d = S[cur] || S.en || {}; tip.textContent = d[key] || tip.textContent; }
+      tip.classList.toggle("hide", !!hide);
+    }
+
+    cv.addEventListener("pointerdown", function (e) { e.preventDefault(); cv.focus(); tap(); });
+    cv.addEventListener("keydown", function (e) {
+      if (e.key === " " || e.key === "Enter") { e.preventDefault(); tap(); }
+    });
+
+    function ringR(i) { return i ? rOut : rIn; }
+
+    function step(dt) {
+      st.t += dt; st.spin += dt * 0.12;
+      if (st.dead > 0) { st.dead += dt; }
+      else {
+        st.w = 1.5 + Math.min(st.t * 0.035, 1.5);                 // кільце лише розганяється
+        st.a += st.w * dt;
+        st.hop = Math.min(1, st.hop + dt * 9);                    // перескок ~0.11 с
+        var r = ringR(st.ring), ang = st.a;
+        // шипи: свій — смерть, сусідній упритул — комбо
+        st.spikes.forEach(function (s) {
+          var d = Math.abs(((s.a + st.spin - ang + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI);
+          if (d < 0.14) {
+            if (s.r === st.ring && st.hop > 0.5 && !st.demo) { st.dead = 0.001; }
+            else if (s.r !== st.ring && !s.grazed) { s.grazed = 1; st.combo++; st.sparks.push({ a: s.a + st.spin, r: ringR(s.r), t: 0 }); }
+          } else if (d > 0.4) s.grazed = 0;
+        });
+        st.gems.forEach(function (g) {
+          if (g.got) return;
+          var d = Math.abs(((g.a + st.spin - ang + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI);
+          if (g.r === st.ring && d < 0.16) {
+            g.got = 1; st.score += 1 + Math.min(st.combo, 4);
+            scoreEl.textContent = st.score;
+            st.sparks.push({ a: g.a + st.spin, r: ringR(g.r), t: 0, gem: 1 });
+            setTimeout(function () { g.got = 0; g.a = Math.random() * Math.PI * 2; g.r = Math.random() < .5 ? 0 : 1; }, 900);
+          }
+        });
+        if (st.demo && st.t > 1.6) { st.t = 0.2; st.ring = st.ring ? 0 : 1; st.hop = 0; }
+      }
+      st.sparks = st.sparks.filter(function (s) { s.t += dt; return s.t < 0.5; });
+      if (st.dead > 0.45 && st.dead < 0.5) {
+        if (st.score > best) { best = st.score; bestEl.textContent = best; store("od:miniBest", best); }
+        setTip("hero.again", 0);
+      }
+    }
+
+    function glowCircle(r, col, w, a) {
+      ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = col; ctx.lineWidth = w;
+      ctx.shadowColor = col; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    }
+    function at(r, a) { return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; }
+
+    function draw() {
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      glowCircle(rOut, COL.ring, Math.max(2, S0 * 0.012), 1);
+      glowCircle(rIn, COL.ring, Math.max(2, S0 * 0.012), 1);
+
+      st.spikes.forEach(function (s) {
+        var p = at(ringR(s.r), s.a + st.spin), ang = s.a + st.spin;
+        ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(ang + Math.PI / 2);
+        ctx.fillStyle = COL.spike; ctx.shadowColor = COL.spike; ctx.shadowBlur = 10;
+        var k = S0 * 0.032;
+        ctx.beginPath(); ctx.moveTo(0, -k); ctx.lineTo(k * 0.8, k * 0.7); ctx.lineTo(-k * 0.8, k * 0.7);
+        ctx.closePath(); ctx.fill(); ctx.restore();
+      });
+
+      st.gems.forEach(function (g) {
+        if (g.got) return;
+        var p = at(ringR(g.r), g.a + st.spin), k = S0 * 0.022;
+        ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(st.t * 1.6);
+        ctx.fillStyle = COL.gem; ctx.shadowColor = COL.gem; ctx.shadowBlur = 12;
+        ctx.fillRect(-k / 2, -k / 2, k, k); ctx.restore();
+      });
+
+      st.sparks.forEach(function (s) {
+        var p = at(s.r, s.a), k = (s.t / 0.5);
+        ctx.save(); ctx.globalAlpha = 1 - k; ctx.strokeStyle = s.gem ? COL.gem : COL.spike;
+        ctx.lineWidth = 2; ctx.beginPath();
+        ctx.arc(p[0], p[1], S0 * (0.02 + k * 0.05), 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      });
+
+      // м'яч: під час перескоку їде між кільцями
+      var from = ringR(st.ring ? 0 : 1), to = ringR(st.ring);
+      var e = st.hop < 1 ? 1 - Math.pow(1 - st.hop, 3) : 1;
+      var r = from + (to - from) * e, p = at(r, st.a), k = S0 * 0.03;
+      ctx.save();
+      ctx.globalAlpha = st.dead > 0 ? Math.max(0, 1 - st.dead * 2.2) : 1;
+      ctx.fillStyle = COL.player; ctx.shadowColor = COL.player; ctx.shadowBlur = 22;
+      ctx.beginPath(); ctx.arc(p[0], p[1], k, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      if (st.dead > 0) {
+        ctx.save(); ctx.globalAlpha = Math.min(1, st.dead * 3); ctx.strokeStyle = COL.spike;
+        ctx.lineWidth = 2; ctx.beginPath();
+        ctx.arc(p[0], p[1], k + st.dead * S0 * 0.5, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      }
+    }
+
+    var last = 0, live = false;
+    function frame(ts) {
+      if (!live) return;
+      var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;
+      step(dt); draw(); requestAnimationFrame(frame);
+    }
+    function start() { if (live) return; live = true; last = performance.now(); requestAnimationFrame(frame); }
+    function stop() { live = false; }
+
+    addEventListener("resize", function () { size(); draw(); });
+    document.addEventListener("visibilitychange", function () { document.hidden ? stop() : start(); });
+    new IntersectionObserver(function (es) {
+      es[0].isIntersecting ? start() : stop();
+    }, { threshold: 0.15 }).observe(cv);
+    size(); draw();
+  })();
+
+  /* ── 4. ПРЕВ'Ю ТРЕКІВ ─────────────────────────────────────────────────────
+     Один звук за раз, файли — з самого сайту (audio/<id>.preview.mp3). */
+  (function previews() {
+    var cards = [].slice.call(document.querySelectorAll(".lv[data-audio]"));
+    if (!cards.length) return;
+    var playing = null;
+    function stopAll() {
+      if (!playing) return;
+      playing.au.pause(); playing.au.currentTime = 0;
+      playing.card.classList.remove("on");
+      playing.bar.style.width = "0%"; playing.set(false);
+      playing = null;
+    }
+    cards.forEach(function (card) {
+      var btn = card.querySelector("button"), bar = card.querySelector(".pb i");
+      var au = null;
+      function set(on) {
+        btn.innerHTML = on
+          ? '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4.5v15l12-7.5z"/></svg>';
+        var d = S[cur] || S.en || {};
+        btn.setAttribute("aria-label", (on ? d["levels.stop"] : d["levels.listen"]) || "");
+      }
+      set(false);
+      btn.addEventListener("click", function () {
+        if (playing && playing.card === card) { stopAll(); return; }
+        stopAll();
+        if (!au) {
+          au = new Audio(card.dataset.audio);
+          au.preload = "none";
+          au.addEventListener("timeupdate", function () {
+            if (au.duration) bar.style.width = (au.currentTime / au.duration * 100) + "%";
+          });
+          au.addEventListener("ended", stopAll);
+        }
+        au.play().then(function () {
+          card.classList.add("on"); set(true);
+          playing = { au: au, card: card, bar: bar, set: set };
+        }, function () { /* браузер не пустив — мовчимо */ });
+      });
+    });
+  })();
+
+  /* ── 5. СЕРЦЕ LEWYDO ──────────────────────────────────────────────────────
+     Стандарт бренду: один удар, коли знак з'являється. Ніколи в петлі. */
+  (function heartbeat() {
+    var logo = document.querySelector("#studio .lw-logo");
+    if (!logo || reduced) return;
+    new IntersectionObserver(function (es, obs) {
+      if (!es[0].isIntersecting) return;
+      logo.classList.add("lw-beating");
+      obs.disconnect();
+    }, { threshold: 0.5 }).observe(logo);
+  })();
+})();
+</script>
 </body>
 </html>

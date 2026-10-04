@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://roshevasternin.github.io/Game-Orbit-Dash/sitemap.xml
