@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orbit Dash</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0}.left-0{left:0}.left-1\/2{left:50%}.left-3{left:.75rem}.right-0{right:0}.right-3{right:.75rem}.top-3{top:.75rem}.z-20{z-index:20}.z-30{z-index:30}.z-40{z-index:40}.z-50{z-index:50}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.aspect-square{aspect-ratio:1/1}.h-10{height:2.5rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-8{width:2rem}.w-full{width:100%}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%,to{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}.animate-bounce{animation:bounce 1s infinite}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}@keyframes spin{to{transform:rotate(1turn)}}.animate-spin{animation:spin 1s linear infinite}.cursor-move{cursor:move}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.resize{resize:both}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-sm{border-radius:.125rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.p-4{padding:1rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-1{padding-bottom:.25rem}.pb-3{padding-bottom:.75rem}.pt-8{padding-top:2rem}.text-center{text-align:center}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xs{font-size:.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-white\/40{color:hsla(0,0%,100%,.4)}.outline-none{outline:2px solid transparent;outline-offset:2px}.ring{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.blur{--tw-blur:blur(8px)}.blur,.drop-shadow{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow{--tw-drop-shadow:drop-shadow(0 1px 2px rgba(0,0,0,.1)) drop-shadow(0 1px 1px rgba(0,0,0,.06))}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.active\:scale-90:active{--tw-scale-x:.9;--tw-scale-y:.9}.active\:scale-90:active,.active\:scale-95:active{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95}.disabled\:opacity-40:disabled{opacity:.4}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#0b0d1a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;height:100%;background:#0b0d1a;overscroll-behavior:none}
+#root{height:100%}
+
+/* ═══ БРЕНД LEWYDO — стандарт студії, кіт як є ═══════════════════════════════
+   Джерело: https://roshevasternin.github.io/brand/ (brand.json — усі числа),
+   код — kit/code/web/lewydo-brand.css. Марку НЕ чіпаємо: часи, масштаби й криві
+   keyframes нижче скопійовані з кіта без жодної зміни.
+   Єдина відмінність — розкладка: кіт міряє в px через --lw-s, а прототип живе в
+   юнітах екрана 360 (u(n) = n·100cqw/360), тож тут --lw-u. Числа ті самі:
+   Lockup 208×322, логотип 208 (серце 140 по центру), назва 208×74, слоган 208×19,
+   лінія 146×1 на 20 нижче. Фон і світло — наші (космос гри), марка — ні. */
+.lw{--lw-u:calc(100cqw / 360)}
+.lw-lockup{display:flex;flex-direction:column;align-items:center;width:calc(208 * var(--lw-u));height:calc(322 * var(--lw-u))}
+.lw-logo{position:relative;display:block;flex:none;width:calc(208 * var(--lw-u));height:calc(208 * var(--lw-u))}
+.lw-back,.lw-front,.lw-aura{position:absolute;display:block;transform-origin:50% 50%}
+.lw-back{left:0;top:0;width:100%;height:100%}
+.lw-front{left:16.346%;top:16.346%;width:67.308%;height:67.308%}      /* 140 з 208, по центру */
+.lw-aura{left:0;top:0;width:100%;height:100%;opacity:0;pointer-events:none}
+.lw-name{display:block;flex:none;width:calc(208 * var(--lw-u));height:calc(74 * var(--lw-u))}
+.lw-slogan{display:block;flex:none;width:calc(208 * var(--lw-u));height:calc(19 * var(--lw-u))}
+.lw-line{display:block;flex:none;width:calc(146 * var(--lw-u));height:calc(1 * var(--lw-u));min-height:1px;margin-top:calc(20 * var(--lw-u))}
+
+/* Підпис — логотип 24 + назва 46.1×16.4; пігулка меню кладе його в капсулу 28 з › */
+.lw-sig{display:inline-flex;align-items:center;gap:calc(1 * var(--lw-u))}
+.lw-sig .lw-logo{width:calc(24 * var(--lw-u));height:calc(24 * var(--lw-u))}
+.lw-sig .lw-name{width:calc(46.1 * var(--lw-u));height:calc(16.4 * var(--lw-u))}
+.lw-pill{display:inline-flex;align-items:center;gap:calc(5 * var(--lw-u));height:calc(28 * var(--lw-u));
+  padding:0 calc(10 * var(--lw-u)) 0 calc(3 * var(--lw-u));border-radius:999px;border:1px solid rgba(61,220,132,.24);
+  background:rgba(61,220,132,.04);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+.lw-pill:active{transform:scale(.96)}
+/* Зона тапу 48 (кіт: pill.tapArea) — вигляд лишається 28: прозора обгортка, натиск тисне пігулку */
+.lw-tap{background:none;border:0;padding:calc(10 * var(--lw-u)) 0;display:inline-flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.lw-tap:active .lw-pill{transform:scale(.96)}
+.lw-pill .lw-go{width:calc(5 * var(--lw-u));height:calc(8 * var(--lw-u));opacity:.65}
+
+/* Серцебиття — ОДИН раз, коли марка з'являється (ніколи в петлі): клас .lw-beating на .lw-logo */
+.lw-beating .lw-front{animation:lwHeart 440ms linear var(--d,0s) 1;}
+.lw-beating .lw-back{animation:lwGlow 450ms linear var(--d,0s) 1 forwards;}
+@keyframes lwHeart{0%{transform:scale(1);animation-timing-function:cubic-bezier(.61,1,.88,1)}22.727%{transform:scale(1.13);animation-timing-function:cubic-bezier(.12,0,.39,0)}
+  50%{transform:scale(1);animation-timing-function:cubic-bezier(.61,1,.88,1)}72.727%{transform:scale(1.07);animation-timing-function:cubic-bezier(.12,0,.39,0)}100%{transform:scale(1)}}
+@keyframes lwGlow{0%,11.111%{transform:scale(1);animation-timing-function:cubic-bezier(.61,1,.88,1)}37.778%{transform:scale(1.15);animation-timing-function:cubic-bezier(.12,0,.39,0)}100%{transform:scale(1.05)}}
+
+/* Сплеш (BrandScreen) — клас .lw-splash на .lw-lockup. Усе приїжджає згори вниз,
+   далі серцебиття як фінал зі звуком Lewydo (2.09 с; його перший удар — на 0.03). */
+.lw-splash .lw-logo{opacity:0;transform:scale(.94);animation:lwArrive .7s cubic-bezier(.22,1,.36,1) .15s forwards;}
+.lw-splash .lw-front{animation:lwBeat 900ms linear 2s 1;}
+.lw-splash .lw-back{animation:lwBloom 1000ms linear 2s 1 forwards;}
+.lw-splash .lw-aura{animation:lwWave 1s cubic-bezier(.2,.7,.3,1) 2.12s 1;}
+.lw-splash .lw-aura+.lw-aura{animation:lwWave2 .9s cubic-bezier(.2,.7,.3,1) 2.4s 1;}
+.lw-splash .lw-name{opacity:0;transform:scale(1.06);animation:lwFocus .55s cubic-bezier(.5,0,.5,1) .55s forwards;}
+.lw-splash .lw-slogan{opacity:0;transform:scale(1.06);animation:lwFocus .55s cubic-bezier(.5,0,.5,1) .85s forwards;}
+.lw-splash .lw-line{opacity:0;transform:scaleX(0);animation:lwFadeIn .3s linear 1.15s forwards,lwOpen .7s cubic-bezier(.16,1,.3,1) 1.15s forwards;}
+@keyframes lwArrive{to{opacity:1;transform:scale(1)}}
+@keyframes lwFadeIn{to{opacity:1}}
+@keyframes lwFocus{to{opacity:1;transform:scale(1)}}
+@keyframes lwOpen{to{transform:scaleX(1)}}
+@keyframes lwBeat{
+  0%{transform:scale(1);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  11%{transform:scale(.95);animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+  19%{transform:scale(1.2);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  31%{transform:scale(.97);animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+  50%{transform:scale(1.12);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  63%{transform:scale(.985);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  80%{transform:scale(1.012)}
+  100%{transform:scale(1)}}
+@keyframes lwBloom{
+  0%{transform:scale(1);filter:brightness(1)}
+  12%{transform:scale(.98);filter:brightness(1);animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+  22%{transform:scale(1.3);filter:brightness(1.4);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  40%{transform:scale(1.1);filter:brightness(1.1);animation-timing-function:cubic-bezier(.2,.9,.3,1)}
+  52%{transform:scale(1.2);filter:brightness(1.25);animation-timing-function:cubic-bezier(.45,0,.55,1)}
+  100%{transform:scale(1.05);filter:brightness(1)}}
+@keyframes lwWave{0%{opacity:.55;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes lwWave2{0%{opacity:.32;transform:scale(1)}100%{opacity:0;transform:scale(1.55)}}
+
+@media (prefers-reduced-motion:reduce){
+  .lw-beating .lw-front,.lw-beating .lw-back,.lw-splash .lw-front,.lw-splash .lw-back,.lw-splash .lw-aura{animation:none;}
+  .lw-splash .lw-logo,.lw-splash .lw-name,.lw-splash .lw-slogan,.lw-splash .lw-line{animation:none;opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+<script>window.__odSite = {"levels":[{"id":"first-light","name":"FIRST LIGHT","at":55.685,"dur":72.331},{"id":"slow-orbit","name":"SLOW ORBIT","at":60.3,"dur":96.986},{"id":"neon-drift","name":"NEON DRIFT","at":7.157,"dur":92.043},{"id":"hyperlane","name":"HYPERLANE","at":30.3,"dur":86.9},{"id":"starborn","name":"STARBORN","at":27.992,"dur":84.531}]};</script>
+<script>/* ─────────────────────────────────────────────────────────────────────────────
+   ЖИВА ГРА ДЛЯ САЙТІВ — play/embed.html (site/build.py вшиває цей скрипт у прототип перед бандлом).
+
+   Не копія гри, а сам прототип: той самий бандл, що й play/ (play/game.js), лише без меню. Сайт гри
+   (герой) і сайт студії (блок Orbit Dash) вставляють його <iframe>. Прототип оновився → наступна
+   збірка сайту → і тут уже нова гра: нічого не перемальовується руками.
+
+   ДИВИТИСЯ (поки не торкнулись). Трейлер: кожен рівень — його найкращий шматок (той самий, що прев'ю
+   треку: previewAt із файлу рівня), сам собою (AUTOPLAY гравця, «чистий кадр» __orbitClean — без кнопок
+   і написів), потім наступний рівень. ?level=<id> чи повідомлення level — лише цей рівень, по колу.
+   ГРАТИ (тап у кадрі). Повний трек рівня (раз ~1.5–2 МБ) і рівень з початку — твій, уже з музикою.
+
+   Звук і годинник. Браузер не пускає звук без дотику, а годинник рівня в прототипі — годинник
+   AudioContext: поки контекст стоїть, гра стояла б. Тож до першого дотику годинник «тихий» (від
+   performance.now), а звукові вузли не стартують (start/stop і автоматизація параметрів — порожні).
+   Перший дотик будить контекст, і рівень починається знову — уже зі справжнім годинником. Гучність —
+   через свій вузол між грою й колонками (destination): «без звуку» не зупиняє гри.
+
+   Легкий трек. Дивитися повний mp3 не треба: замість нього — буфер на всю довжину треку, де звучить
+   лише прев'ю (~190 КБ) на своєму місці (previewAt). Гра цього не помічає. На «грати» в той самий
+   буфер лягає повний трек — і кеш гри вже повний.
+
+   Сховище — у пам'яті: справжній сейв гравця (play/) живий-здоровий, вбудована гра його не бачить.
+
+   Сторінка-батько → сюди (postMessage { od: … }):
+     level {id}     лише цей рівень (у тому ж режимі); id: null — знову трейлер
+     visible {on}   поза екраном — годинник стоїть (і звук), назад — іде далі
+     labels {…}     підписи мовою сторінки: tap, sound, watch, loading
+   Звідси: ready · state {mode, level, sound, trailer} · tick {t, end, bg, level} (~8 разів за с).
+   ───────────────────────────────────────────────────────────────────────────── */
+(function () {
+  "use strict";
+  var Q = new URLSearchParams(location.search);
+  var SITE = window.__odSite || { levels: [] };            // збірка: [{ id, name, at, dur }] — рівні в порядку гри
+  var LV = {};
+  SITE.levels.forEach(function (l) { LV[l.id] = l; });
+  var hold = Q.get("level") && LV[Q.get("level")] ? Q.get("level") : null;
+  var STILL = Q.get("still") === "1";                      // prefers-reduced-motion на сторінці: нічого само
+  var SEG = 12;                                            // с — шматок рівня в трейлері (прев'ю ~12 с)
+  var log = Q.get("debug") === "1" ? function () { console.log.apply(console, ["[odx]"].concat([].slice.call(arguments))); } : function () {};
+  window.__orbitPublic = 1;      // без FPS, DEV і заглушки банера
+  window.__orbitNoBrand = 1;     // без заставки Lewydo (її бачать у самій грі)
+  window.__orbitClean = true;    // чистий кадр: у рівні — лише смуга прогресу
+
+  /* ── 1. сховище в пам'яті ─────────────────────────────────────────────────── */
+  var mem = new Map(), first = SITE.levels[0] ? SITE.levels[0].id : "first-light";
+  var seed = function (k, v) { mem.set(k, JSON.stringify(v)); };
+  seed("orbitdash-save", { tutSeen: true, runs: 3, noAds: true, lastMode: "levels", gems: 0,
+    levels: { levels: {}, last: hold || first, promoShown: true } });
+  seed("orbitdash-settings", { sfx: 0.8, music: 0.85, sfxOn: true, musicOn: true, vibro: false, track: null });
+  seed("beat-settings", { ofs: 0, auto: false, sfx: false, cal: false, autoSync: false });
+  window.storage = {   // та сама форма, що й шим у shell.html (побачить window.storage і свого не поставить)
+    get: function (k) { return mem.has(k) ? Promise.resolve({ key: k, value: mem.get(k), shared: false }) : Promise.reject(new Error("not found")); },
+    set: function (k, v) { mem.set(k, v); return Promise.resolve({ key: k, value: v, shared: false }); },
+    delete: function (k) { mem.delete(k); return Promise.resolve({ key: k, deleted: true, shared: false }); },
+    list: function (p) { var ks = []; mem.forEach(function (_, k) { if (!p || k.indexOf(p) === 0) ks.push(k); }); return Promise.resolve({ keys: ks, prefix: p, shared: false }); },
+  };
+
+  /* ── 2. тихий годинник до першого дотику ─────────────────────────────────── */
+  var silent = true, frozen = false, vBase = 0, vFrom = performance.now(), soundOn = false;
+  var ctxs = [];
+  var vnow = function () { return frozen ? vBase : vBase + (performance.now() - vFrom) / 1000; };
+  var BAC = window.BaseAudioContext || window.AudioContext || window.webkitAudioContext;
+  var P = BAC && BAC.prototype, dSt = P && Object.getOwnPropertyDescriptor(P, "state");
+  var realDecode = P && P.decodeAudioData;
+  var seen = function (c) { if (ctxs.indexOf(c) < 0) ctxs.push(c); return c; };
+  if (P) {
+    var dCT = Object.getOwnPropertyDescriptor(P, "currentTime"), dDst = Object.getOwnPropertyDescriptor(P, "destination");
+    if (dCT && dCT.get) Object.defineProperty(P, "currentTime", { configurable: true,
+      get: function () { seen(this); return silent ? vnow() : dCT.get.call(this); } });
+    if (dSt && dSt.get) Object.defineProperty(P, "state", { configurable: true,
+      get: function () { var s = dSt.get.call(this); return silent && s === "suspended" ? "running" : s; } });
+    // свій вузол гучності між грою й колонками: «без звуку» гасить його, гра йде далі
+    if (dDst && dDst.get) Object.defineProperty(P, "destination", { configurable: true,
+      get: function () {
+        seen(this);
+        if (!this.__odOut) { var g = this.createGain(); g.gain.value = soundOn ? 1 : 0; g.connect(dDst.get.call(this)); this.__odOut = g; }
+        return this.__odOut;
+      } });
+    var AC = window.AudioContext;
+    if (AC && AC.prototype.getOutputTimestamp) {
+      var gOT = AC.prototype.getOutputTimestamp;
+      AC.prototype.getOutputTimestamp = function () { seen(this); return silent ? { contextTime: vnow(), performanceTime: performance.now() } : gOT.call(this); };
+    }
+    // start / stop — і на базовому класі, і окремо на AudioBufferSourceNode (свій підпис): латаємо всі
+    ["AudioScheduledSourceNode", "AudioBufferSourceNode", "OscillatorNode", "ConstantSourceNode"].forEach(function (n) {
+      var K = window[n], pr = K && K.prototype;
+      if (!pr) return;
+      if (Object.prototype.hasOwnProperty.call(pr, "start")) {
+        var oStart = pr.start;
+        pr.start = function () { if (silent) { this.__odMute = true; return; } return oStart.apply(this, arguments); };
+      }
+      if (Object.prototype.hasOwnProperty.call(pr, "stop")) {
+        var oStop = pr.stop;
+        pr.stop = function () { if (this.__odMute) return; return oStop.apply(this, arguments); };
+      }
+    });
+    var AP = window.AudioParam && window.AudioParam.prototype;
+    if (AP) ["setValueAtTime", "linearRampToValueAtTime", "exponentialRampToValueAtTime", "setTargetAtTime",
+      "setValueCurveAtTime", "cancelScheduledValues", "cancelAndHoldAtTime"].forEach(function (m) {
+      var f = AP[m];
+      if (typeof f === "function") AP[m] = function () { return silent ? this : f.apply(this, arguments); };
+    });
+  }
+
+  /* ── 3. легкий трек: буфер на всю довжину, звучить лише прев'ю ───────────── */
+  var LITE = {}, realFetch = window.fetch.bind(window);
+  var MARK = "ODLITE:";
+  var trackId = function (url) { var m = /(?:^|\/)audio\/([\w-]+)\.mp3(?:$|\?)/.exec(String(url)); return m ? m[1] : null; };
+  window.fetch = function (url, opt) {
+    var id = trackId(typeof url === "string" ? url : url && url.url);
+    if (id && LV[id] && !(LITE[id] && LITE[id].full)) return Promise.resolve(new Response(MARK + id));
+    return realFetch(url, opt);
+  };
+  var decodeWith = function (ctx, data) {
+    return new Promise(function (res, rej) { var p = realDecode.call(ctx, data, res, rej); if (p && p.then) p.then(res, rej); });
+  };
+  var copyInto = function (dst, src, at) {
+    var o = Math.max(0, Math.round(at * dst.sampleRate));
+    for (var c = 0; c < dst.numberOfChannels; c++) {
+      var d = src.getChannelData(Math.min(c, src.numberOfChannels - 1));
+      var n = Math.min(d.length, dst.length - o);
+      if (n > 0) dst.copyToChannel(n === d.length ? d : d.subarray(0, n), c, o);
+    }
+  };
+  if (P && realDecode) P.decodeAudioData = function (data, ok, fail) {
+    var ctx = this, head = "";
+    try { head = String.fromCharCode.apply(null, new Uint8Array(data, 0, Math.min(40, data.byteLength))); } catch (e) {}
+    if (head.indexOf(MARK) !== 0) return realDecode.apply(this, arguments);
+    var id = head.slice(MARK.length), L = LV[id];
+    var sr = ctx.sampleRate, buf = ctx.createBuffer(2, Math.ceil((L.dur + 0.05) * sr), sr);
+    var rec = LITE[id] = { buf: buf, full: false, ctx: ctx };
+    // прев'ю — на своє місце, і лише тоді буфер готовий: вузол треку бере звук у мить start()
+    var done = realFetch("audio/" + id + ".preview.mp3").then(function (r) { return r.ok ? r.arrayBuffer() : null; })
+      .then(function (ab) { return ab && decodeWith(ctx, ab); })
+      .then(function (pv) { if (pv && !rec.full) { copyInto(buf, pv, L.at); rec.pvLen = pv.duration; } })
+      .catch(function () {})
+      .then(function () { return buf; });
+    if (ok) done.then(ok);
+    return done;
+  };
+  /** Повний трек рівня — у той самий буфер (кеш гри: id той самий, буфер той самий, тепер повний). */
+  function upgrade(id) {
+    var rec = LITE[id];
+    if (!rec || rec.full) return Promise.resolve(true);
+    if (rec.up) return rec.up;
+    return rec.up = realFetch("audio/" + id + ".mp3").then(function (r) { return r.arrayBuffer(); })
+      .then(function (ab) { return decodeWith(rec.ctx, ab); })
+      .then(function (full) { rec.buf.getChannelData(0).fill(0); rec.buf.getChannelData(1).fill(0); copyInto(rec.buf, full, 0); rec.full = true; return true; })
+      .catch(function () { rec.up = null; return false; });
+  }
+
+  /** Справжній звук — лише з жесту (тап у кадрі): контекст оживає, годинник стає справжнім. */
+  function wake() {
+    if (!silent) return;
+    silent = false;
+    ctxs.forEach(function (c) { try { if (dSt.get.call(c) === "suspended") c.resume(); } catch (e) {} });
+  }
+  function setSound(on) {
+    soundOn = !!on;
+    ctxs.forEach(function (c) { if (c.__odOut) { try { c.__odOut.gain.value = soundOn ? 1 : 0; } catch (e) {} } });
+  }
+  /** Поза екраном: годинник стоїть (тихий — сам, справжній — разом зі звуком). */
+  function freeze(on) {
+    if (on === frozen) return;
+    if (silent) { if (on) { vBase = vnow(); frozen = true; } else { vFrom = performance.now(); frozen = false; } return; }
+    frozen = on;
+    ctxs.forEach(function (c) { try { on ? c.suspend() : c.resume(); } catch (e) {} });
+  }
+
+  /* ── 4. режисер ──────────────────────────────────────────────────────────── */
+  var mode = "watch", level = hold || first, segFrom = 0, started = false, busy = false, armed = false, goAt = 0;
+  var post = function (m) { try { if (parent !== window) parent.postMessage(m, "*"); } catch (e) {} };
+  var state = function () { post({ od: "state", mode: mode, level: level, sound: soundOn, trailer: mode === "watch" && !hold }); };
+  var info = function () { try { var d = window.__orbitDev && window.__orbitDev.current; return d && d.beatInfo ? d.beatInfo() : null; } catch (e) { return null; } };
+  /** Рівень: watch — з його найкращого шматка, сам; play — з початку, гравець. */
+  function go(id, watch) {
+    if (!window.__orbitLevel || !window.__orbitStartLevel || !LV[id]) return false;
+    var e;
+    try { e = window.__orbitLevel(id); } catch (err) { return false; }
+    level = id; started = true; armed = false; goAt = performance.now();
+    segFrom = watch ? Math.max(0, LV[id].at - 0.6) : 0;
+    log("go", id, watch ? "watch" : "play", "from", segFrom.toFixed(2));
+    window.__orbitSkipTo = watch && segFrom > 0 ? segFrom : 0;          // DEV-хук прототипу: перша спроба — з цієї секунди
+    window.__orbitStartLevel(Object.assign({}, e, { autoplay: !!watch }));
+    state();
+    return true;
+  }
+  function next() {
+    var ids = SITE.levels.map(function (l) { return l.id; });
+    return ids[(ids.indexOf(level) + 1) % ids.length];
+  }
+  // ready — коли кадр уже живий (рівень біжить), а не одразу: сторінка тримає свій постер (той самий кадр, media.cjs
+  // poster) до цієї миті, тож гра з'являється на його місці без чорного кадру завантаження треку
+  var announced = false;
+  var announce = function () { if (!announced) { announced = true; post({ od: "ready" }); } };
+  function boot() {
+    if (!window.__orbitStartLevel || !window.__orbitLevel || !document.getElementById("root") || !document.getElementById("root").firstChild) return void setTimeout(boot, 60);
+    setTimeout(function () {                                   // сейв і налаштування — з пам'яті, мить на ефекти
+      ui();
+      if (STILL) announce(); else { go(level, true); setTimeout(announce, 4000); }
+    }, 250);
+  }
+  setInterval(function () {
+    if (!started || frozen || busy) return;
+    var i = info();
+    if (!i) return;
+    // рівень вантажиться асинхронно: поки біжить попередній забіг (інший рівень чи той самий з іншої миті), його
+    // кадри не наші — інакше «кінець шматка» спрацював би вдруге й перезапустив рівень уже без перемотки
+    if (!armed) {
+      if (i.id === level && i.t >= segFrom - 3 && i.t < segFrom + 2) armed = true;
+      else if (performance.now() - goAt < 8000) return;
+      else armed = true;
+    }
+    if (i.t > segFrom + 0.05) announce();
+    post({ od: "tick", t: i.t, end: i.end, bg: i.cam && i.cam.bg, level: level });
+    if (mode !== "watch") return;
+    var len = Math.min(SEG, (LITE[level] && LITE[level].pvLen) || SEG);
+    if (i.t > segFrom + 0.6 + len || i.state === "dying" || i.state === "dead" || i.state === "done" || (i.end && i.t > i.end)) { log("segment end", i.id, i.t.toFixed(2), i.state); go(hold ? level : next(), true); }
+  }, 125);
+  window.addEventListener("message", function (e) {
+    var m = e.data;
+    if (!m || typeof m !== "object" || typeof m.od !== "string") return;
+    if (m.od === "level") {
+      hold = m.id && LV[m.id] ? m.id : null;
+      if (!hold) { if (mode === "watch") state(); return; }
+      if (STILL && !started) { level = hold; return; }
+      if (mode === "play") { play(hold); return; }
+      go(hold, true);
+    }
+    else if (m.od === "visible") freeze(!m.on);
+    else if (m.od === "labels") { for (var k in m) if (k !== "od") L[k] = m[k]; paint(); }
+  });
+
+  /** Грати: повний трек цього рівня — і з початку, гравець. */
+  function play(id) {
+    wake(); setSound(true);
+    mode = "play"; busy = true; box.className = "play wait"; paint(); state();
+    upgrade(id).then(function () { busy = false; box.className = "play"; go(id, false); });
+  }
+
+  /* ── 5. кнопки поверх кадру (підписи — мовою сторінки) ───────────────────── */
+  var L = { tap: "TAP TO PLAY", sound: "SOUND", watch: "WATCH", loading: "LOADING" };
+  var box, tapEl, sndEl, backEl, waitEl;
+  var I_ON = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.6 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  var I_OFF = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  function ui() {
+    var css = document.createElement("style");
+    css.textContent =
+      "#odx{position:fixed;inset:0;z-index:2147483000;font-family:'Exo 2',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer}" +
+      "#odx.play{pointer-events:none;cursor:auto}" +
+      "#odx .tap{position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:inline-flex;align-items:center;gap:10px;white-space:nowrap;" +
+      "padding:13px 22px 13px 18px;border-radius:999px;background:rgba(6,8,24,.66);border:1px solid rgba(255,255,255,.24);color:#fff;font-weight:700;font-size:13px;letter-spacing:.17em;" +
+      "backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:odxp 1.7s ease-in-out infinite}" +
+      "#odx .tap i{width:0;height:0;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent #25f4ff;filter:drop-shadow(0 0 6px #25f4ff)}" +
+      "#odx.play .tap{display:none}" +
+      "#odx .btn{position:absolute;bottom:calc(24px + env(safe-area-inset-bottom,0px));display:inline-flex;align-items:center;justify-content:center;gap:7px;height:44px;min-width:44px;padding:0 13px;border-radius:999px;pointer-events:auto;cursor:pointer;" +
+      "background:rgba(6,8,24,.58);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.92);font:700 10.5px/1 'Exo 2',system-ui,sans-serif;letter-spacing:.14em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}" +
+      "#odx .snd{right:16px}#odx .snd span{display:none}#odx .snd[aria-pressed=false] span{display:inline}" +
+      "#odx:not(.play) .snd{bottom:calc(84px + env(safe-area-inset-bottom,0px))}" +
+      "#odx .back{left:16px;display:none}#odx.play .back{display:inline-flex}" +
+      "#odx .wait{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:none;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:rgba(6,8,24,.72);color:#fff;font:700 11px/1 'Exo 2',system-ui,sans-serif;letter-spacing:.18em}" +
+      "#odx.wait .wait{display:inline-flex}#odx .wait b{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#25f4ff;animation:odxs .7s linear infinite}" +
+      "#odx .btn:active{transform:scale(.95)}#odx .tap:active{transform:translateX(-50%) scale(.96)}" +
+      "@keyframes odxp{0%,100%{box-shadow:0 0 0 0 rgba(37,244,255,.38),0 10px 30px rgba(0,0,0,.45)}50%{box-shadow:0 0 0 9px rgba(37,244,255,0),0 10px 30px rgba(0,0,0,.45)}}" +
+      "@keyframes odxs{to{transform:rotate(360deg)}}" +
+      "@media (prefers-reduced-motion:reduce){#odx .tap{animation:none}}";
+    document.head.appendChild(css);
+    box = document.createElement("div"); box.id = "odx";
+    box.innerHTML = '<button class="tap" type="button"><i></i><span></span></button>' +
+      '<button class="btn snd" type="button" aria-pressed="false"></button><button class="btn back" type="button"></button>' +
+      '<div class="wait" aria-live="polite"><b></b><span></span></div>';
+    document.body.appendChild(box);
+    tapEl = box.querySelector(".tap"); sndEl = box.querySelector(".snd"); backEl = box.querySelector(".back"); waitEl = box.querySelector(".wait span");
+    // увесь кадр — «грати»: тап будь-де (крім кнопок) — і рівень твій, уже з музикою
+    box.addEventListener("click", function (e) { if (mode !== "watch" || e.target.closest(".btn")) return; play(level); });
+    sndEl.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (silent) { wake(); setSound(true); if (mode === "watch") go(level, true); }   // знову зі шматка — тепер зі справжнім годинником
+      else setSound(!soundOn);
+      paint(); state();
+    });
+    backEl.addEventListener("click", function (e) {
+      e.stopPropagation();
+      mode = "watch"; box.className = ""; paint(); go(level, true);
+    });
+    paint();
+  }
+  function paint() {
+    if (!box) return;
+    tapEl.querySelector("span").textContent = L.tap;
+    sndEl.innerHTML = (soundOn ? I_ON : I_OFF) + "<span>" + L.sound + "</span>";
+    sndEl.setAttribute("aria-pressed", String(soundOn));
+    sndEl.setAttribute("aria-label", L.sound);
+    backEl.textContent = "‹ " + L.watch;
+    waitEl.textContent = L.loading;
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
+
+<div id="root"></div>
+<script>
+// window.storage поверх localStorage. У чаті це API середовища артефактів; на
+// опублікованій сторінці й локально його немає. Форма відповідей та сама, тож
+// код гри не змінюється. Якщо localStorage недоступний (приватний режим,
+// заборона сховища) — тихо живемо в пам'яті, гра не падає.
+(function () {
+  if (window.storage) return;
+  let ls = null;
+  try { ls = window.localStorage; ls.setItem("__t", "1"); ls.removeItem("__t"); } catch (e) { ls = null; }
+  const mem = new Map();
+  const R = (k) => { try { return ls ? ls.getItem(k) : (mem.has(k) ? mem.get(k) : null); } catch (e) { return null; } };
+  const W = (k, v) => { try { ls ? ls.setItem(k, v) : mem.set(k, v); } catch (e) { mem.set(k, v); } };
+  const D = (k) => { try { ls ? ls.removeItem(k) : mem.delete(k); } catch (e) { mem.delete(k); } };
+  const all = () => { try { if (!ls) return [...mem.keys()]; const a = []; for (let i = 0; i < ls.length; i++) a.push(ls.key(i)); return a; } catch (e) { return [...mem.keys()]; } };
+  const pre = (shared) => (shared ? "od:shared:" : "od:own:");
+  window.storage = {
+    async get(key, shared) { const v = R(pre(shared) + key); if (v === null) throw new Error("not found"); return { key, value: v, shared: !!shared }; },
+    async set(key, value, shared) { W(pre(shared) + key, value); return { key, value, shared: !!shared }; },
+    async delete(key, shared) { D(pre(shared) + key); return { key, deleted: true, shared: !!shared }; },
+    async list(prefix, shared) {
+      const p = pre(shared), full = p + (prefix || "");
+      return { keys: all().filter((k) => k.startsWith(full)).map((k) => k.slice(p.length)), prefix, shared: !!shared };
+    },
+  };
+})();
+</script>
+<script src="game.js"></script>
+</body>
+</html>
