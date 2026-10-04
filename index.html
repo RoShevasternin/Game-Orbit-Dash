@@ -133,11 +133,15 @@ header.on{background:rgba(4,5,15,.76);backdrop-filter:blur(16px) saturate(1.3);-
 .badge i{width:7px;height:7px;border-radius:50%;background:var(--go);box-shadow:0 0 10px var(--go);animation:live 1.8s ease-in-out infinite}
 @keyframes live{0%,100%{opacity:1}50%{opacity:.3}}
 h1{font-family:var(--disp);font-weight:900;line-height:.86;letter-spacing:.035em;font-size:clamp(60px,13.6vw,130px);margin:20px 0 0;user-select:none}
-h1 span{display:block}
-h1 .o{color:var(--player);text-shadow:0 0 calc(28px + 30px * var(--pulse)) rgba(37,244,255,calc(.42 + .45 * var(--pulse))),0 0 8px rgba(37,244,255,.5)}
-h1 .d{color:var(--gem);text-shadow:0 0 calc(28px + 30px * var(--pulse)) rgba(255,213,74,calc(.36 + .45 * var(--pulse))),0 0 8px rgba(255,213,74,.45)}
+h1 span{display:block;position:relative}
+h1 .o{color:var(--player);text-shadow:0 0 28px rgba(37,244,255,.42),0 0 8px rgba(37,244,255,.5)}
+h1 .d{color:var(--gem);text-shadow:0 0 28px rgba(255,213,74,.36),0 0 8px rgba(255,213,74,.45)}
+/* удар бочки — шар зі спалахом поверх літер: міняється лише його прозорість (без перемальовування тексту щокадру) */
+h1 span::after{content:attr(data-g);position:absolute;inset:0;color:transparent;opacity:var(--pulse);will-change:opacity;pointer-events:none}
+h1 .o::after{text-shadow:0 0 56px rgba(37,244,255,.95),0 0 22px rgba(37,244,255,.65)}
+h1 .d::after{text-shadow:0 0 56px rgba(255,213,74,.9),0 0 22px rgba(255,213,74,.6)}
 .tag{font-family:var(--disp);font-weight:700;font-size:clamp(19px,2.5vw,26px);line-height:1.3;margin-top:22px;max-width:24ch}
-.tag em{font-style:normal;color:var(--acc);text-shadow:0 0 calc(10px + 16px * var(--pulse)) color-mix(in srgb,var(--acc) 60%,transparent)}
+.tag em{font-style:normal;color:var(--acc);text-shadow:0 0 16px color-mix(in srgb,var(--acc) 50%,transparent)}
 .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
 .more .sub{color:var(--dim);max-width:52ch;font-size:clamp(16px,1.5vw,18px)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;list-style:none}
@@ -148,13 +152,14 @@ h1 .d{color:var(--gem);text-shadow:0 0 calc(28px + 30px * var(--pulse)) rgba(255
 .stage{position:relative;display:flex;flex-direction:column;align-items:center;margin:44px 0 40px;--pw:min(74vw,300px)}
 .orbits{position:absolute;left:50%;top:calc(9px + (var(--pw) - 18px) * .7867);width:calc(var(--pw) * 2.05);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;z-index:0}
 .orbits i{position:absolute;inset:0;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--acc) 24%,transparent);
-  box-shadow:0 0 calc(16px + 34px * var(--pulse)) -8px color-mix(in srgb,var(--acc) 65%,transparent),inset 0 0 calc(16px + 34px * var(--pulse)) -12px color-mix(in srgb,var(--acc) 55%,transparent)}
+  box-shadow:0 0 26px -8px color-mix(in srgb,var(--acc) 60%,transparent),inset 0 0 26px -12px color-mix(in srgb,var(--acc) 50%,transparent)}
 .orbits i:nth-of-type(2){inset:18%;border-color:color-mix(in srgb,var(--acc) 16%,transparent)}
 .orbits b{position:absolute;inset:0;animation:spin 12s linear infinite}
 .orbits b::before{content:"";position:absolute;left:50%;top:-6px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--acc);box-shadow:0 0 16px 3px var(--acc)}
 .orbits b:nth-of-type(2){inset:18%;animation-duration:7.5s;animation-direction:reverse}
 .orbits b:nth-of-type(2)::before{width:9px;height:9px;margin-left:-4.5px;top:-4.5px;background:var(--acc2);box-shadow:0 0 14px 2px var(--acc2)}
-.orbits .glow{position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--acc) calc(12% + 14% * var(--pulse)),transparent),transparent 72%)}
+.orbits .glow{position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--acc) 30%,transparent),transparent 72%);
+  opacity:calc(.4 + .6 * var(--pulse));will-change:opacity}
 .orbits svg{position:absolute;width:26px;height:26px;color:var(--acc3);filter:drop-shadow(0 0 8px var(--acc3));animation:spin 6s linear infinite}
 .orbits svg:nth-of-type(1){left:4%;top:24%}
 .orbits svg:nth-of-type(2){right:2%;top:58%;width:18px;height:18px;animation-duration:4.5s;animation-direction:reverse}
@@ -162,7 +167,7 @@ h1 .d{color:var(--gem);text-shadow:0 0 calc(28px + 30px * var(--pulse)) rgba(255
 .device{position:relative;z-index:1;width:var(--pw);padding:9px;border-radius:calc(var(--pw) * .14);
   background:linear-gradient(160deg,#2f3772 0%,#151939 38%,#080a1f 100%);
   box-shadow:0 0 0 1px rgba(255,255,255,.11),inset 0 1px 0 rgba(255,255,255,.14),0 60px 100px -36px rgba(0,0,0,.95),
-    0 0 calc(70px + 70px * var(--pulse)) -22px color-mix(in srgb,var(--acc) calc(36% + 34% * var(--pulse)),transparent)}
+    0 0 90px -22px color-mix(in srgb,var(--acc) 50%,transparent)}
 .device::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(140deg,rgba(255,255,255,.13),transparent 28%)}
 .screen{position:relative;width:100%;aspect-ratio:9/20;border-radius:calc(var(--pw) * .105);overflow:hidden;background:#04050f;isolation:isolate}
 .screen>img,.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -207,7 +212,7 @@ h2{font-family:var(--disp);font-weight:900;letter-spacing:.012em;line-height:1.0
 .trk:hover{transform:translateY(-6px);border-color:color-mix(in srgb,var(--a) 50%,transparent);box-shadow:0 26px 60px -30px color-mix(in srgb,var(--a) 80%,transparent)}
 .trk.on{border-color:color-mix(in srgb,var(--a) 75%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--a) 40%,transparent),0 30px 70px -30px color-mix(in srgb,var(--a) 90%,transparent)}
 .trk-cover{position:relative;aspect-ratio:1;overflow:hidden;background:var(--bgc)}
-.trk-cover img{width:100%;height:100%;object-fit:cover;transform:scale(calc(1.02 + .045 * var(--k)));filter:brightness(calc(1 + .18 * var(--k)))}
+.trk-cover img{width:100%;height:100%;object-fit:cover;transform:scale(calc(1.02 + .045 * var(--k)));will-change:transform}
 .trk-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 52%,rgba(3,4,12,.85));pointer-events:none}
 .trk-play{position:absolute;right:14px;bottom:14px;z-index:3;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
   background:var(--a);color:#03060f;box-shadow:0 10px 26px -6px color-mix(in srgb,var(--a) 85%,transparent),inset 0 1px 0 rgba(255,255,255,.6);transition:transform .2s var(--ease)}
@@ -416,7 +421,7 @@ footer .fine{text-align:center;margin-top:20px;font-family:var(--mono);font-size
 <section class="hero" aria-labelledby="h1">
   <div class="wrap hero-grid">
     <span class="badge"><i></i><span data-t="hero.badge">Out now on Google Play</span></span>
-    <h1 id="h1"><span class="o">ORBIT</span><span class="d">DASH</span></h1>
+    <h1 id="h1"><span class="o" data-g="ORBIT">ORBIT</span><span class="d" data-g="DASH">DASH</span></h1>
     <p class="tag"><span data-t="hero.lead">Two orbits. One tap.</span> <em data-t="hero.beat">Every jump on the beat.</em></p>
     <div class="more">
       <p class="sub" data-t="hero.sub">A rhythm arcade in deep space. Tap to switch orbits, slip between the spikes in time with the music and ride levels built on our own tracks.</p>
@@ -800,6 +805,7 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
         labels(); visible();
         if (want) send({ od: "level", id: want });
       } else if (m.od === "state") {
+        if (m.mode === "play" && pv) pv.stop();                    // гравець грає зі звуком — прев'ю треку замовкає
         if (m.trailer) { if (!want) mark(null); }
         else if (m.level) { want = m.level; mark(m.level); }
         now(m.level);
@@ -814,6 +820,7 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
     chips.forEach(function (b) { b.addEventListener("click", function () { pick(b.dataset.id); }); });
     $$("[data-watch]").forEach(function (b) {
       b.addEventListener("click", function () {
+        if (pv) pv.stop();
         pick(b.dataset.watch);
         var st = $("#stage");
         if (st) st.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
@@ -872,6 +879,7 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
     onLang.push(function () { cards.forEach(function (c) { label(c, c === on); }); });
     document.addEventListener("visibilitychange", function () { if (document.hidden) stop(); });
     return {
+      stop: stop,
       frame: function (now, dt) {
         if (!on || !au) return;
         var L = BY[on.dataset.id], ct = au.currentTime || 0;
