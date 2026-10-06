@@ -20,7 +20,7 @@
 Відкрий сесію Claude Code на **Game-Orbit-Dash-PRIVATE** (саме на ньому, а не на цьому репозиторії),
 скажи, що змінити, і далі за `site/README.md`:
 `python3 site/build.py --strict` → `node site/test.cjs` → публікація в цей репозиторій.
-Після злиття в `main` приватного репозиторію це робить сама дія `.github/workflows/site.yml` (якщо там є секрет `SITE_TOKEN`).
+Після злиття в `main` приватного репозиторію це робить сама дія `.github/workflows/site.yml` (ключ розгортання `SITE_DEPLOY_KEY`; запасний — токен `SITE_TOKEN`).
 
 **Веб-версія гри** (`play/`) збирається з прототипу (`prototype/`) у публічному режимі — тож вона завжди така,
 як прототип у `main`.
