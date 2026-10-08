@@ -103,6 +103,8 @@ html,body{margin:0;height:100%;background:#0b0d1a;overscroll-behavior:none}
    треку: previewAt із файлу рівня), сам собою (AUTOPLAY гравця, «чистий кадр» __orbitClean — без кнопок
    і написів), потім наступний рівень. ?level=<id> чи повідомлення level — лише цей рівень, по колу.
    ГРАТИ (тап у кадрі). Повний трек рівня (раз ~1.5–2 МБ) і рівень з початку — твій, уже з музикою.
+   Кнопки ‹ WATCH і SOUND унизу кадру — поки на екрані немає панелі кінця рівня (смерть, LEVEL COMPLETE): там
+   унизу її власні кнопки (PRACTICE · LEVELS, RETRY · LEVELS), і кнопки поверх кадру ховаються (клас .panel).
 
    Звук і годинник. Браузер не пускає звук без дотику, а годинник рівня в прототипі — годинник
    AudioContext: поки контекст стоїть, гра стояла б. Тож до першого дотику годинник «тихий» (від
@@ -298,6 +300,10 @@ html,body{margin:0;height:100%;background:#0b0d1a;overscroll-behavior:none}
   setInterval(function () {
     if (!started || frozen || busy) return;
     var i = info();
+    // гра: на панелі кінця рівня (смерть — QUICK і DECISION, LEVEL COMPLETE) кнопки WATCH і SOUND ховаються: вони лежать
+    // на її нижньому ряду (PRACTICE · LEVELS, RETRY · LEVELS) і з'їдали б тапи. До перевірок нижче — щоб клас знявся й тоді,
+    // коли рівня вже немає (LEVELS) чи режим знову «дивитися»
+    if (box) box.classList.toggle("panel", mode === "play" && !!(i && (i.panel || i.state === "dead" || i.state === "done")));
     if (!i) return;
     // рівень вантажиться асинхронно: поки біжить попередній забіг (інший рівень чи той самий з іншої миті), його
     // кадри не наші — інакше «кінець шматка» спрацював би вдруге й перезапустив рівень уже без перемотки
@@ -353,6 +359,7 @@ html,body{margin:0;height:100%;background:#0b0d1a;overscroll-behavior:none}
       "#odx .snd{right:16px}#odx .snd span{display:none}#odx .snd[aria-pressed=false] span{display:inline}" +
       "#odx:not(.play) .snd{bottom:calc(84px + env(safe-area-inset-bottom,0px))}" +
       "#odx .back{left:16px;display:none}#odx.play .back{display:inline-flex}" +
+      "#odx .btn{transition:opacity .15s}#odx.play.panel .btn{opacity:0;pointer-events:none}" +
       "#odx .wait{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:none;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:rgba(6,8,24,.72);color:#fff;font:700 11px/1 'Exo 2',system-ui,sans-serif;letter-spacing:.18em}" +
       "#odx.wait .wait{display:inline-flex}#odx .wait b{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#25f4ff;animation:odxs .7s linear infinite}" +
       "#odx .btn:active{transform:scale(.95)}#odx .tap:active{transform:translateX(-50%) scale(.96)}" +
