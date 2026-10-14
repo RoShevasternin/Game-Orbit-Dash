@@ -99,7 +99,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 </style>
 </head>
 <body>
-<script>window.__odSite = {"levels":[{"id":"first-light","name":"FIRST LIGHT","at":55.685,"dur":72.331},{"id":"slow-orbit","name":"SLOW ORBIT","at":60.3,"dur":96.986},{"id":"neon-drift","name":"NEON DRIFT","at":7.157,"dur":92.043},{"id":"hyperlane","name":"HYPERLANE","at":30.3,"dur":86.9},{"id":"starborn","name":"STARBORN","at":27.992,"dur":84.531}]};</script>
+<script>window.__odSite = {"levels":[{"id":"first-light","name":"FIRST LIGHT","at":55.685,"dur":72.331},{"id":"slow-orbit","name":"SLOW ORBIT","at":60.3,"dur":96.986},{"id":"neon-drift","name":"NEON DRIFT","at":7.157,"dur":92.043},{"id":"hyperlane","name":"HYPERLANE","at":30.3,"dur":86.9},{"id":"starborn","name":"STARBORN","at":27.992,"dur":84.531}],"langs":["om","af","az","id","ms","bs","ca","cs","da","de","et","en","es","eu","fil","fr","gl","ha","hr","ig","zu","is","it","sw","lv","lt","hu","nl","nb","uz","pl","pt","ro","sq","sk","sl","so","fi","sv","vi","tr","tk","yo","be","bg","ky","mk","mn","sr","tg","uk","kk","el","ko","ja","zh-CN","zh-TW","hy","he","ur","ar","fa","ps","ne","mr","hi","as","bn","pa","gu","or","ta","te","kn","ml","si","th","lo","my","ka","am","km"]};</script>
 <script>/* ─────────────────────────────────────────────────────────────────────────────
    ЖИВА ГРА ДЛЯ САЙТІВ — play/embed.html (site/build.py вшиває цей скрипт у прототип перед бандлом).
 
@@ -129,7 +129,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
    Сторінка-батько → сюди (postMessage { od: … }):
      level {id}     лише цей рівень (у тому ж режимі); id: null — знову трейлер
      visible {on}   поза екраном — годинник стоїть (і звук), назад — іде далі
-     labels {…}     підписи мовою сторінки: tap, sound, watch, loading
+     labels {…}     підписи мовою сторінки: tap, sound, watch, loading (сама гра в кадрі — тією ж мовою: ?lang=…)
    Звідси: ready · state {mode, level, sound, trailer} · tick {t, end, bg, level} (~8 разів за с).
    ───────────────────────────────────────────────────────────────────────────── */
 (function () {
@@ -142,6 +142,10 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
   var STILL = Q.get("still") === "1";                      // prefers-reduced-motion на сторінці: нічого само
   var SEG = 12;                                            // с — шматок рівня в трейлері (прев'ю ~12 с)
   var log = Q.get("debug") === "1" ? function () { console.log.apply(console, ["[odx]"].concat([].slice.call(arguments))); } : function () {};
+  // мова гри = мова сторінки (?lang=…, сайт передає свою): «мова телефона» прототипу — вона; усі мовні пакети вже тут
+  var LANG = Q.get("lang") && (SITE.langs || []).indexOf(Q.get("lang")) >= 0 ? Q.get("lang") : null;
+  if (LANG) window.__orbitPhoneLangs = [LANG];
+  window.__orbitPacks = "all";
   window.__orbitPublic = 1;      // без FPS, DEV і заглушки банера
   window.__orbitNoBrand = 1;     // без заставки Lewydo (її бачать у самій грі)
   window.__orbitClean = true;    // чистий кадр: у рівні — лише смуга прогресу
@@ -149,7 +153,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
   /* ── 1. сховище в пам'яті ─────────────────────────────────────────────────── */
   var mem = new Map(), first = SITE.levels[0] ? SITE.levels[0].id : "first-light";
   var seed = function (k, v) { mem.set(k, JSON.stringify(v)); };
-  seed("orbitdash-save", { tutSeen: true, runs: 3, noAds: true, lastMode: "levels", gems: 0,
+  seed("orbitdash-save", { tutSeen: true, runs: 3, noAds: true, lastMode: "levels", gems: 0, lang: LANG,
     levels: { levels: {}, last: hold || first, promoShown: true } });
   seed("orbitdash-settings", { sfx: 0.8, music: 0.85, sfxOn: true, musicOn: true, vibro: false, track: null });
   seed("beat-settings", { ofs: 0, auto: false, sfx: false, cal: false, autoSync: false });
@@ -355,20 +359,20 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
   function ui() {
     var css = document.createElement("style");
     css.textContent =
-      "#odx{position:fixed;inset:0;z-index:2147483000;font-family:'Exo 2',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer}" +
+      "#odx{position:fixed;inset:0;z-index:2147483000;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-tap-highlight-color:transparent;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer}" +
       "#odx.play{pointer-events:none;cursor:auto}" +
       "#odx .tap{position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:inline-flex;align-items:center;gap:10px;white-space:nowrap;" +
-      "padding:13px 22px 13px 18px;border-radius:999px;background:rgba(6,8,24,.66);border:1px solid rgba(255,255,255,.24);color:#fff;font-weight:700;font-size:13px;letter-spacing:.17em;" +
+      "padding:13px 22px 13px 18px;border-radius:999px;background:rgba(6,8,24,.66);border:1px solid rgba(255,255,255,.24);color:#fff;font-weight:800;font-size:13px;letter-spacing:.14em;" +
       "backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:odxp 1.7s ease-in-out infinite}" +
       "#odx .tap i{width:0;height:0;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent #25f4ff;filter:drop-shadow(0 0 6px #25f4ff)}" +
       "#odx.play .tap{display:none}" +
       "#odx .btn{position:absolute;bottom:calc(24px + env(safe-area-inset-bottom,0px));display:inline-flex;align-items:center;justify-content:center;gap:7px;height:44px;min-width:44px;padding:0 13px;border-radius:999px;pointer-events:auto;cursor:pointer;" +
-      "background:rgba(6,8,24,.58);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.92);font:700 10.5px/1 'Exo 2',system-ui,sans-serif;letter-spacing:.14em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}" +
+      "background:rgba(6,8,24,.58);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.92);font:800 10.5px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}" +
       "#odx .snd{right:16px}#odx .snd span{display:none}#odx .snd[aria-pressed=false] span{display:inline}" +
       "#odx:not(.play) .snd{bottom:calc(84px + env(safe-area-inset-bottom,0px))}" +
       "#odx .back{left:16px;display:none}#odx.play .back{display:inline-flex}" +
       "#odx .btn{transition:opacity .15s}#odx.play.panel .btn{opacity:0;pointer-events:none}" +
-      "#odx .wait{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:none;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:rgba(6,8,24,.72);color:#fff;font:700 11px/1 'Exo 2',system-ui,sans-serif;letter-spacing:.18em}" +
+      "#odx .wait{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:none;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:rgba(6,8,24,.72);color:#fff;font:800 11px/1 Inter,system-ui,sans-serif;letter-spacing:.18em}" +
       "#odx.wait .wait{display:inline-flex}#odx .wait b{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#25f4ff;animation:odxs .7s linear infinite}" +
       "#odx .btn:active{transform:scale(.95)}#odx .tap:active{transform:translateX(-50%) scale(.96)}" +
       "@keyframes odxp{0%,100%{box-shadow:0 0 0 0 rgba(37,244,255,.38),0 10px 30px rgba(0,0,0,.45)}50%{box-shadow:0 0 0 9px rgba(37,244,255,0),0 10px 30px rgba(0,0,0,.45)}}" +

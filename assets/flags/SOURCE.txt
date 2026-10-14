@@ -1,0 +1,3 @@
+circle-flags 2.8.3 (npm), HatScripts — MIT, див. LICENSE.md.
+https://github.com/HatScripts/circle-flags
+Лише прапори мов Orbit Dash (docs/research/i18n/DESIGN.md §4.4). Додати: cp з пакета npm тієї ж версії.

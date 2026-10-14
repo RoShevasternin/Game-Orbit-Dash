@@ -8,9 +8,10 @@
 **Джерело** — приватний репозиторій **RoShevasternin/Game-Orbit-Dash-PRIVATE**, тека `site/`:
 - шаблон сторінки — `site/src/index.html`, поведінка — `site/src/page.js`;
 - жива гра в герої (і в блоці на сайті студії) — `play/embed.html`: прототип + режисер `site/src/embed.js`;
-- тексти 15 мовами — `site/tools/strings_src.py` → `site/src/strings.json`;
+- тексти всіма мовами гри (82; файл на мову) — `site/tools/strings/<мова>.json` → `site/tools/strings_src.py` → `site/src/strings.json`;
+- магазин (рушій хвостів гри) і Бліп (код мультика) — `site/src/shop.mjs`, `site/src/blip.mjs`;
 - налаштування — `site/src/site.json`; політика — `site/src/privacy.html`;
-- обкладинки, ролики, постер — `site/media.cjs` (знімає сам прототип);
+- обкладинки, ролики, постер, герої — `site/media.cjs`, скриншоти кожною мовою — `site/shots.cjs` (знімає сам прототип);
 - збірка — `site/build.py`, перевірка — `site/test.cjs`.
 
 Повна інструкція — там, у `site/README.md`. Правила проєкту — у `Orbit Dash/CLAUDE.md`.

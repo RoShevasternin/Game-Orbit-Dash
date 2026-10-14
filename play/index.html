@@ -98,7 +98,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 </style>
 </head>
 <body>
-<script>/* публічне демо: без FPS, DEV і заглушки банера */ window.__orbitPublic = 1;</script>
+<script>/* публічна гра: без FPS, DEV і заглушки банера; мова — як на сайті */ window.__orbitPublic = 1;(function(){try{var q=new URLSearchParams(location.search).get("lang"),s=null;try{s=localStorage.getItem("lewydo:lang")}catch(e){}var l=q||s,d=[].slice.call(navigator.languages||[navigator.language||"en"]);if(l)d.unshift(l);window.__orbitPhoneLangs=d;window.__orbitPacks="all"}catch(e){}})();</script>
 
 <div id="root"></div>
 <script>
