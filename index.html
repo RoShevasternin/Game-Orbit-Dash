@@ -571,8 +571,9 @@ h1 .d::after{text-shadow:0 0 56px rgba(255,213,74,.9),0 0 22px rgba(255,213,74,.
 .podium svg{position:absolute;left:50%;top:-24px;width:26px;height:22px;transform:translateX(-50%);color:var(--gold);filter:drop-shadow(0 0 8px var(--gold))}
 .vinyl{width:76px;height:76px;border-radius:50%;background:repeating-radial-gradient(circle,#15172e 0 2px,#0b0c1d 2px 4px);box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 26px -8px var(--music);position:relative;animation:spin 6s linear infinite}
 .vinyl::after{content:"";position:absolute;inset:34%;border-radius:50%;background:radial-gradient(circle,#0b0c1d 18%,var(--music) 20%,color-mix(in srgb,var(--music),#000 30%) 100%)}
-.flagrow{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
-.flagrow .ball{width:26px;height:26px}
+.flagrow{display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0;cursor:pointer}
+.flagrow .ball{width:22px;height:22px}
+.flagrow:hover .ball{transform:translateY(-1px)}
 .big-n{font-weight:800;font-size:44px;line-height:1;letter-spacing:-.02em;color:var(--acc);text-shadow:0 0 22px color-mix(in srgb,var(--acc) 45%,transparent);font-variant-numeric:tabular-nums}
 
 /* ── скриншоти ──────────────────────────────────────────────────────────────── */
@@ -1513,15 +1514,22 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
   addEventListener("resize", fitLines);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLines);
 
-  /* мови — м'ячиками в плитці «N мов»: по прапору на різні куточки світу */
+  /* мови — м'ячиками в плитці «N мов»: УСІ мови гри (власник 15.10: «пише 82 мови, а прапорців ніби менше»);
+     спершу різні куточки світу, далі решта в порядку листа; тап по м'ячиках — лист мов */
   (function flagRow() {
     var box = $("#flagRow");
     if (!box) return;
-    var pick = ["en", "uk", "es", "pt", "fr", "de", "it", "pl", "tr", "ja", "ko", "zh-TW", "zh-CN", "hi", "bn", "ar", "fa", "he", "id", "vi", "th",
-      "sw", "yo", "am", "kk", "ka", "hy", "el", "ro", "sv", "fi", "nl"];
-    box.innerHTML = pick.filter(function (id) { return LBY[id]; }).map(function (id) {
-      return '<span class="ball"><img src="' + flagSrc(flagOf(id)) + '" alt="" width="26" height="26" loading="lazy"></span>';
+    var first = ["en", "uk", "es", "pt", "fr", "de", "it", "pl", "tr", "ja", "ko", "zh-TW", "zh-CN", "hi", "bn", "ar", "fa", "he", "id", "vi", "th",
+      "sw", "yo", "am", "kk", "ka", "hy", "el", "ro", "sv", "fi", "nl"].filter(function (id) { return LBY[id]; });
+    // решта — однакові прапори (мови Індії, Нігерії…) розкладено рівномірно, а не стосом поруч: k-та з n мов прапора стає на (k + ½) / n
+    var rest = LANGS.map(function (L) { return L.id; }).filter(function (id) { return first.indexOf(id) < 0; }), grp = {};
+    rest.forEach(function (id) { (grp[flagOf(id)] = grp[flagOf(id)] || []).push(id); });
+    var all = first.concat(rest.map(function (id, i) { var g = grp[flagOf(id)], k = g.indexOf(id); return { id: id, at: (k + 0.5) / g.length, i: i }; })
+      .sort(function (a, b) { return a.at - b.at || a.i - b.i; }).map(function (x) { return x.id; }));
+    box.innerHTML = all.map(function (id) {
+      return '<span class="ball" title="' + String(LBY[id].name).replace(/"/g, "&quot;") + '"><img src="' + flagSrc(flagOf(id)) + '" alt="" width="22" height="22" loading="lazy"></span>';
     }).join("");
+    box.addEventListener("click", function () { var b = $("#langBtn"); if (b) b.click(); });
   })();
 
   /* ── СЕРІЇ «БЛІП» — плеєр YouTube (youtube-nocookie) лише після тапу ▶ ──────── */
