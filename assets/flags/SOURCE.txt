@@ -1,3 +1,6 @@
 circle-flags 2.8.3 (npm), HatScripts — MIT, див. LICENSE.md.
 https://github.com/HatScripts/circle-flags
-Лише прапори мов Orbit Dash (docs/research/i18n/DESIGN.md §4.4). Додати: cp з пакета npm тієї ж версії.
+Прапори мов Orbit Dash (docs/research/i18n/DESIGN.md §4.4) і [v73] прапори країн RANKS — усі коди ISO 3166-1 alpha-2 (+ XK),
+КРІМ ru (російського прапора в грі немає; рядок «Россия, останови войну в Украине» — assets/flags/own/ru-stained.svg). Без
+службових кодів пакета (ac an cp cq dg ea eu fx ic su ta uk un xx yu). Атлас гри (gen-flags.cjs) бере лише коди langs.json —
+решта піде в гру окремим лінивим атласом країн разом із портом RANKS. Додати: cp з пакета npm тієї ж версії.

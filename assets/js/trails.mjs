@@ -866,10 +866,14 @@ export const TRAIL_STYLES = Object.fromEntries(TRAILS.map(({ id }) => [id, {
   build(F, s = {}) {
     const head = { style: id, mode: F.mode };
     const base = F.ok ? makerOf(F, id)(F, UNIT) : empty();
-    const metrics = trailMetrics(F, base);
     const pm = typeof s.posMul === "number" ? s.posMul : 1, wm = typeof s.wMul === "number" ? s.wMul : 1;
     const out = pm === 1 && wm === 1 ? base : F.ok ? makerOf(F, id)(F, { pm, sm: pm * wm }) : empty();
-    return { ...head, ...(out.glow ? { glow: out.glow } : {}), fills: out.fills, strokes: out.strokes, rings: out.rings, dots: out.dots, metrics };
+    const o = { ...head, ...(out.glow ? { glow: out.glow } : {}), fills: out.fills, strokes: out.strokes, rings: out.rings, dots: out.dots };
+    // [v73] RANKS правка 1 (огляд a11y #9): метрики — ліниво, лише коли їх читають (тести, вектори); жива орбіта RANKS малює щокадру й не платить
+    // O(вершини × точки шляху) і ≈ 12–15 МБ/с сміття. Порядок ключів і JSON — ті самі (властивість перелічувана, остання).
+    let m = null;
+    Object.defineProperty(o, "metrics", { enumerable: true, configurable: true, get() { return m || (m = trailMetrics(F, base)); } });
+    return o;
   },
 }]));
 /** [v47] Стиль за id; невідомий — COMET (TRAIL_DEFAULT). */
