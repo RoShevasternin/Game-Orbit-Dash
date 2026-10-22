@@ -118,16 +118,20 @@ export const TRAIL_MODE = { LEVEL: "level", ENDLESS: "endless" };
 export const TRAIL_DEFAULT = "comet";
 export const TRAILS = [
   { id: "comet",  name: "COMET",  price: 0,    desc: "The classic streak of light" },
-  { id: "beads",  name: "BEADS",  price: 500,  desc: "Beads of light that tick on the beat" },
-  { id: "dash",   name: "DASH",   price: 900,  desc: "A dashed line that ticks with the music" },
-  { id: "helix",  name: "HELIX",  price: 1500, desc: "Two strands · one twist per beat" },
-  { id: "embers", name: "EMBERS", price: 2500, desc: "A hot core shedding sparks · more on the drop" },
+  { id: "beads",  name: "BEADS",  price: 1500, desc: "Beads of light that tick on the beat" },
+  { id: "dash",   name: "DASH",   price: 2700, desc: "A dashed line that ticks with the music" },
+  { id: "helix",  name: "HELIX",  price: 4500, desc: "Two strands · one twist per beat" },
+  { id: "embers", name: "EMBERS", price: 7500, desc: "A hot core shedding sparks · more on the drop" },
   { id: "pixel",  name: "PIXEL",  level: "first-light", desc: "8-bit squares that step in 16ths" },
   { id: "echo",   name: "ECHO",   level: "slow-orbit",  desc: "Three ghost rings follow your ball" },
   { id: "drift",  name: "DRIFT",  level: "neon-drift",  desc: "Twin skid marks · flare on the kick" },
   { id: "zap",    name: "ZAP",    level: "hyperlane",   desc: "A crackling bolt · re-strikes on 8ths" },
   { id: "nova",   name: "NOVA",   level: "starborn",    desc: "A ring of light on every beat" },
+  // [v81] ексклюзив RANKS: не продається й не дається рівнем — лише SUPERNOVA (4 × GOLD за тиждень, ranks.mjs RING_PERKS). perk — нагорода, що його дає
+  { id: "flare",  name: "FLARE",  perk: "legend",       desc: "A blazing core · loops of fire burst on the beat" },
 ];
+/** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
+export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
 /** [v47] Хвіст, який дає рівень (перший зарахований прохід), або null. */
 export const trailOfLevel = (levelId) => (typeof levelId === "string" && TRAILS.find((t) => t.level === levelId)) || null;
 /** [v47] Опис хвоста за id, або null. */
@@ -155,10 +159,13 @@ export const TRAIL_STYLE = {
   ZAP:    { VERTS: 10, JIT_K: 0.5, REROLL_BEATS: 0.5, WIDE_K: 0.5, WIDE_A: 0.5, CORE_K: 0.15, CORE_MIX: 0.6, CORE_A: 0.9,
     VEIL_K: 0.9 },   // [v47] широкий штрих — смуга сталої ширини з α ≤ .5: не ширший, ніж дає VEIL_K·VEIL_MAX «пелени» на всю ламану
   NOVA:   { CORE_K: 0.4, EVERY_BEATS: 1, R0: 0.3, R1: 1.0, W: 1.2, A: 0.5, MIX: 0.3, MAX: 2 },
+  // [v81] FLARE (ексклюзив SUPERNOVA): гаряче ядро CORE_K (CORE_MIX) і петлі вогню — на кожній долі петля виростає з краю ядра з боку, що чергується
+  // (H0 → H1 конверту, ширина основи BASE_K висоти), гасне A·(1 − q)², товщина W; MAX новіших; іскри — на сітці SPARK_BEATS
+  FLARE:  { CORE_K: 0.5, CORE_MIX: 0.45, EVERY_BEATS: 1, MAX: 2, H0: 0.35, H1: 0.95, BASE_K: 0.8, W: 1.1, A: 0.6, MIX: 0.4, VERTS: 9 },
 };
 /**
  * [v47] Форми стилів У БЕЗКІНЕЧНОМУ (полірування v47: на знімках кожен куплений чи зароблений хвіст був тоншим і блідішим
- * за безкоштовний COMET, кілька — ледь видні на кільці в крейсері; гравець, що віддав 2 500 ◆, мусить бачити щось
+ * за безкоштовний COMET, кілька — ледь видні на кільці в крейсері; гравець, що віддав 7 500 ◆, мусить бачити щось
  * багатше). Рівні — НЕ тут: там лишаються межі читабельності v46 (TRAIL_STYLE вище). COMET безкінечного — v46 як був.
  *   LOOK — спільна «оболонка» всіх 9 стилів: півширина hwE(f) = HW_TAIL + (HW_HEAD − HW_TAIL)·f^W_EXP (голова 7.5 юн. —
  *     ширша за 6.75 COMET, але в конверті ENDLESS_ENV 9), α aE(f) = A_HEAD·f^A_EXP (у середині ≈ .56 проти .35 COMET).
@@ -203,6 +210,10 @@ export const TRAIL_STYLE_E = {
     GLOW_K: 2.0 },   // [v50] тіло й ореол звужуються до хвоста (makeZapE) — WIDE_K .55 → .65, GLOW_K 1.8 → 2.0 (ореол голови 9.75 < м'яча 10): хвіст — у точку
   NOVA:   { CORE_K: 0.55, CORE_MIX: 0.2, EVERY: 0.125, MAX: 3, R0: 0.45, R1: 1.0, W: 2.4, A: 0.95, FADE_EXP: 0.6, MIX: 0.45,
     GLOW_MUL: 2.0, RING_GLOW_W: 2.2 },
+  // [v81] FLARE ∞: широке гаряче ядро, петлі вогню на сітці EVERY по черзі з обох боків (ростуть H0 → H1 конверту, гаснуть), іскри-корона на сітці
+  // SPARK (N, R ≤ PART_R_MAX), ореол — ядро ×GLOW_MUL і вершини петель
+  FLARE:  { CORE_K: 0.62, CORE_MIX: 0.45, EVERY: 0.1, MAX: 3, H0: 0.4, H1: 1.0, BASE_K: 0.85, W: 1.8, A: 0.95, FADE_EXP: 0.7, MIX: 0.5, VERTS: 11,
+    SPARK: 0.045, N: 6, R: [1.0, 2.0], SPARK_A: 0.85, SPARK_MIX: 0.55, GLOW_MUL: 1.9, APEX_GLOW: 3.2 },
 };
 /**
  * [v47] Зерна h01 — ЛИШЕ від індексів сітки часу (ніколи Math.random чи годинник стіни): той самий кадр на тій самій
@@ -638,6 +649,35 @@ function makeNova(F, S) {
   return out;
 }
 
+/**
+ * [v81] Петля вогню (FLARE): ламана півеліпса з основою на осі шляху в точці p — розмах a уздовж дотичної, висота h уздовж нормалі (side ±1).
+ * Найдальша точка від осі — h (+ пів штриха): маляр і метрики бачать її як звичайний штрих.
+ */
+const flareLoop = (S, p, side, a, h, n) => {
+  const tx = -p.ny, ty = p.nx, out = [];
+  for (let k = 0; k <= n; k++) {
+    const th = (Math.PI * k) / n, u = Math.cos(th) * a, v = Math.sin(th) * h * side;
+    out.push([(p.x + tx * u + p.nx * v) * S.pm, (p.y + ty * u + p.ny * v) * S.pm]);
+  }
+  return out;
+};
+/** [v81] Рівний «градієнт» (два однакові стопи) — штрихи мають форму grad, як решта стилів (маляр і метрики гри — один шлях). */
+const flatGrad = (F, S, mixK, alpha) => chordGrad(F, S, [[0, mixK, alpha], [1, mixK, alpha]]);
+/** FLARE (рівень) — ядро й петлі вогню на сильній долі, з боку, що чергується; reduced — без петель. */
+function makeFlare(F, S) {
+  const C = TRAIL_STYLE.FLARE, out = empty(), W = C.W * F.scr;
+  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * F.hw(p.f))], grad: pointGrad(F, S, F.smp, C.CORE_MIX, (p) => F.alpha(p.f)) });
+  if (F.reduced) return out;
+  for (const { g, t } of gridTimes(F, F.step(C.EVERY_BEATS), C.MAX).reverse()) {
+    const p = F.at(t);
+    if (!p) continue;
+    const q = clamp01((F.tH - t) / F.span), h = Math.min((C.H0 + (C.H1 - C.H0) * q) * (F.env - W / 2), F.env - p.dev - W / 2);
+    if (!(h > 0)) continue;
+    out.strokes.push({ pts: flareLoop(S, p, g % 2 ? 1 : -1, h * C.BASE_K, h, C.VERTS), w: W * S.sm, grad: flatGrad(F, S, C.MIX, C.A * (1 - q) * (1 - q)) });
+  }
+  return out;
+}
+
 // ================================================================ безкінечний: форми TRAIL_STYLE_E (полірування v47)
 
 /** Оболонка безкінечного (TRAIL_STYLE_E.LOOK): півширина hw(f) і α a(f), юн. поля. */
@@ -850,11 +890,39 @@ function makeNovaE(F, S) {
   return out;
 }
 
+/** [v81] FLARE ∞ — широке гаряче ядро, петлі вогню з обох боків по черзі й іскри-корона; ореол — ядро й вершини петель. */
+function makeFlareE(F, S) {
+  const C = TRAIL_STYLE_E.FLARE, X = LOOK_E, out = empty(), halo = [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f) * C.GLOW_MUL)];
+  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f))], grad: gradE(F, S, C.CORE_MIX, X.a) });
+  if (!F.reduced) {
+    for (const { g, t } of gridTimes(F, C.EVERY, C.MAX).reverse()) {
+      const p = F.at(t);
+      if (!p) continue;
+      const q = clamp01((F.tH - t) / F.span), h = Math.min((C.H0 + (C.H1 - C.H0) * q) * (F.env - C.W / 2), F.env - p.dev - C.W / 2);
+      if (!(h > 0)) continue;
+      const side = g % 2 ? 1 : -1, a = C.A * Math.pow(1 - q, C.FADE_EXP);
+      out.strokes.push({ pts: flareLoop(S, p, side, h * C.BASE_K, h, C.VERTS), w: C.W * S.sm, grad: flatGrad(F, S, C.MIX, a) });
+      const ax = p.x + p.nx * h * 0.6 * side, ay = p.y + p.ny * h * 0.6 * side;
+      halo.push(circlePoly(S, ax, ay, Math.min(C.APEX_GLOW, F.env - p.dev)));
+    }
+  }
+  const rMax = TRAIL_RULES.PART_R_MAX;
+  for (const { g, t } of gridTimes(F, C.SPARK, C.N).reverse()) {
+    const p = F.at(t);
+    if (!p) continue;
+    const seed = seedOf(g), r = Math.min(C.R[0] + (C.R[1] - C.R[0]) * h01(seed + TRAIL_SEED.RADIUS), rMax, F.env - p.dev);
+    const room = Math.max(0, F.env - p.dev - r), d = F.reduced ? 0 : (2 * h01(seed) - 1) * room;
+    out.dots.push({ x: (p.x + p.nx * d) * S.pm, y: (p.y + p.ny * d) * S.pm, r: r * S.sm, mixK: C.SPARK_MIX, alpha: C.SPARK_A * X.a(p.f), spark: true });
+  }
+  out.glow = glowOf(halo);
+  return out;
+}
+
 const MAKERS = { comet: makeComet, beads: makeBeads, dash: makeDash, helix: makeHelix, embers: makeEmbers,
-  pixel: makePixel, echo: makeEcho, drift: makeDrift, zap: makeZap, nova: makeNova };
+  pixel: makePixel, echo: makeEcho, drift: makeDrift, zap: makeZap, nova: makeNova, flare: makeFlare };
 /** [v47] Безкінечний: свої форми (TRAIL_STYLE_E); COMET — v46 (makeComet, гілка ENDLESS). */
 const MAKERS_E = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
-  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE };
+  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, flare: makeFlareE };
 const makerOf = (F, id) => (F.mode === TRAIL_MODE.ENDLESS ? MAKERS_E : MAKERS)[id];
 
 /**
