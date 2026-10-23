@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy Policy — Orbit Dash</title>
-<meta name="description" content="What Orbit Dash collects, who it is shared with, and what this website does (nothing: no ads, no analytics, no cookies).">
+<meta name="description" content="What Orbit Dash collects, who it is shared with, and what this website does (no ads; Google Analytics only if you allow it).">
 <meta name="theme-color" content="#0e1024">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="index,follow">
@@ -20,7 +20,7 @@
 body{background:radial-gradient(70% 50% at 50% 0,#1c2044 0%,var(--bg) 55%,var(--deep) 100%);
   background-attachment:fixed;color:var(--text);font-family:var(--body);line-height:1.68;
   font-size:16px;overflow-x:hidden;-webkit-text-size-adjust:100%}
-a{color:var(--player)}
+a{color:var(--player);overflow-wrap:anywhere}
 a:hover{text-decoration:underline}
 .wrap{max-width:760px;margin:0 auto;padding:0 clamp(16px,4vw,28px)}
 header{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:clamp(30px,6vw,56px)}
@@ -46,6 +46,9 @@ td{color:var(--dim)}td:first-child{color:var(--text);font-weight:700;white-space
 footer{border-top:1px solid var(--line);margin-top:clamp(40px,7vw,70px);padding:28px 0 44px;text-align:center}
 footer .fine{font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--faint);line-height:2}
 footer a{color:var(--dim);text-decoration:none}footer a:hover{color:var(--player)}
+.odc-open{display:inline-block;margin-top:8px;min-height:40px;padding:0 16px;border:0;border-radius:12px;background:rgba(255,255,255,.08);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);color:var(--text);font:700 14px/1 var(--body);cursor:pointer}
+.odc-open:hover{background:rgba(255,255,255,.14)}
 </style>
 </head>
 <body>
@@ -63,17 +66,20 @@ In this policy “we” means Lewydo, “the app” means the Orbit Dash Android
 <p>Questions, requests, complaints: <a href="mailto:roshevasternin@gmail.com">roshevasternin@gmail.com</a>. We answer in person — there is no support department.</p>
 
 <div class="box good">
-<p><b>The short version.</b> This website shows you ads never, tracks you never and sets cookies never — the fonts and
-every other file come from this site itself. The Android app is free and pays for itself with ads, so it does share
+<p><b>The short version.</b> This website never shows you ads. It counts visits with Google Analytics <b>only if you
+tap Allow</b> in the small banner — until then, and if you tap Decline, nothing is sent to Google and no cookies are set;
+the fonts and every other file come from this site itself. The Android app is free and pays for itself with ads, so it does share
 some data with Google and TikTok; everything it shares is listed below. Your game progress lives on your own device.</p>
 </div>
 
 <h2>This website and the browser version</h2>
-<p>This site is plain static files on GitHub Pages. We do not run analytics, advertising, cookie banners, social
-widgets or any other third-party code here. Fonts, images, sound and the game itself are served from this site, so
-your browser does not contact anyone else while you read or play — until you open RANKS in the game (see below).</p>
+<p>This site is plain static files on GitHub Pages. We do not run advertising, social widgets or other third-party
+code here. Fonts, images, sound and the game itself are served from this site, so your browser does not contact anyone
+else while you read or play — unless you allow Google Analytics (see “Website analytics” below) or open RANKS in the
+game (see below).</p>
 <ul>
-<li><b>No cookies.</b> We do not set any.</li>
+<li><b>No cookies unless you allow analytics.</b> We set none of our own; Google Analytics sets its cookies only after
+you tap Allow.</li>
 <li><b>Blip's cartoon episodes</b> play in YouTube's own player (from <code>youtube-nocookie.com</code>, YouTube's
 privacy-enhanced mode), and only after you tap ▶ on an episode. Nothing is loaded from YouTube before that tap. Once the
 player is open, YouTube's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">privacy policy</a>
@@ -97,6 +103,40 @@ IP address) needed to deliver a page. See
 <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub's privacy statement</a>.
 We receive no reports or statistics from it.</li>
 </ul>
+
+<h2 id="analytics">Website analytics (Google Analytics)</h2>
+<p>To see how many people play Orbit Dash in the browser and which parts of the game they enjoy, this site can use
+<b>Google Analytics 4</b> (run by Google). It is <b>off until you choose</b>: a small banner asks “Can we count visits
+with Google Analytics?”. Before you answer, and if you tap <b>Decline</b>, Google Analytics is not loaded at all — no
+request goes to Google and no cookie is set. Only if you tap <b>Allow</b> does your browser load Google's script
+(<code>googletagmanager.com</code>) and send visit data to <code>google-analytics.com</code>.</p>
+<ul>
+<li><b>Where:</b> on this page and in the browser version of the game (<code>/play/</code>). Not in the live game
+preview that other sites embed, and not on this policy page.</li>
+<li><b>What is collected:</b> pages viewed; that a game, a run or a level started; the level's name and whether it was
+finished; a rough score range at the end of a run (such as “500–999”, never the exact score); opening RANKS and joining
+it; clicks on the Google Play / App Store buttons. Plus what Google Analytics records with any visit (including its
+standard “enhanced measurement”, such as how far a page was scrolled and clicks on links to other sites): a random browser
+ID, the page address, the referring site, the time, and your browser, device type, language and approximate location
+(country / city), which Google derives from your IP address and does not store. We do not send your name, e-mail,
+RANKS nickname or anything you type.</li>
+<li><b>Cookies:</b> <code>_ga</code> and <code>_ga_KDLF8656QS</code> (a random ID and the current session), first-party
+on this site's path, kept for up to 13 months. Your answer itself is remembered in your browser's
+<code>localStorage</code> (<code>lewydo:od-analytics</code>); after 13 months we ask again.</li>
+<li><b>No advertising:</b> Google signals and ad personalisation are switched off for this site; the data is used only
+for statistics.</li>
+<li><b>Retention:</b> Google Analytics keeps the event data for <b>2 months</b> (the setting of our Analytics property);
+the random browser ID itself can be kept up to 14 months from your last visit and is then deleted.</li>
+<li><b>Changing your mind:</b> use <b>Cookie settings</b> at the bottom of the main page, <b>PRIVACY OPTIONS</b> in the
+game's Settings, or the button below. If you switch from Allow to Decline, the script stops sending and the cookies are
+deleted. <button type="button" class="odc-open" data-odc-open>Cookie settings</button></li>
+<li><b>Legal basis:</b> your consent (GDPR Art. 6(1)(a)), which you can withdraw at any time. Google's own handling is
+described in <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's privacy policy</a> and
+<a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses data from
+sites that use its services</a>.</li>
+</ul>
+<p>This is the website's own analytics. The apps' analytics are separate and are described in their own section
+below (one policy, a separate section per platform).</p>
 
 <h2>The Android app</h2>
 <p>The app does not ask you to create an account and does not ask for your name, e-mail, photos, contacts, files
@@ -144,7 +184,8 @@ collect personal data from children. If you believe a child has provided persona
 
 <h2>How long data is kept</h2>
 <p>Apart from the web leaderboards described above, we keep no database of our own. Analytics and crash data are kept by Google for the retention period set in our
-Firebase project (by default up to 14 months for analytics events, and shorter for crash reports); TikTok keeps
+Firebase / Google Analytics project: analytics events (from the app and, if you allowed it, from this website) for
+2 months, the random analytics ID up to 14 months after the last activity, crash reports for a shorter time; TikTok keeps
 attribution data under its own policy. Your game progress stays on your device for as long as the app or the
 browser data is there.</p>
 
@@ -176,6 +217,29 @@ changes are described here; the previous wording is available on request.</p>
 © 2026 Lewydo™ · Love What You Do
 </p>
 </div></footer>
+
+<style>
+.odc{position:fixed;z-index:70;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));box-sizing:border-box;margin:0 auto;
+  max-width:560px;padding:12px 14px;border-radius:16px;background:rgba(20,23,48,.95);color:#fff;text-align:start;
+  box-shadow:0 10px 34px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14);font:500 14px/1.45 Inter,system-ui,sans-serif;
+  letter-spacing:0;text-transform:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:opacity .2s,visibility .2s}
+.odc[hidden]{display:none}
+.odc.odc-away{opacity:0;visibility:hidden}
+.odc p{margin:0;color:rgba(255,255,255,.88)}
+.odc a{color:#7ef0ff;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.odc-b{display:flex;gap:8px;margin-top:10px}
+.odc-b button{flex:1 1 0;min-width:0;min-height:44px;margin:0;padding:6px 12px;border:0;border-radius:12px;background:rgba(255,255,255,.1);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);color:#fff;font:700 14px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
+.odc-b button:hover{background:rgba(255,255,255,.16)}
+.odc-b button:focus-visible{outline:2px solid #7ef0ff;outline-offset:2px}
+.odc-b button[aria-pressed=true]{box-shadow:inset 0 0 0 2px #7ef0ff}
+@media (min-width:720px){.odc{left:auto;right:16px;bottom:16px;width:380px}}
+.odc.odc-corner{left:16px;right:auto;bottom:16px;margin:0}
+html.odc-flow .odc{left:0;right:0;bottom:0;width:auto;max-width:none;margin:0;border-radius:16px 16px 0 0;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}</style>
+<div id="odc" class="odc" role="region" aria-label="Cookie settings" data-ta="aria-label:consent.settings" hidden><p><span data-t="consent.text">Can we count visits with Google Analytics? It helps us improve the game.</span> <a href="privacy.html#analytics" data-t="foot.privacy">Privacy</a></p><div class="odc-b"><button type="button" data-odc="granted" data-t="consent.allow">Allow</button><button type="button" data-odc="denied" data-t="consent.decline">Decline</button></div></div>
+<script>window.__odConsent = {"id":"G-KDLF8656QS","mode":"privacy"};</script>
+<script src="assets/js/consent.js"></script>
 
 </body>
 </html>

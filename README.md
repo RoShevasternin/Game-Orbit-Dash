@@ -10,7 +10,8 @@ The site of the game **Orbit Dash**: https://roshevasternin.github.io/Game-Orbit
 This repository holds the **built** site only. It is generated from the private source repository
 and republished on every change — see `CLAUDE.md`.
 
-The site makes no third-party requests: no ads, no analytics, no cookies. Fonts and every other file
-are served from the site itself.
+The site shows no ads and makes no third-party requests unless the visitor taps **Allow** in the consent
+banner: only then is Google Analytics 4 loaded (on the main page and in `play/`; never in `play/embed.html`).
+Fonts and every other file are served from the site itself.
 
 © 2026 Lewydo™ · Love What You Do. All rights reserved.
