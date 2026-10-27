@@ -30,25 +30,30 @@
 //   Зразок: { x, y, nx, ny, f, s, t }.
 //   env — дозвіл на півширину КОЖНОГО намальованого пікселя (зсув + радіус + пів штриха): LEVEL HW_MAX·(1 + BEAT_W)/z
 //   (8.1 од. екрана), але не більше ENDLESS_ENV (9 юн. = 0.9 радіуса м'яча 10) — за малого зуму хвіст ширшим за м'яч не
-//   стає (§5.3 «outer half-width < ball radius»); ENDLESS — ENDLESS_ENV.
+//   стає (§5.3 «outer half-width < ball radius»); ENDLESS — ENDLESS_ENV. [v102] Це конверт COMET у рівні; решта 9 стилів у рівні
+//   малюються на кадрі вигляду lookFrame (env ENDLESS_ENV на екрані, до зуму 1 — у полі): ≤ 9·min(1, z) од. екрана.
 //
 // ПРИМІТИВИ TRAIL_STYLES[id].build(F, s = {}) → { style, mode, glow?, fills, strokes, rings, dots, metrics }:
 //   fills   [{ paths: [полігон…], grad | solid, inner? }] — один fill = одне заливання (nonzero) усіх підшляхів;
 //           полігон смуги — [L0 … L(m−1), R(m−1) … R0] (як outline v46), квадрат PIXEL — 4 кути тим самим порядком.
 //   strokes [{ pts: [[x, y]…], w, grad | solid, inner? }] — ламана, round joins і caps.
 //   rings   [{ x, y, r, w, mixK, alpha }] — коло-обвідка (r — до середини штриха, w — товщина).
-//   dots    [{ x, y, r, mixK, alpha, inner?, spark? }] — круг.
-//   glow?   { paths, solid } — лише ENDLESS: ореол (COMET — v46; решта — формою свого стилю, TRAIL_STYLE_E), малюється
-//           ADDITIVE (lighter) першим одним заливанням; поза конвертом і «пеленою» (у безкінечному lighter дозволено, у
-//           рівнях — ніколи). Підшляхи ореолу (крім COMET v46) — одного обходу, дірка обідка — протилежного.
-//   grad  = { a: [x, y], b: [x, y], stops: [[offset 0…1, mixK, alpha]…] } — лінійний градієнт хорди хвіст → голова;
-//   solid = { mixK, alpha }. Барва — ЛИШЕ гравцева: mixK → mix(player, #fff, mixK), плюс α. Своєї барви стиль не має.
+//   dots    [{ x, y, r, mixK, alpha, inner?, spark?, hue? }] — круг.
+//   glow?   { paths, solid } — ореол (COMET безкінечного — COMET_E; решта 9 — формою свого стилю, TRAIL_STYLE_E, [v102] і в рівнях;
+//           COMET у рівні — без ореолу, v46), малюється ADDITIVE (lighter) першим одним заливанням; поза конвертом і «пеленою».
+//           Підшляхи ореолу — одного обходу, дірка обідка — протилежного.
+//   grad  = { a: [x, y], b: [x, y], stops: [[offset 0…1, mixK, alpha, hue?, ball?]…] } — лінійний градієнт хорди хвіст → голова;
+//   solid = { mixK, alpha, hue?, ball? }. Барва — гравцева: mixK → mix(player, #fff, mixK), плюс α; своєї барви стиль не має — [v102] крім FLARE: hue
+//           (#rrggbb, вогонь TRAIL_STYLE_E.FLARE.FLAME) — база замість player: mix(hue, #fff, mixK).
+//           [v103] ball ∈ [0, 1] — частка барви М'ЯЧА в базі своєї барви (лише разом із hue): база = mix(hue, player, ball), далі mix(база, #fff, mixK).
+//           Власник 25.10: «хвіст щоб хоча б починався кольором м'яча» — FLARE біля голови барви м'ячика, далі по довжині — у вогонь
+//           (TRAIL_STYLE_E.FLARE.HEAD_*). Решта 9 стилів — і так барви м'ячика по всій довжині (база = player; у рівнях — барва рівня, як і м'яч).
 //   inner — намальовано всередині попереднього шару (ядро в тілі, серцевина намистини): лише підіймає α, у «пелену» не
 //   йде (як v46: пелена — лише тіло). spark — частинка (EMBERS): ліміт PARTS_MAX і PART_R_MAX. Маляр ці поля ігнорує.
 //   s = { posMul, wMul } — прев'ю (SHOP, картка, LEVEL COMPLETE): позиції × posMul, розміри × posMul·wMul; метрики —
 //   завжди кадру без масштабу.
 //
-// МАЛЯР (paintTrail — увесь «тонкий маляр» JSX; у грі — квади msdf.circle з field_page, без зміни blend у рівнях):
+// МАЛЯР (paintTrail — увесь «тонкий маляр» JSX; у грі — квади msdf.circle з field_page; [v102] ореол — і в рівнях, як у безкінечному):
 //   X = cx + x·k, Y = cy + y·k; барва stop/solid → rgba(mix(colour, #fff, mixK), α); порядок — glow (lighter) →
 //   fills → strokes → rings → dots (source-over), у кожному масиві — за порядком (старші першими).
 //
@@ -57,8 +62,8 @@
 //   піксель від осі шляху (вершини полігонів; центр + r кругів; центр + r + w/2 кілець; точки + w/2 штрихів), юн.;
 //   veilU2 — «пелена» на екрані, од.²: площа примітивів (без inner) з власною α у [VEIL_A0, VEIL_A1] (чотирикутники смуг,
 //   α градієнта в центрі; круги πr²; кільця 2πrw; штрихи довжина·w), × z²; parts — частинок; fills — заливань (з glow);
-//   draws — дрібних малювань (штрихи + кільця + круги). Ліміти — §5.5: LEVEL lenFu·z ≤ 120.5, outerHalfFu·z ≤ 8.11,
-//   ENDLESS outerHalfFu ≤ 9; veil ≤ 800; parts ≤ 14; fills ≤ 4; draws ≤ 30.
+//   draws — дрібних малювань (штрихи + кільця + круги). Ліміти — §5.5: LEVEL lenFu·z ≤ 120.5, outerHalfFu·z ≤ 8.11 (COMET) ·
+//   ≤ 9·min(1, z) (решта, v102); ENDLESS outerHalfFu ≤ 9; veil ≤ 800; parts ≤ 14; fills ≤ 4; draws ≤ 30.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ================================================================ ЕФЕКТИ ЯК У ГРІ — шлейф (перенесено з JSX у v47, числа ті самі)
@@ -143,30 +148,18 @@ export const trailDef = (id) => (typeof id === "string" && TRAILS.find((t) => t.
 // зміна форми в часі ≤ FLICKER_HZ_MAX (перебиває лише ZAP). Числа — не з Figma.
 export const TRAIL_RULES = { ENDLESS_SPAN: 23 / 60, ENDLESS_ENV: 9, PARTS_MAX: 14, PART_R_MAX: 2.4, MIX_MAX: 0.6,
   HEAD_A_MAX: 0.95, FLICKER_HZ_MAX: 6 };
-// [v47] Числа стилів У РІВНЯХ (§5.4; безкінечний — TRAIL_STYLE_E нижче). *_BEATS — частки долі. Довжини R, R_MIN, DRIFT,
-// SNAP, SIZES, W — одиниці екрана (÷ z). *_K — частки hw(f). Числа — не з Figma.
-// BEADS.CORE_A і ECHO.MIX — сталі зі спеки (α .9 серцевини, mix .2 кілець), названі тут, щоб у порті не було «магії».
-export const TRAIL_STYLE = {
-  BEADS:  { GRID_BEATS: 1 / 8, R_K: 1.0, R_MIN: 1.2, CORE_K: 0.45, CORE_MIX: 0.6, CORE_FROM: 0.5, POP: 1.3, N_MAX: 9,
-    CORE_A: 0.9 },
-  DASH:   { GRID_BEATS: 1 / 8, DUTY: 0.65 },
-  HELIX:  { TWIST_BEATS: 1, AMP_K: 0.6, STRAND_K: 0.35, MIX2: 0.35 },
-  EMBERS: { CORE_K: 0.45, CORE_MIX: 0.3, N: 7, N_DROP: 14, DROP_LEVEL: 2, R: [0.8, 2.2], DRIFT: 8, MIX: 0.5, A: 0.9 },
-  PIXEL:  { GRID_BEATS: 1 / 16, SNAP: 3, SIZES: [2, 4, 6], A_STEPS: [0.25, 0.5, 0.75, 0.95], N_MAX: 12 },
-  ECHO:   { GAP_BEATS: 1 / 6, R_K: [0.6, 0.5, 0.4], A: [0.35, 0.24, 0.12], W: 1.2, LINE_K: 0.25, LINE_A: 0.3, BALL_R: 10,
-    MIX: 0.2 },
-  DRIFT:  { OFF_K: 0.7, MARK_K: 0.3, BASE_A: 0.55, KICK_A: 0.45 },
-  ZAP:    { VERTS: 10, JIT_K: 0.5, REROLL_BEATS: 0.5, WIDE_K: 0.5, WIDE_A: 0.5, CORE_K: 0.15, CORE_MIX: 0.6, CORE_A: 0.9,
-    VEIL_K: 0.9 },   // [v47] широкий штрих — смуга сталої ширини з α ≤ .5: не ширший, ніж дає VEIL_K·VEIL_MAX «пелени» на всю ламану
-  NOVA:   { CORE_K: 0.4, EVERY_BEATS: 1, R0: 0.3, R1: 1.0, W: 1.2, A: 0.5, MIX: 0.3, MAX: 2 },
-  // [v81] FLARE (ексклюзив SUPERNOVA): гаряче ядро CORE_K (CORE_MIX) і петлі вогню — на кожній долі петля виростає з краю ядра з боку, що чергується
-  // (H0 → H1 конверту, ширина основи BASE_K висоти), гасне A·(1 − q)², товщина W; MAX новіших; іскри — на сітці SPARK_BEATS
-  FLARE:  { CORE_K: 0.5, CORE_MIX: 0.45, EVERY_BEATS: 1, MAX: 2, H0: 0.35, H1: 0.95, BASE_K: 0.8, W: 1.1, A: 0.6, MIX: 0.4, VERTS: 9 },
-};
 /**
  * [v47] Форми стилів У БЕЗКІНЕЧНОМУ (полірування v47: на знімках кожен куплений чи зароблений хвіст був тоншим і блідішим
  * за безкоштовний COMET, кілька — ледь видні на кільці в крейсері; гравець, що віддав 7 500 ◆, мусить бачити щось
- * багатше). Рівні — НЕ тут: там лишаються межі читабельності v46 (TRAIL_STYLE вище). COMET безкінечного — v46 як був.
+ * багатше). COMET безкінечного — v51 «крапля світла» (COMET_E нижче).
+ * [v102] І В РІВНЯХ (власник 25.10.2026: «хвіст тільки на безкінечний ран, а на музичних звичайний» — у рівнях 9 стилів були тонкими
+ *   v46-версіями без ореолу, FLARE — голе ядро): у рівні ті самі форми й ореол, що в безкінечному (купив — бачиш те саме скрізь), а
+ *   «музичні» сітки — у долях треку (*_BEATS: намистини, риски, поворот, відлуння, кільця, петлі, іскри б'ють у такт; DRIFT — спалах на
+ *   бочці KICK_BASE; EMBERS — N_CALM іскор поза дропом, N у дропі; ZAP — перебиття REROLL_BEATS, не частіше FLICKER_HZ_MAX).
+ *   Барва — гравцева рівня (палітра рівня + секції, як COMET v46): стиль своєї барви не має. COMET у рівнях — v46 без змін.
+ *   Розмір у рівні — на ЕКРАНІ: кадр «вигляду» lookFrame — той самий trailFrame з радіусами вузлів ×zs і зумом z / zs (zs = max(1, z)),
+ *   env = ENDLESS_ENV; примітиви — ×1/zs назад у поле. Тобто до зуму 1 хвіст = безкінечний один в один (росте з полем, як м'яч), на
+ *   зумі > 1 на екрані не більший, ніж на 1 (півширина ≤ 9 од. екрана, довжина — LEN_MAX / z, як v46); «пелена» ≤ VEIL_MAX.
  *   LOOK — спільна «оболонка» всіх 9 стилів: півширина hwE(f) = HW_TAIL + (HW_HEAD − HW_TAIL)·f^W_EXP (голова 7.5 юн. —
  *     ширша за 6.75 COMET, але в конверті ENDLESS_ENV 9), α aE(f) = A_HEAD·f^A_EXP (у середині ≈ .56 проти .35 COMET).
  *     Кожен стиль має ореол COMET-а: один заливання lighter барвою гравця з α GLOW_A — але ФОРМОЮ свого стилю (кола
@@ -195,25 +188,54 @@ export const TRAIL_STYLE = {
  * Підібрано на знімках безкінечного (хоп і крейсер, 10 стилів поряд). Числа — не з Figma.
  */
 export const TRAIL_STYLE_E = {
-  LOOK:   { HW_TAIL: 1, HW_HEAD: 7.5, W_EXP: 0.85, A_HEAD: 0.95, A_EXP: 0.75, GLOW_A: 0.16, ROUND: 16, RING_N: 24 },
-  BEADS:  { GRID: 0.028, N_MAX: 14, R_TAIL: 2, R_HEAD: 5.2, A_MAX: 0.8, CORE_K: 0.45, CORE_MIX: 0.35, CORE_A: 0.85, CORE_FROM: 0.3,
-    THREAD_K: 0.2, THREAD_A: 0.75, GLOW_K: 2.1 },
-  DASH:   { GRID: 0.05, DUTY: 0.62, CORE_K: 0.45, CORE_MIX: 0.7, CORE_A: 0.9, CORE_EXP: 1.2, GLOW_MUL: 1.9 },
-  HELIX:  { TWIST: 0.16, AMP_K: 0.62, STRAND_K: 0.42, MIX2: 0.4, GLOW_MUL: 1.5 },
-  EMBERS: { CORE_K: 0.6, CORE_MIX: 0.4, N: 14, R: [1.2, 2.4], DRIFT: 9, MIX: 0.55, A: 0.95, SPARK_EXP: 0.5, GLOW_MUL: 1.9,
+  // [v104] PINCH_LEN — ореол стилів, ширший за м'ячик біля голови (FLARE, DRIFT, DASH, PIXEL, BEADS), ближче PINCH_LEN дугою від голови
+  //   плавно (smoothstep, як COMET_E) звужує свій множник до GLOW_HEAD_K стилю: голова входить під м'яч (r 10), без кутів (LOOK_E.pk;
+  //   trails.test.mjs headRule). Юн. кадру: поле в безкінечному, екран у кадрі вигляду рівня.
+  LOOK:   { HW_TAIL: 1, HW_HEAD: 7.5, W_EXP: 0.85, A_HEAD: 0.95, A_EXP: 0.75, GLOW_A: 0.16, ROUND: 16, RING_N: 24, PINCH_LEN: 24 },
+  BEADS:  { GRID: 0.028, GRID_BEATS: 1 / 16, N_MAX: 14, R_TAIL: 2, R_HEAD: 5.2, A_MAX: 0.8, CORE_K: 0.45, CORE_MIX: 0.35, CORE_A: 0.85, CORE_FROM: 0.3,
+    THREAD_K: 0.2, THREAD_A: 0.75, GLOW_K: 2.1, GLOW_HEAD_K: 1.6 },
+  DASH:   { GRID: 0.05, GRID_BEATS: 1 / 8, DUTY: 0.62, CORE_K: 0.45, CORE_MIX: 0.7, CORE_A: 0.9, CORE_EXP: 1.2, GLOW_MUL: 1.9, GLOW_HEAD_K: 1.15 },
+  HELIX:  { TWIST: 0.16, TWIST_BEATS: 1 / 4, AMP_K: 0.62, STRAND_K: 0.42, MIX2: 0.4, GLOW_MUL: 1.5 },
+  EMBERS: { CORE_K: 0.6, CORE_MIX: 0.4, N: 14, N_CALM: 9, DROP_LEVEL: 2, R: [1.2, 2.4], DRIFT: 9, MIX: 0.55, A: 0.95, SPARK_EXP: 0.5, GLOW_MUL: 1.9,
     SPARK_GLOW_K: 2.6 },
-  PIXEL:  { GRID: 0.018, N_MAX: 22, SNAP: 4, SIZES: [4, 6, 8], SIZE_K: 2, A_STEPS: [0.3, 0.6, 0.9], GLOW_K: 1.8 },
-  ECHO:   { GAP: 0.1, R_K: [0.8, 0.68, 0.56], A: [0.85, 0.65, 0.45], W: 1.8, LINE_K: 0.42, LINE_A: 0.75, BALL_R: 10, MIX: 0.25,
+  PIXEL:  { GRID: 0.018, GRID_BEATS: 1 / 32, N_MAX: 22, SNAP: 4, SIZES: [4, 6, 8], SIZE_K: 2, A_STEPS: [0.3, 0.6, 0.9], GLOW_K: 1.8, GLOW_HEAD_K: 1 },
+  ECHO:   { GAP: 0.1, GAP_BEATS: 1 / 6, R_K: [0.8, 0.68, 0.56], A: [0.85, 0.65, 0.45], W: 1.8, LINE_K: 0.42, LINE_A: 0.75, BALL_R: 10, MIX: 0.25,
     GLOW_MUL: 2.4 },
-  DRIFT:  { OFF_K: 0.68, MARK_K: 0.4, A: 0.95, MIX: 0.15, GLOW_MUL: 1.3 },
-  ZAP:    { VERTS: 12, JIT_K: 0.6, REROLL: 0.2, WIDE_K: 0.65, WIDE_A: 0.9, CORE_K: 0.2, CORE_MIX: 0.65, CORE_A: 0.95, VEIL_K: 0.9,
+  DRIFT:  { OFF_K: 0.68, MARK_K: 0.4, A: 0.95, MIX: 0.15, GLOW_MUL: 1.3, GLOW_HEAD_K: 1, KICK_BASE: 0.55 },
+  ZAP:    { VERTS: 12, JIT_K: 0.6, REROLL: 0.2, REROLL_BEATS: 0.5, WIDE_K: 0.65, WIDE_A: 0.9, CORE_K: 0.2, CORE_MIX: 0.65, CORE_A: 0.95, VEIL_K: 0.9,
     GLOW_K: 2.0 },   // [v50] тіло й ореол звужуються до хвоста (makeZapE) — WIDE_K .55 → .65, GLOW_K 1.8 → 2.0 (ореол голови 9.75 < м'яча 10): хвіст — у точку
-  NOVA:   { CORE_K: 0.55, CORE_MIX: 0.2, EVERY: 0.125, MAX: 3, R0: 0.45, R1: 1.0, W: 2.4, A: 0.95, FADE_EXP: 0.6, MIX: 0.45,
+  NOVA:   { CORE_K: 0.55, CORE_MIX: 0.2, EVERY: 0.125, EVERY_BEATS: 1 / 4, MAX: 3, R0: 0.45, R1: 1.0, W: 2.4, A: 0.95, FADE_EXP: 0.6, MIX: 0.45,
     GLOW_MUL: 2.0, RING_GLOW_W: 2.2 },
-  // [v81] FLARE ∞: широке гаряче ядро, петлі вогню на сітці EVERY по черзі з обох боків (ростуть H0 → H1 конверту, гаснуть), іскри-корона на сітці
-  // SPARK (N, R ≤ PART_R_MAX), ореол — ядро ×GLOW_MUL і вершини петель
-  FLARE:  { CORE_K: 0.62, CORE_MIX: 0.45, EVERY: 0.1, MAX: 3, H0: 0.4, H1: 1.0, BASE_K: 0.85, W: 1.8, A: 0.95, FADE_EXP: 0.7, MIX: 0.5, VERTS: 11,
-    SPARK: 0.045, N: 6, R: [1.0, 2.0], SPARK_A: 0.85, SPARK_MIX: 0.55, GLOW_MUL: 1.9, APEX_GLOW: 3.2 },
+  // [v81] FLARE: широке гаряче ядро, петлі вогню на сітці EVERY по черзі з обох боків (ростуть H0 → H1 конверту, гаснуть), іскри-корона на сітці
+  // SPARK (N, R ≤ PART_R_MAX), ореол — ядро ×GLOW_MUL і вершини петель.
+  // [v102] власник 25.10: «FLARE не такий вже й гарний, особливий» — ексклюзив SUPERNOVA, найефектніший хвіст гри (у тих самих примітивах і межах):
+  //   ВОГОНЬ — єдиний стиль зі СВОЄЮ барвою (виняток §5.3 «барва — лише гравцева»: ексклюзив, впізнається з першого погляду; значок призу — той самий
+  //     вогонь #ff8a3d): FLAME = [EMBER, GOLD]; барва гравця / рівня його не перефарбовує (у рівнях — поверх палітри рівня, як вогонь). Маляр: стоп /
+  //     solid / крапка з полем hue — база замість гравцевої, далі mix(hue, #fff, mixK), як завжди;
+  //   ПЕРЕЛИВ — по ядру біжать гребені розжарення: w = ½(1 + cos 2π(f·SHIM_WAVES − (tH − t0) / SHIM_T)) — SHIM_WAVES гребенів, до голови за SHIM_T с
+  //     (рівень — SHIM_BEATS долі; «менше руху» — стоїть); барва стопа — EMBER → GOLD за w, до білого mixK = CORE_MIX + SHIM·w²;
+  //   РОЗЖАРЕНЕ СЕРЦЕ — друге ядро HOT_K·hwE, GOLD майже білим HOT_MIX, α HOT_A·aE^HOT_EXP (inner, від голови);
+  //   ПЕТЛІ — MAX новіших, товщі W, GOLD (MIX); у рівні — на кожній ¼ долі (EVERY_BEATS), на сильній долі петля повна, між — OFF_H;
+  //   ІСКРИ — N на сітці SPARK (рівень — SPARK_BEATS), GOLD / EMBER по черзі, біля голови тримаються ядра, у хвості розлітаються на
+  //     (SPREAD0 + (1 − SPREAD0)·(1 − f)) вільного місця; кожна з ореолом SPARK_GLOW_K; СВІТЛО — ореол EMBER з власною α GLOW_A (решта — LOOK.GLOW_A .16).
+  //   Заливань 3 (ореол, ядро, серце) ≤ 4; малювань ≤ MAX + N = 12 ≤ 30; частинок N ≤ 14. Порт: ті самі смуги / штрихи / кола квадами.
+  FLARE:  { FLAME: ["#ff6a2a", "#ffd04a"], CORE_K: 0.7, CORE_MIX: 0.3, SHIM: 0.55, SHIM_WAVES: 1.6, SHIM_T: 0.42, SHIM_BEATS: 1 / 2,
+    HOT_K: 0.34, HOT_MIX: 0.85, HOT_A: 0.95, HOT_EXP: 1.2,
+    EVERY: 0.09, EVERY_BEATS: 1 / 4, MAX: 4, OFF_H: 0.72, H0: 0.4, H1: 1.0, BASE_K: 0.85, W: 2.1, A: 0.95, FADE_EXP: 0.7, MIX: 0.3, VERTS: 11,
+    SPARK: 0.04, SPARK_BEATS: 1 / 12, N: 8, R: [1.0, 2.2], SPARK_A: 0.95, SPARK_MIX: 0.45, SPREAD0: 0.35, SPARK_GLOW_K: 2.4,
+    // [v104] власник 25.10: «на м'ячі гострі кути від хвоста» — ореол ядра ×GLOW_MUL у голові був 11.0 > м'яча 10 (кути смуги з-під
+    //   м'ячика); за LOOK.PINCH_LEN до голови плавно звужується до GLOW_HEAD_K (голова 7.35 — як COMET 7.56)
+    GLOW_A: 0.42, GLOW_MUL: 2.1, GLOW_HEAD_K: 1.4, APEX_GLOW: 3.6,
+    // [v103] ГОЛОВА БАРВИ М'ЯЧА (власник 25.10): ball(f) = HEAD_BALL·smooth(clamp((f − (1 − HEAD_LEN)) / HEAD_LEN)), smooth = x²(3 − 2x) —
+    //   біля м'ячика (f = 1) база = барва м'ячика, на HEAD_LEN довжини (за f) плавно переходить у вогонь (EMBER…GOLD), далі — чистий вогонь.
+    //   Той самий ball у кожному стопі ядра, серця й ореолу (стоп = зразок шляху), у петлі й іскрі — за f її точки. Ореол — градієнт хорди
+    //   (стоп на зразок, α стала GLOW_A), не одна барва: інакше біля м'ячика — помаранчевий ореол. Нових малювань немає.
+    HEAD_BALL: 1, HEAD_LEN: 0.42 },
+};
+/** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. */
+export const flareBallOf = (f) => {
+  const C = TRAIL_STYLE_E.FLARE, x = Math.min(1, Math.max(0, (f - (1 - C.HEAD_LEN)) / C.HEAD_LEN));
+  return C.HEAD_BALL * x * x * (3 - 2 * x);
 };
 /**
  * [v47] Зерна h01 — ЛИШЕ від індексів сітки часу (ніколи Math.random чи годинник стіни): той самий кадр на тій самій
@@ -291,6 +313,8 @@ export function trailFrame(nodes, mode, o = {}) {
     at: () => null,
     atS: () => null,
   };
+  // [v102] вхід кадру (неперелічувано: у вектори й JSON не йде) — з нього рівень будує кадр вигляду lookFrame
+  if (LV) Object.defineProperty(F, "src", { value: { nodes, o } });
   if (N < 2) return F;                                         // v46: менше 2 вузлів — нічого
   // 1. POINTS точок рівно по часу; te — мить, яку точка справді показує (хвіст, притиснутий до найстарішого вузла, — його t)
   const P = LV ? T.POINTS : E.POINTS, pts = [], te = [];
@@ -463,191 +487,12 @@ function makeCometE(F, S) {
   };
 }
 
-/** Градієнти «як у COMET» для DASH: тіло — COMET режиму; ядро — гаряча нитка LEVEL_TRAIL (у ENDLESS свого ядра немає). */
-const cometBodyGrad = (F, S) => (F.mode === TRAIL_MODE.LEVEL
-  ? chordGrad(F, S, COMET_STOPS.map((q) => [q, 0, F.alpha(q)]))
-  : chordGrad(F, S, [[0, 0, 0], [TRAIL_FX.CORE_MID, 0, TRAIL_FX.CORE_A_MID], [1, 0, TRAIL_FX.CORE_A_HEAD]]));
-const cometCoreGrad = (F, S) => chordGrad(F, S, COMET_STOPS.map((q) => [q, LEVEL_TRAIL.CORE_MIX, LEVEL_TRAIL.CORE_A * Math.pow(q, LEVEL_TRAIL.CORE_EXP)]));
-
-/**
- * BEADS — намистини на сітці часу (1/8 долі | GRID_E): стоять, як тики метронома, + голова; новіші N_MAX. r = max(R_MIN,
- * R_K·hw), ≤ env; α(f); серцевина r·CORE_K (mix CORE_MIX, α CORE_A) — у новішій половині. Пульс долі: найновіша намистина
- * сітки ×(1 + (POP − 1)·beat) — голова лежить під м'ячем (r ≤ env < 10), її «тик» не видно (рішення v47); reduced — без.
- */
-function makeBeads(F, S) {
-  const C = TRAIL_STYLE.BEADS, out = empty();
-  const grid = gridTimes(F, F.step(C.GRID_BEATS), C.N_MAX - 1);
-  const beads = [{ t: F.tH, pop: false }, ...grid.map((g, i) => ({ t: g.t, pop: i === 0 }))].slice(0, C.N_MAX).reverse();   // голова + сітка
-  const rMin = C.R_MIN * F.scr;
-  for (const b of beads) {
-    const p = F.at(b.t);
-    if (!p) continue;
-    let r = Math.max(rMin, C.R_K * F.hw(p.f));
-    if (b.pop && !F.reduced) r *= 1 + (C.POP - 1) * F.beat;
-    r = Math.min(r, F.env - p.dev);
-    out.dots.push(dot(S, p.x, p.y, r, 0, F.alpha(p.f)));
-    if (p.f >= C.CORE_FROM) out.dots.push(dot(S, p.x, p.y, r * C.CORE_K, C.CORE_MIX, C.CORE_A, { inner: true }));
-  }
-  return out;
-}
-
-/** DASH — стрічка COMET, порізана на риски [g, g + DUTY·крок] сітки часу (1/8 долі | GRID_E): одне заливання тіла, одне — ядра. */
-function makeDash(F, S) {
-  const C = TRAIL_STYLE.DASH, step = F.step(C.GRID_BEATS), tTail = F.tLo[0];
-  const dashes = [];
-  for (const { t: g } of gridTimes(F, step, Infinity).concat(gridTail(F, step))) {
-    const ta = Math.max(g, tTail), tb = Math.min(g + C.DUTY * step, F.tH);
-    if (tb - ta <= EPS_T) continue;
-    const smp = [F.at(ta)];
-    for (let k = 0; k < F.M; k++) if (F.tLo[k] > ta + EPS_T && F.t[k] < tb - EPS_T) smp.push(F.smp[k]);
-    smp.push(F.at(tb));
-    const uniq = smp.filter((p, i) => p && (i === 0 || Math.hypot(p.x - smp[i - 1].x, p.y - smp[i - 1].y) >= EPS_D));
-    if (uniq.length >= 2) dashes.unshift(uniq);                // старші першими
-  }
-  if (!dashes.length) return empty();
-  return { fills: [
-    { paths: dashes.map((d) => ribbon(S, d, (p) => Math.min(F.hw(p.f), F.env - p.dev))), grad: cometBodyGrad(F, S) },
-    { paths: dashes.map((d) => ribbon(S, d, (p) => Math.min(F.hw(p.f), F.env - p.dev) * LEVEL_TRAIL.CORE_W)), grad: cometCoreGrad(F, S), inner: true },
-  ], strokes: [], rings: [], dots: [] };
-}
 /** Риска, що почалась до хвоста (її клітинка сітки старша за span), але ще лежить на шляху. */
 const gridTail = (F, step) => {
   if (!(step > 0)) return [];
   const g = Math.floor((Math.max(F.tLo[0], F.tH - F.span) - F.t0) / step + EPS_T), t = F.t0 + g * step;
   return t < Math.max(F.tLo[0], F.tH - F.span) - EPS_T ? [{ g, t }] : [];
 };
-
-/** HELIX — два пасма навколо осі, зустрічаються на хвості й голові; фаза — від часу (поворот на долю | TWIST_E). */
-function makeHelix(F, S) {
-  const C = TRAIL_STYLE.HELIX, period = F.step(C.TWIST_BEATS), h1 = F.hw(1);
-  const w = (p) => C.STRAND_K * F.hw(p.f);
-  const off = (p) => {
-    const A = Math.max(0, Math.min(C.AMP_K * h1 * 4 * p.f * (1 - p.f), F.env - C.STRAND_K * F.hw(p.f)));
-    return A * Math.sin((TAU * (p.t - F.t0)) / period);
-  };
-  const a = (p) => F.alpha(p.f);
-  return { fills: [
-    { paths: [ribbon(S, F.smp, w, (p) => -off(p))], grad: pointGrad(F, S, F.smp, C.MIX2, a) },
-    { paths: [ribbon(S, F.smp, w, off)], grad: pointGrad(F, S, F.smp, 0, a) },
-  ], strokes: [], rings: [], dots: [] };
-}
-
-/** EMBERS — тонке ядро й іскри, що народжуються на сітці span/N (не ковзають), відпливають убік і гаснуть; дроп — N_DROP. */
-function makeEmbers(F, S) {
-  const C = TRAIL_STYLE.EMBERS, out = empty();
-  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * F.hw(p.f))], grad: pointGrad(F, S, F.smp, C.CORE_MIX, (p) => F.alpha(p.f)) });
-  const n = F.level(F.tH) >= C.DROP_LEVEL ? C.N_DROP : C.N;
-  const rMax = TRAIL_RULES.PART_R_MAX * F.scr;
-  for (const { g, t } of gridTimes(F, F.span / n, n).reverse()) {
-    const p = F.at(t);
-    if (!p) continue;
-    const seed = seedOf(g), r = Math.min((C.R[0] + (C.R[1] - C.R[0]) * h01(seed + TRAIL_SEED.RADIUS)) * F.scr, rMax, F.env - p.dev);
-    const room = Math.max(0, F.env - p.dev - r);
-    const d = F.reduced ? 0 : Math.max(-room, Math.min(room, (1 - p.f) * C.DRIFT * F.scr * (2 * h01(seed) - 1)));
-    out.dots.push({ x: p.x * S.pm + p.nx * d * S.sm, y: p.y * S.pm + p.ny * d * S.sm, r: r * S.sm, mixK: C.MIX, alpha: C.A * F.alpha(p.f), spark: true });
-  }
-  return out;
-}
-
-/** PIXEL — квадрати на сітці 1/16 долі | GRID_E, центр на сітці SNAP поля, розмір — найближчий із SIZES, α — сходинкою вниз. */
-function makePixel(F, S) {
-  const C = TRAIL_STYLE.PIXEL, snap = C.SNAP * F.scr, cells = new Set(), byA = new Map();
-  for (const { t } of gridTimes(F, F.step(C.GRID_BEATS), C.N_MAX)) {
-    const p = F.at(t);
-    if (!p) continue;
-    const av = F.alpha(p.f);
-    let a = 0;
-    for (const st of C.A_STEPS) if (st <= av) a = st;            // α — униз до сходинки; нижче першої — не малюємо
-    if (!a) continue;
-    const ix = Math.floor(p.x / snap + 0.5), iy = Math.floor(p.y / snap + 0.5), key = ix + "," + iy;
-    if (cells.has(key)) continue;                                // клітинка вже має новіший квадрат
-    const cx = ix * snap, cy = iy * snap, room = F.env - p.dev - Math.hypot(cx - p.x, cy - p.y);
-    let side = 0;
-    for (const sz of C.SIZES) {                                  // найближчий до 2·hw, що влазить у конверт кутом
-      const v = sz * F.scr;
-      if (v * Math.SQRT1_2 <= room && v <= 2 * F.env && (!side || Math.abs(v - 2 * F.hw(p.f)) < Math.abs(side - 2 * F.hw(p.f)))) side = v;
-    }
-    if (!side) continue;
-    cells.add(key);
-    if (!byA.has(a)) byA.set(a, []);
-    byA.get(a).unshift([cx, cy, side / 2]);                      // старші першими
-  }
-  const fills = [...byA.keys()].sort((x, y) => x - y).map((a) => ({
-    paths: byA.get(a).map(([cx, cy, h]) => {
-      const X = cx * S.pm, Y = cy * S.pm, H = h * S.sm;
-      return [[X - H, Y - H], [X + H, Y - H], [X + H, Y + H], [X - H, Y + H]];
-    }),
-    solid: { mixK: 0, alpha: a },
-  }));
-  return { fills, strokes: [], rings: [], dots: [] };
-}
-
-/** ECHO — волосина й три порожні кільця за ⅙, ⅓, ½ долі (тріоль) | GAP_E позаду; у HOLD — разом із кадром нічого. */
-function makeEcho(F, S) {
-  const C = TRAIL_STYLE.ECHO, out = empty(), gap = F.step(C.GAP_BEATS), W = C.W * F.scr;
-  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.LINE_K * F.hw(p.f))], grad: pointGrad(F, S, F.smp, 0, (p) => C.LINE_A * F.alpha(p.f)) });
-  for (let k = C.R_K.length; k >= 1; k--) {                    // дальнє першим
-    const p = F.at(F.tH - k * gap);
-    if (!p) continue;
-    const r = Math.min(C.R_K[k - 1] * C.BALL_R, F.env - p.dev - W / 2);
-    if (r > 0) out.rings.push({ x: p.x * S.pm, y: p.y * S.pm, r: r * S.sm, w: W * S.sm, mixK: C.MIX, alpha: C.A[k - 1] });
-  }
-  return out;
-}
-
-/** DRIFT — два паралельні сліди шин без ядра; LEVEL — спалах на справжній бочці треку kick(t_i), ENDLESS — рівна α. */
-function makeDrift(F, S) {
-  const C = TRAIL_STYLE.DRIFT;
-  const w = (p) => C.MARK_K * F.hw(p.f), off = (p) => C.OFF_K * F.hw(p.f);
-  const a = (p) => F.alpha(p.f) * (C.BASE_A + C.KICK_A * F.kick(p.t));
-  // один градієнт на обидва сліди: одне заливання двох підшляхів (сліди не перетинаються: OFF_K ≥ MARK_K)
-  return { fills: [{ paths: [ribbon(S, F.smp, w, off), ribbon(S, F.smp, w, (p) => -off(p))], grad: pointGrad(F, S, F.smp, 0, a) }],
-    strokes: [], rings: [], dots: [] };
-}
-
-/** [v47] Період перебиття ZAP, с: LEVEL — ½ долі, але не частіше FLICKER_HZ_MAX; ENDLESS — REROLL_E. */
-export const zapPeriod = (F) => (F.mode === TRAIL_MODE.LEVEL
-  ? Math.max(TRAIL_STYLE.ZAP.REROLL_BEATS * F.L.beat, 1 / TRAIL_RULES.FLICKER_HZ_MAX) : TRAIL_STYLE_E.ZAP.REROLL);
-
-/**
- * ZAP — блискавка: VERTS вершин рівними кроками дуги з поперечним стрибком h01(перебиття, k); широкий штрих + ядро.
- * Широкий штрих — смуга СТАЛОЇ ширини 2·WIDE_K·hw(1) з α WIDE_A·α(f): на довгому шляху (безкінечний, 280 °/с — 300 юн.)
- * чи великому зумі вона ставала «пеленою» > VEIL_MAX, тож ширина ≤ VEIL_K·VEIL_MAX / (довжина ламаної·z²); ядро — у тій
- * самій пропорції (CORE_K / WIDE_K).
- */
-function makeZap(F, S) {
-  const C = TRAIL_STYLE.ZAP, h1 = F.hw(1), roll = F.reduced ? 0 : Math.floor((F.tH - F.t0) / zapPeriod(F) + EPS_T);
-  const room = Math.max(0, F.env - C.WIDE_K * h1), smp = [], off = [];
-  let polyLen = 0, px = 0, py = 0;
-  for (let k = 0; k < C.VERTS; k++) {
-    const p = F.atS((F.len * k) / (C.VERTS - 1));
-    const j = k < C.VERTS - 1 ? C.JIT_K * F.hw(p.f) * (2 * h01(seedOf(roll, k)) - 1) : 0;   // голова — без стрибка
-    const d = Math.max(-room, Math.min(room, j)), x = p.x + p.nx * d, y = p.y + p.ny * d;
-    if (k) polyLen += Math.hypot(x - px, y - py);
-    px = x; py = y;
-    smp.push(p); off.push(d);
-  }
-  const wide = 2 * C.WIDE_K * h1, fit = polyLen > 0 ? Math.min(1, (C.VEIL_K * LEVEL_TRAIL.VEIL_MAX) / (polyLen * F.z * F.z * wide)) : 1;
-  const pts = smp.map((p, k) => [p.x * S.pm + p.nx * off[k] * S.sm, p.y * S.pm + p.ny * off[k] * S.sm]);
-  return { fills: [], strokes: [
-    { pts, w: wide * fit * S.sm, grad: pointGrad(F, S, smp, 0, (p) => C.WIDE_A * F.alpha(p.f)) },
-    { pts: pts.map((q) => q.slice()), w: 2 * C.CORE_K * h1 * fit * S.sm, grad: pointGrad(F, S, smp, C.CORE_MIX, (p) => C.CORE_A * F.alpha(p.f)), inner: true },
-  ], rings: [], dots: [] };
-}
-
-/** NOVA — тонке ядро й кільце-штамп, де м'яч був на сильній долі (| EVERY_E): росте R0 → R1 і гасне за span; reduced — без кілець. */
-function makeNova(F, S) {
-  const C = TRAIL_STYLE.NOVA, out = empty(), W = C.W * F.scr;
-  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * F.hw(p.f))], grad: pointGrad(F, S, F.smp, 0, (p) => F.alpha(p.f)) });
-  if (F.reduced) return out;
-  for (const { t } of gridTimes(F, F.step(C.EVERY_BEATS), C.MAX).reverse()) {
-    const p = F.at(t);
-    if (!p) continue;
-    const q = clamp01((F.tH - t) / F.span), r = Math.min((C.R0 + (C.R1 - C.R0) * q) * (F.env - W / 2), F.env - p.dev - W / 2);
-    if (r > 0) out.rings.push({ x: p.x * S.pm, y: p.y * S.pm, r: r * S.sm, w: W * S.sm, mixK: C.MIX, alpha: C.A * (1 - q) * (1 - q) });
-  }
-  return out;
-}
 
 /**
  * [v81] Петля вогню (FLARE): ламана півеліпса з основою на осі шляху в точці p — розмах a уздовж дотичної, висота h уздовж нормалі (side ±1).
@@ -663,27 +508,15 @@ const flareLoop = (S, p, side, a, h, n) => {
 };
 /** [v81] Рівний «градієнт» (два однакові стопи) — штрихи мають форму grad, як решта стилів (маляр і метрики гри — один шлях). */
 const flatGrad = (F, S, mixK, alpha) => chordGrad(F, S, [[0, mixK, alpha], [1, mixK, alpha]]);
-/** FLARE (рівень) — ядро й петлі вогню на сильній долі, з боку, що чергується; reduced — без петель. */
-function makeFlare(F, S) {
-  const C = TRAIL_STYLE.FLARE, out = empty(), W = C.W * F.scr;
-  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * F.hw(p.f))], grad: pointGrad(F, S, F.smp, C.CORE_MIX, (p) => F.alpha(p.f)) });
-  if (F.reduced) return out;
-  for (const { g, t } of gridTimes(F, F.step(C.EVERY_BEATS), C.MAX).reverse()) {
-    const p = F.at(t);
-    if (!p) continue;
-    const q = clamp01((F.tH - t) / F.span), h = Math.min((C.H0 + (C.H1 - C.H0) * q) * (F.env - W / 2), F.env - p.dev - W / 2);
-    if (!(h > 0)) continue;
-    out.strokes.push({ pts: flareLoop(S, p, g % 2 ? 1 : -1, h * C.BASE_K, h, C.VERTS), w: W * S.sm, grad: flatGrad(F, S, C.MIX, C.A * (1 - q) * (1 - q)) });
-  }
-  return out;
-}
-
 // ================================================================ безкінечний: форми TRAIL_STYLE_E (полірування v47)
 
 /** Оболонка безкінечного (TRAIL_STYLE_E.LOOK): півширина hw(f) і α a(f), юн. поля. */
 const LOOK_E = (() => {
   const C = TRAIL_STYLE_E.LOOK;
-  return { hw: (q) => C.HW_TAIL + (C.HW_HEAD - C.HW_TAIL) * Math.pow(q, C.W_EXP), a: (q) => C.A_HEAD * Math.pow(q, C.A_EXP) };
+  return { hw: (q) => C.HW_TAIL + (C.HW_HEAD - C.HW_TAIL) * Math.pow(q, C.W_EXP), a: (q) => C.A_HEAD * Math.pow(q, C.A_EXP),
+    // [v104] множник ореолу біля голови: k далі PINCH_LEN дугою від голови, ближче — плавно (smoothstep) до kHead у самій голові —
+    //   ореол заходить під м'яч. Дугою (юн. кадру), не за f: на стрибку й на старті точки злипаються біля голови, і f там не міра
+    pk: (k, kHead, F, p) => k + (kHead - k) * smooth01(1 - (F.len - p.s) / C.PINCH_LEN) };
 })();
 /** Подвійна площа многокутника (shoelace): > 0 — «додатний» обхід. */
 const area2 = (poly) => { let a = 0; for (let i = 0; i < poly.length; i++) { const p = poly[i], q = poly[(i + 1) % poly.length]; a += p[0] * q[1] - q[0] * p[1]; } return a; };
@@ -703,7 +536,7 @@ const annulusPoly = (S, x, y, r0, r1, n = TRAIL_STYLE_E.LOOK.RING_N) => {
   const O = circlePoly(S, x, y, r1, n), I = circlePoly(S, x, y, Math.max(0, r0), n);
   return [...O, O[0], I[0], ...I.slice(1).reverse(), I[0]];
 };
-const glowOf = (paths) => ({ paths: paths.map(pos), solid: { mixK: 0, alpha: TRAIL_STYLE_E.LOOK.GLOW_A } });
+const glowOf = (paths, alpha = TRAIL_STYLE_E.LOOK.GLOW_A) => ({ paths: paths.map(pos), solid: { mixK: 0, alpha } });
 /** Градієнт зі стопом на кожну точку шляху: α = aOf(f) оболонки безкінечного. */
 const gradE = (F, S, mixK, aOf) => pointGrad(F, S, F.smp, mixK, (p) => aOf(p.f));
 
@@ -711,12 +544,12 @@ const gradE = (F, S, mixK, aOf) => pointGrad(F, S, F.smp, mixK, (p) => aOf(p.f))
 function makeBeadsE(F, S) {
   const C = TRAIL_STYLE_E.BEADS, X = LOOK_E, out = empty(), halo = [];
   out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.THREAD_K * X.hw(p.f))], grad: gradE(F, S, 0, (q) => C.THREAD_A * X.a(q)) });
-  for (const { t } of gridTimes(F, C.GRID, C.N_MAX).reverse()) {
+  for (const { t } of gridTimes(F, F.step(C.GRID_BEATS, C.GRID), C.N_MAX).reverse()) {
     const p = F.at(t);
     if (!p) continue;
     const r = Math.min(C.R_TAIL + (C.R_HEAD - C.R_TAIL) * p.f, F.env - p.dev), a = Math.min(C.A_MAX, X.a(p.f));
     if (!(r > 0) || !(a > 0)) continue;
-    halo.push(circlePoly(S, p.x, p.y, r * C.GLOW_K));
+    halo.push(circlePoly(S, p.x, p.y, r * X.pk(C.GLOW_K, C.GLOW_HEAD_K, F, p)));
     out.dots.push(dot(S, p.x, p.y, r, 0, a));
     if (p.f >= C.CORE_FROM) out.dots.push(dot(S, p.x, p.y, r * C.CORE_K, C.CORE_MIX, C.CORE_A * Math.sqrt(p.f), { inner: true }));
   }
@@ -726,9 +559,9 @@ function makeBeadsE(F, S) {
 
 /** DASH ∞ — риски на всю оболонку з гарячим ядром; ореол — ті самі риски, ширші. */
 function makeDashE(F, S) {
-  const C = TRAIL_STYLE_E.DASH, X = LOOK_E, tTail = F.tLo[0], dashes = [];
-  for (const { t: g } of gridTimes(F, C.GRID, Infinity).concat(gridTail(F, C.GRID))) {
-    const ta = Math.max(g, tTail), tb = Math.min(g + C.DUTY * C.GRID, F.tH);
+  const C = TRAIL_STYLE_E.DASH, X = LOOK_E, tTail = F.tLo[0], dashes = [], step = F.step(C.GRID_BEATS, C.GRID);
+  for (const { t: g } of gridTimes(F, step, Infinity).concat(gridTail(F, step))) {
+    const ta = Math.max(g, tTail), tb = Math.min(g + C.DUTY * step, F.tH);
     if (tb - ta <= EPS_T) continue;
     const smp = [F.at(ta)];
     for (let k = 0; k < F.M; k++) if (F.tLo[k] > ta + EPS_T && F.t[k] < tb - EPS_T) smp.push(F.smp[k]);
@@ -739,7 +572,7 @@ function makeDashE(F, S) {
   if (!dashes.length) return empty();
   const w = (p) => Math.min(X.hw(p.f), F.env - p.dev);
   return {
-    glow: glowOf(dashes.map((d) => ribbon(S, d, (p) => X.hw(p.f) * C.GLOW_MUL))),
+    glow: glowOf(dashes.map((d) => ribbon(S, d, (p) => X.hw(p.f) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p)))),
     fills: [
       { paths: dashes.map((d) => ribbon(S, d, w)), grad: gradE(F, S, 0, X.a) },
       { paths: dashes.map((d) => ribbon(S, d, (p) => w(p) * C.CORE_K)), grad: gradE(F, S, C.CORE_MIX, (q) => C.CORE_A * Math.pow(q, C.CORE_EXP)), inner: true },
@@ -751,7 +584,7 @@ function makeHelixE(F, S) {
   const C = TRAIL_STYLE_E.HELIX, X = LOOK_E;
   const w = (p) => C.STRAND_K * X.hw(p.f);
   const amp = (p) => Math.max(0, Math.min(C.AMP_K * F.env * Math.sqrt(4 * p.f * (1 - p.f)), F.env - w(p)));
-  const off = (p) => amp(p) * Math.sin((TAU * p.t) / C.TWIST);
+  const twist = F.step(C.TWIST_BEATS, C.TWIST), off = (p) => amp(p) * Math.sin((TAU * (p.t - F.t0)) / twist);
   return {
     glow: glowOf([ribbon(S, F.smp, (p) => (amp(p) + w(p)) * C.GLOW_MUL)]),
     fills: [
@@ -765,7 +598,8 @@ function makeEmbersE(F, S) {
   const C = TRAIL_STYLE_E.EMBERS, X = LOOK_E, out = empty(), rMax = TRAIL_RULES.PART_R_MAX;
   const halo = [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f) * C.GLOW_MUL)];
   out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f))], grad: gradE(F, S, C.CORE_MIX, X.a) });
-  for (const { g, t } of gridTimes(F, F.span / C.N, C.N).reverse()) {
+  const n = F.pick(F.level(F.tH) >= C.DROP_LEVEL ? C.N : C.N_CALM, C.N);   // [v102] рівень: дроп — N іскор, решта — N_CALM
+  for (const { g, t } of gridTimes(F, F.span / n, n).reverse()) {
     const p = F.at(t);
     if (!p) continue;
     const seed = seedOf(g), r = Math.min(C.R[0] + (C.R[1] - C.R[0]) * h01(seed + TRAIL_SEED.RADIUS), rMax, F.env - p.dev);
@@ -783,7 +617,7 @@ function makeEmbersE(F, S) {
 function makePixelE(F, S) {
   const C = TRAIL_STYLE_E.PIXEL, X = LOOK_E, cells = new Set(), byA = new Map(), halo = [];
   const sq = (cx, cy, h) => { const Xc = cx * S.pm, Yc = cy * S.pm, H = h * S.sm; return [[Xc - H, Yc - H], [Xc + H, Yc - H], [Xc + H, Yc + H], [Xc - H, Yc + H]]; };
-  for (const { t } of gridTimes(F, C.GRID, C.N_MAX)) {
+  for (const { t } of gridTimes(F, F.step(C.GRID_BEATS, C.GRID), C.N_MAX)) {
     const p = F.at(t);
     if (!p) continue;
     const av = X.a(p.f);
@@ -799,7 +633,7 @@ function makePixelE(F, S) {
     cells.add(key);
     if (!byA.has(a)) byA.set(a, []);
     byA.get(a).unshift([cx, cy, side / 2]);
-    halo.unshift(sq(cx, cy, (side / 2) * C.GLOW_K));
+    halo.unshift(sq(cx, cy, (side / 2) * X.pk(C.GLOW_K, C.GLOW_HEAD_K, F, p)));
   }
   const fills = [...byA.keys()].sort((x, y) => x - y).map((a) => ({ paths: byA.get(a).map(([cx, cy, h]) => sq(cx, cy, h)), solid: { mixK: 0, alpha: a } }));
   return { ...(halo.length ? { glow: glowOf(halo) } : {}), fills, strokes: [], rings: [], dots: [] };
@@ -809,8 +643,9 @@ function makePixelE(F, S) {
 function makeEchoE(F, S) {
   const C = TRAIL_STYLE_E.ECHO, X = LOOK_E, out = empty(), halo = [ribbon(S, F.smp, (p) => C.LINE_K * X.hw(p.f) * C.GLOW_MUL)];
   out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.LINE_K * X.hw(p.f))], grad: gradE(F, S, 0, (q) => C.LINE_A * X.a(q)) });
+  const gap = F.step(C.GAP_BEATS, C.GAP);
   for (let k = C.R_K.length; k >= 1; k--) {
-    const p = F.at(F.tH - k * C.GAP);
+    const p = F.at(F.tH - k * gap);
     if (!p) continue;
     const r = Math.min(C.R_K[k - 1] * C.BALL_R, F.env - p.dev - C.W / 2);
     if (!(r > 0)) continue;
@@ -826,13 +661,19 @@ function makeDriftE(F, S) {
   const C = TRAIL_STYLE_E.DRIFT, X = LOOK_E;
   const w = (p) => C.MARK_K * X.hw(p.f), off = (p) => C.OFF_K * X.hw(p.f);
   return {
-    glow: glowOf([ribbon(S, F.smp, (p) => (off(p) + w(p)) * C.GLOW_MUL)]),
-    fills: [{ paths: [ribbon(S, F.smp, w, off), ribbon(S, F.smp, w, (p) => -off(p))], grad: gradE(F, S, C.MIX, (q) => C.A * X.a(q)) }],
+    glow: glowOf([ribbon(S, F.smp, (p) => (off(p) + w(p)) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p))]),
+    // [v102] рівень — спалах на справжній бочці треку (α × KICK_BASE … 1); безкінечний — рівна α
+    fills: [{ paths: [ribbon(S, F.smp, w, off), ribbon(S, F.smp, w, (p) => -off(p))],
+      grad: pointGrad(F, S, F.smp, C.MIX, (p) => C.A * X.a(p.f) * F.pick(C.KICK_BASE + (1 - C.KICK_BASE) * F.kick(p.t), 1)) }],
     strokes: [], rings: [], dots: [] };
 }
 
+/** [v47] Період перебиття ZAP, с: LEVEL — REROLL_BEATS долі, але не частіше FLICKER_HZ_MAX; ENDLESS — REROLL. */
+export const zapPeriod = (F) => (F.mode === TRAIL_MODE.LEVEL
+  ? Math.max(TRAIL_STYLE_E.ZAP.REROLL_BEATS * F.L.beat, 1 / TRAIL_RULES.FLICKER_HZ_MAX) : TRAIL_STYLE_E.ZAP.REROLL);
+
 /**
- * ZAP ∞ — блискавка: тіло + біле ядро, перебиття раз на REROLL с; ореол — тією самою ламаною.
+ * ZAP ∞ — блискавка: тіло + біле ядро, перебиття раз на REROLL с (рівень — zapPeriod); ореол — тією самою ламаною.
  * [v50] Власник: «HYPERLANE (ZAP) на безкінечному виглядає обрізано». Причина — дві смуги СТАЛОЇ ширини: тіло-штрих 2·WIDE_K·hwE(1)
  * і ореол-смуга сталої ширини довкола ламаної (нормалі ламаної, суцільна α GLOW_A lighter) — тіло до хвоста гасне, а ореол ні: на хвості він
  * закінчувався рівним прямокутним зрізом на всю ширину (і з «зазубринами» на зламах: нормалі ламаної перехрещувались). Тепер
@@ -842,11 +683,13 @@ function makeDriftE(F, S) {
  * (той самий вимір, що trailMetrics), ширина тіла й ядра — ×fit, щоб її було ≤ VEIL_K·VEIL_MAX.
  */
 function makeZapE(F, S) {
-  const C = TRAIL_STYLE_E.ZAP, X = LOOK_E, T = LEVEL_TRAIL, roll = F.reduced ? 0 : Math.floor(F.tH / C.REROLL + EPS_T);
+  const C = TRAIL_STYLE_E.ZAP, X = LOOK_E, T = LEVEL_TRAIL, roll = F.reduced ? 0 : Math.floor((F.tH - F.t0) / zapPeriod(F) + EPS_T);
   const wide = 2 * C.WIDE_K * X.hw(1), room = Math.max(0, F.env - wide / 2), smp = [], off = [];
   for (let k = 0; k < C.VERTS; k++) {
     const p = F.atS((F.len * k) / (C.VERTS - 1));
-    const j = k < C.VERTS - 1 ? C.JIT_K * X.hw(p.f) * (2 * h01(seedOf(roll, k)) - 1) : 0;
+    // [v104] стрибок вершини гасне за LOOK.PINCH_LEN до голови (X.pk 1 → 0): на короткому шляху (повільний рівень) вершина біля голови
+    //   стрибала на 4.5 убік, і ореол смуги виходив за м'ячик кутом; блискавка тепер виходить із-під м'ячика
+    const j = k < C.VERTS - 1 ? C.JIT_K * X.hw(p.f) * X.pk(1, 0, F, p) * (2 * h01(seedOf(roll, k)) - 1) : 0;
     smp.push(p); off.push(Math.max(-room, Math.min(room, j)));
   }
   const offOf = (p, k) => off[k], half = (p) => C.WIDE_K * X.hw(p.f);
@@ -876,7 +719,7 @@ function makeNovaE(F, S) {
   const C = TRAIL_STYLE_E.NOVA, X = LOOK_E, out = empty(), halo = [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f) * C.GLOW_MUL)];
   out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f))], grad: gradE(F, S, C.CORE_MIX, X.a) });
   if (!F.reduced) {
-    for (const { t } of gridTimes(F, C.EVERY, C.MAX).reverse()) {
+    for (const { t } of gridTimes(F, F.step(C.EVERY_BEATS, C.EVERY), C.MAX).reverse()) {
       const p = F.at(t);
       if (!p) continue;
       const q = clamp01((F.tH - t) / F.span), r = Math.min((C.R0 + (C.R1 - C.R0) * q) * (F.env - C.W / 2), F.env - p.dev - C.W / 2);
@@ -890,40 +733,87 @@ function makeNovaE(F, S) {
   return out;
 }
 
-/** [v81] FLARE ∞ — широке гаряче ядро, петлі вогню з обох боків по черзі й іскри-корона; ореол — ядро й вершини петель. */
+/**
+ * [v81] FLARE — широке гаряче ядро, петлі вогню з обох боків по черзі й іскри-корона; ореол — ядро, вершини петель і кожна іскра.
+ * [v102] перелив (біла хвиля розжарення біжить ядром до голови), розжарене серце, петлі на ¼ долі (рівень: сильна доля — повна петля),
+ * іскри розлітаються до хвоста, власне світло GLOW_A (числа й порт — TRAIL_STYLE_E.FLARE).
+ */
 function makeFlareE(F, S) {
-  const C = TRAIL_STYLE_E.FLARE, X = LOOK_E, out = empty(), halo = [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f) * C.GLOW_MUL)];
-  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f))], grad: gradE(F, S, C.CORE_MIX, X.a) });
+  const C = TRAIL_STYLE_E.FLARE, X = LOOK_E, out = empty(), halo = [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p))];
+  const [ember, gold] = C.FLAME;
+  // перелив: w = ½(1 + cos 2π(f·SHIM_WAVES − фаза)) — гребені біжать до голови (фаза — час шлейфу / SHIM_T, рівень — у долях; «менше руху» — 0);
+  // барва стопа — вогонь від EMBER (w 0) до GOLD (w 1), розжарення до білого mixK = CORE_MIX + SHIM·w²
+  const ph = F.reduced ? 0 : (F.tH - F.t0) / F.step(C.SHIM_BEATS, C.SHIM_T), stops = [];
+  let last = 0;
+  for (const p of F.smp) {
+    const w = 0.5 * (1 + Math.cos(TAU * (p.f * C.SHIM_WAVES - ph)));
+    last = Math.max(last, chordU(F, p.x, p.y));
+    stops.push([last, C.CORE_MIX + C.SHIM * w * w, X.a(p.f), flameHex(ember, gold, w), flareBallOf(p.f)]);
+  }
+  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.CORE_K * X.hw(p.f))], grad: chordGrad(F, S, stops) });
+  const hot = gradE(F, S, C.HOT_MIX, (q) => C.HOT_A * Math.pow(X.a(q), C.HOT_EXP));
+  hot.stops = hot.stops.map((s, i) => [s[0], s[1], s[2], gold, flareBallOf(F.smp[i].f)]);
+  out.fills.push({ paths: [ribbon(S, F.smp, (p) => C.HOT_K * X.hw(p.f))], grad: hot, inner: true });
   if (!F.reduced) {
-    for (const { g, t } of gridTimes(F, C.EVERY, C.MAX).reverse()) {
+    for (const { g, t } of gridTimes(F, F.step(C.EVERY_BEATS, C.EVERY), C.MAX).reverse()) {
       const p = F.at(t);
       if (!p) continue;
-      const q = clamp01((F.tH - t) / F.span), h = Math.min((C.H0 + (C.H1 - C.H0) * q) * (F.env - C.W / 2), F.env - p.dev - C.W / 2);
+      const k = F.pick(((g % 4) + 4) % 4 === 0 ? 1 : C.OFF_H, 1);           // рівень: на долі — повна петля, між — OFF_H
+      const q = clamp01((F.tH - t) / F.span), h = Math.min((C.H0 + (C.H1 - C.H0) * q) * k * (F.env - C.W / 2), F.env - p.dev - C.W / 2);
       if (!(h > 0)) continue;
-      const side = g % 2 ? 1 : -1, a = C.A * Math.pow(1 - q, C.FADE_EXP);
-      out.strokes.push({ pts: flareLoop(S, p, side, h * C.BASE_K, h, C.VERTS), w: C.W * S.sm, grad: flatGrad(F, S, C.MIX, a) });
+      const side = g % 2 ? 1 : -1, a = C.A * Math.pow(1 - q, C.FADE_EXP), lg = flatGrad(F, S, C.MIX, a);
+      const lb = flareBallOf(p.f);
+      lg.stops = lg.stops.map((s) => [s[0], s[1], s[2], gold, lb]);
+      out.strokes.push({ pts: flareLoop(S, p, side, h * C.BASE_K, h, C.VERTS), w: C.W * S.sm, grad: lg });
       const ax = p.x + p.nx * h * 0.6 * side, ay = p.y + p.ny * h * 0.6 * side;
       halo.push(circlePoly(S, ax, ay, Math.min(C.APEX_GLOW, F.env - p.dev)));
     }
   }
   const rMax = TRAIL_RULES.PART_R_MAX;
-  for (const { g, t } of gridTimes(F, C.SPARK, C.N).reverse()) {
+  for (const { g, t } of gridTimes(F, F.step(C.SPARK_BEATS, C.SPARK), C.N).reverse()) {
     const p = F.at(t);
     if (!p) continue;
     const seed = seedOf(g), r = Math.min(C.R[0] + (C.R[1] - C.R[0]) * h01(seed + TRAIL_SEED.RADIUS), rMax, F.env - p.dev);
-    const room = Math.max(0, F.env - p.dev - r), d = F.reduced ? 0 : (2 * h01(seed) - 1) * room;
-    out.dots.push({ x: (p.x + p.nx * d) * S.pm, y: (p.y + p.ny * d) * S.pm, r: r * S.sm, mixK: C.SPARK_MIX, alpha: C.SPARK_A * X.a(p.f), spark: true });
+    const room = Math.max(0, F.env - p.dev - r), d = F.reduced ? 0 : (2 * h01(seed) - 1) * room * (C.SPREAD0 + (1 - C.SPREAD0) * (1 - p.f));
+    const x = p.x + p.nx * d, y = p.y + p.ny * d;
+    halo.push(circlePoly(S, x, y, r * C.SPARK_GLOW_K));
+    out.dots.push({ x: x * S.pm, y: y * S.pm, r: r * S.sm, mixK: C.SPARK_MIX, alpha: C.SPARK_A * X.a(p.f), spark: true, hue: g % 2 ? gold : ember, ball: flareBallOf(p.f) });
   }
-  out.glow = glowOf(halo);
+  // ореол — градієнт хорди: стоп на зразок (як ядро), α GLOW_A, база EMBER → барва м'яча біля голови
+  out.glow = { paths: glowOf(halo, C.GLOW_A).paths, grad: chordGrad(F, S, stops.map((s) => [s[0], 0, C.GLOW_A, ember, s[4]])) };
   return out;
 }
+/** [v102] Барва вогню FLARE: лінійно EMBER → GOLD за w ∈ [0, 1], #rrggbb (той самий round, що mixHex маляра). */
+const flameHex = (a, b, w) => {
+  const x = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16)), y = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
+  return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * w).toString(16).padStart(2, "0")).join("");
+};
 
-const MAKERS = { comet: makeComet, beads: makeBeads, dash: makeDash, helix: makeHelix, embers: makeEmbers,
-  pixel: makePixel, echo: makeEcho, drift: makeDrift, zap: makeZap, nova: makeNova, flare: makeFlare };
-/** [v47] Безкінечний: свої форми (TRAIL_STYLE_E); COMET — v46 (makeComet, гілка ENDLESS). */
-const MAKERS_E = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
+/**
+ * [v47] Форми стилів: COMET — makeComet (рівень v46 · безкінечний COMET_E), решта 9 — TRAIL_STYLE_E.
+ * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
+ */
+const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
   pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, flare: makeFlareE };
-const makerOf = (F, id) => (F.mode === TRAIL_MODE.ENDLESS ? MAKERS_E : MAKERS)[id];
+/**
+ * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
+ * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
+ */
+export function lookFrame(F) {
+  if (F.look) return F.look;
+  const zs = Math.max(1, F.z), { nodes, o } = F.src;
+  const V = trailFrame(zs === 1 ? nodes : nodes.map((n) => ({ a: n.a, r: n.r * zs, t: n.t })), TRAIL_MODE.LEVEL, { ...o, z: F.z / zs });
+  V.env = TRAIL_RULES.ENDLESS_ENV;
+  V.zs = zs;
+  Object.defineProperty(F, "look", { value: V });
+  return V;
+}
+/** Примітиви стилю id на кадрі F у масштабі S: безкінечний і COMET — як є; рівень — форма на lookFrame, ×1/zs у поле. */
+const shapeOf = (F, id, S) => {
+  if (F.mode === TRAIL_MODE.ENDLESS || id === TRAIL_DEFAULT) return MAKERS[id](F, S);
+  const V = lookFrame(F);
+  return V.ok ? MAKERS[id](V, { pm: S.pm / V.zs, sm: S.sm / V.zs }) : empty();
+};
 
 /**
  * [v47] Стилі: TRAIL_STYLES[id].build(F, s = {}) → примітиви + metrics (шапка). Кадр не ok — порожньо (HOLD, < 2 вузлів).
@@ -933,9 +823,9 @@ export const TRAIL_STYLES = Object.fromEntries(TRAILS.map(({ id }) => [id, {
   id,
   build(F, s = {}) {
     const head = { style: id, mode: F.mode };
-    const base = F.ok ? makerOf(F, id)(F, UNIT) : empty();
+    const base = F.ok ? shapeOf(F, id, UNIT) : empty();
     const pm = typeof s.posMul === "number" ? s.posMul : 1, wm = typeof s.wMul === "number" ? s.wMul : 1;
-    const out = pm === 1 && wm === 1 ? base : F.ok ? makerOf(F, id)(F, { pm, sm: pm * wm }) : empty();
+    const out = pm === 1 && wm === 1 ? base : F.ok ? shapeOf(F, id, { pm, sm: pm * wm }) : empty();
     const o = { ...head, ...(out.glow ? { glow: out.glow } : {}), fills: out.fills, strokes: out.strokes, rings: out.rings, dots: out.dots };
     // [v73] RANKS правка 1 (огляд a11y #9): метрики — ліниво, лише коли їх читають (тести, вектори); жива орбіта RANKS малює щокадру й не платить
     // O(вершини × точки шляху) і ≈ 12–15 МБ/с сміття. Порядок ключів і JSON — ті самі (властивість перелічувана, остання).
@@ -1045,15 +935,18 @@ const WHITE = "#ffffff";
  */
 export function paintTrail(ctx, prims, colour, o = {}) {
   const k = typeof o.k === "number" ? o.k : 1, cx = o.cx || 0, cy = o.cy || 0, tints = new Map();
-  const tint = (mixK) => {
-    if (!(mixK > 0)) return colour;
-    if (!tints.has(mixK)) tints.set(mixK, mixHex(colour, WHITE, mixK));
-    return tints.get(mixK);
+  // [v102] hue — своя база барви (лише FLARE: вогонь), інакше гравцева; [v103] ball — частка барви м'яча в цій базі (голова FLARE)
+  const tint = (mixK, hue, ball) => {
+    const base = hue ? (ball > 0 ? mixHex(hue, colour, ball) : hue) : colour;
+    if (!(mixK > 0)) return base;
+    const key = hue ? base + mixK : mixK;
+    if (!tints.has(key)) tints.set(key, mixHex(base, WHITE, mixK));
+    return tints.get(key);
   };
   const paint = (p) => {
-    if (p.solid) return rgba(tint(p.solid.mixK), p.solid.alpha);
+    if (p.solid) return rgba(tint(p.solid.mixK, p.solid.hue, p.solid.ball), p.solid.alpha);
     const g = ctx.createLinearGradient(cx + p.grad.a[0] * k, cy + p.grad.a[1] * k, cx + p.grad.b[0] * k, cy + p.grad.b[1] * k);
-    for (const [off, mixK, a] of p.grad.stops) g.addColorStop(off, rgba(tint(mixK), a));
+    for (const [off, mixK, a, hue, ball] of p.grad.stops) g.addColorStop(off, rgba(tint(mixK, hue, ball), a));
     return g;
   };
   const trace = (paths) => {
@@ -1081,12 +974,12 @@ export function paintTrail(ctx, prims, colour, o = {}) {
     }
     for (const rg of prims.rings) {
       ctx.beginPath(); ctx.arc(cx + rg.x * k, cy + rg.y * k, rg.r * k, 0, TAU);
-      ctx.lineWidth = rg.w * k; ctx.strokeStyle = rgba(tint(rg.mixK), rg.alpha); ctx.stroke();
+      ctx.lineWidth = rg.w * k; ctx.strokeStyle = rgba(tint(rg.mixK, rg.hue, rg.ball), rg.alpha); ctx.stroke();
     }
     ctx.restore();
   }
   for (const d of prims.dots) {
     ctx.beginPath(); ctx.arc(cx + d.x * k, cy + d.y * k, d.r * k, 0, TAU);
-    ctx.fillStyle = rgba(tint(d.mixK), d.alpha); ctx.fill();
+    ctx.fillStyle = rgba(tint(d.mixK, d.hue, d.ball), d.alpha); ctx.fill();
   }
 }
