@@ -39,13 +39,18 @@
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (e) { /* лише на цей захід */ } }
 
   var state = load(), loaded = false, sent = 0, played = null, gameSent = false;
-  // [2.2.1] /play/: питаємо не з порога, а коли гравець уже побачив гру (Ходент, «Мозок гравця»: доречний момент) — через ASK_END мс після
-  // першого кінця забігу / рівня, або через ASK_PLAY мс від першого старту, якщо кінця ще немає. Не грав — не питаємо (аналітики й так немає)
-  var ASK_END = 1200, ASK_PLAY = 45000, askTimer = 0, asked = false;
-  function ask(ms) {
-    if (state !== null || open || asked) return;
-    clearTimeout(askTimer);
-    askTimer = setTimeout(function () { if (state === null && !open) { asked = true; show(false); } }, ms);
+  // [2.2.1] /play/ (власник 29.10): питаємо на вході, як і всюди, а хто не вибрав нічого — ще раз після першого кінця забігу / рівня:
+  // банер, що вже стоїть, коротко підсвічується (odc-nudge), схований — з'являється знову. «Відхилити» — вибір: після нього не питаємо
+  // (GDPR — відмову поважаємо, знову спитаємо лише через TTL). Раз за захід на сторінку.
+  var ASK_END = 1200, nudged = false;
+  function askAgain() {
+    if (state !== null || nudged) return;
+    nudged = true;
+    setTimeout(function () {
+      if (state !== null) return;
+      if (!open) { show(false); return; }
+      box.classList.remove("odc-nudge"); void box.offsetWidth; box.classList.add("odc-nudge");
+    }, ASK_END);
   }
 
   /* ── Google Analytics ───────────────────────────────────────────────────── */
@@ -193,10 +198,10 @@
     window.__orbitTrack = function (name, p) {
       p = p || {};
       if (name === "run_start" || name === "level_start") {
-        if (!played) { played = name === "run_start" ? "endless" : "levels"; flushGame(); ask(ASK_PLAY); }
+        if (!played) { played = name === "run_start" ? "endless" : "levels"; flushGame(); }
         if (name === "level_start") send("level_start", { level_name: String(p.level_name || ""), autoplay: String(!!p.autoplay) });
-      } else if (name === "run_end") { send("run_end", { score_bucket: bucket(p.score) }); ask(ASK_END); }
-      else if (name === "level_complete") { send("level_complete", { level_name: String(p.level_name || "") }); ask(ASK_END); }
+      } else if (name === "run_end") { send("run_end", { score_bucket: bucket(p.score) }); askAgain(); }
+      else if (name === "level_complete") { send("level_complete", { level_name: String(p.level_name || "") }); askAgain(); }
       else if (name === "ranks_open") send("ranks_open", { source: String(p.source || ""), state: String(p.state || "") });
       else if (name === "ranks_join" && p.step === 2) send("ranks_join", { outcome: String(p.outcome || "") });
     };
@@ -205,5 +210,5 @@
   }
 
   if (state === "granted") start();
-  else if (state === null && MODE !== "play") show(false);      // [2.2.1] /play/ — після першого забігу (ask)
+  else if (state === null) show(false);                          // на вході; /play/ — ще раз після першого забігу (askAgain)
 })();
