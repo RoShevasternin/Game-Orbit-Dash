@@ -100,6 +100,8 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 <body>
 <script>/* публічна гра: без FPS, DEV і заглушки банера; мова — як на сайті */ window.__orbitPublic = 1;(function(){try{var q=new URLSearchParams(location.search).get("lang"),s=null;try{s=localStorage.getItem("lewydo:lang")}catch(e){}var l=q||s,d=[].slice.call(navigator.languages||[navigator.language||"en"]);if(l)d.unshift(l);window.__orbitPhoneLangs=d;window.__orbitPacks="all"}catch(e){}})();</script>
 
+<script>window.__orbitRemote = {"live":{"halloween":{"on":false,"from":"2026-10-29","to":"2026-11-30"}}};</script>
+
 <div id="root"></div>
 <script>
 // window.storage поверх localStorage. У чаті це API середовища артефактів; на

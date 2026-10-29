@@ -129,7 +129,7 @@
   /* [HALLOWEEN 2.2.1] тема сезону — за МІСЦЕВОЮ датою відвідувача у вікні гри (prototype/haunt.mjs SEASONS, вшивається збіркою; включно,
      1 грудня гасне саме). Перевірка: ?halloween=1 | 0, ?today=yyyy-mm-dd */
   try {
-    var W = {"on":true,"from":"2026-10-29","to":"2026-11-30"}, Q = new URLSearchParams(location.search), q = Q.get("halloween"), n = new Date(), z = function (v) { return (v < 10 ? "0" : "") + v; };
+    var W = {"on":false,"from":"2026-10-29","to":"2026-11-30"}, Q = new URLSearchParams(location.search), q = Q.get("halloween"), n = new Date(), z = function (v) { return (v < 10 ? "0" : "") + v; };
     var day = /^\d{4}-\d{2}-\d{2}$/.test(Q.get("today") || "") ? Q.get("today") : n.getFullYear() + "-" + z(n.getMonth() + 1) + "-" + z(n.getDate());
     if (q === "1" || (q !== "0" && W.on && W.from <= day && day <= W.to)) d.classList.add("halloween");
   } catch (e) {}
