@@ -134,9 +134,11 @@ export const TRAILS = [
   { id: "nova",   name: "NOVA",   level: "starborn",    desc: "A ring of light on every beat" },
   // [v81] ексклюзив RANKS: не продається й не дається рівнем — лише SUPERNOVA (4 × GOLD за тиждень, ranks.mjs RING_PERKS). perk — нагорода, що його дає
   { id: "flare",  name: "FLARE",  perk: "legend",       desc: "A blazing core · loops of fire burst on the beat" },
+  // [HALLOWEEN] begin — хвіст WISP
   // [v118] сезонний подарунок HALLOWEEN: не продається й не дається рівнем — у SHOP лише у вікні сезону (haunt.mjs seasonOn), безкоштовно; узятий —
-  // свій назавжди (trailsOwned). season — id вікна SEASONS haunt.mjs. Назва — не перекладається (як усі хвости)
+  // свій на сезон (trailsOwned; [HALLOWEEN][v119] після сезону зникає й у власників — shop.mjs seasonGifts, haunt-look.mjs). season — id вікна SEASONS haunt.mjs. Назва — не перекладається (як усі хвости)
   { id: "wisp",   name: "WISP",   season: "halloween",   desc: "A ghostly wisp · embers flicker, bats fly off on the beat" },
+  // [HALLOWEEN] end
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -236,6 +238,7 @@ export const TRAIL_STYLE_E = {
     //   Той самий ball у кожному стопі ядра, серця й ореолу (стоп = зразок шляху), у петлі й іскрі — за f її точки. Ореол — градієнт хорди
     //   (стоп на зразок, α стала GLOW_A), не одна барва: інакше біля м'ячика — помаранчевий ореол. Нових малювань немає.
     HEAD_BALL: 1, HEAD_LEN: 0.42 },
+  // [HALLOWEEN] begin — числа стилю WISP
   // [v118] WISP — сезонний подарунок HALLOWEEN (власник 29.10: «придумай скін і хвіст»): блукаючий вогник-привид. Друга (після FLARE) своя барва —
   //   ЕКТОПЛАЗМА ECTO = [VIOLET, SLIME]: біля голови фіолет, до хвоста — слизово-зелений (барви сезону HAUNT_COL haunt.mjs); голова — барва м'яча
   //   (HEAD_BALL / HEAD_LEN — той самий рецепт, що FLARE: «хвіст хоча б починається кольором м'яча»). Примітиви ті самі, межі §5.5 ті самі.
@@ -260,6 +263,7 @@ export const TRAIL_STYLE_E = {
     BAT_EVERY: 0.17, BAT_BEATS: 1, BAT_DROP_BEATS: 1 / 2, DROP_LEVEL: 2, BAT_MAX: 3, BAT_W: 5.2, BAT_H: 3.2, BAT_OFF0: 0.25, BAT_IN: 0.12,
     BAT_A: 0.92, BAT_FADE: 0.5, BAT_MIX: 0.5, BAT_CLEAR: 14, FLAP_T: 0.2, FLAP_BEATS: 1 / 4,
     GLOW_A: 0.42, GLOW_MUL: 1.9, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.5 },
+  // [HALLOWEEN] end
 };
 /** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. [v118] той самий рецепт — headBallOf(WISP). */
 export const headBallOf = (C, f) => {
@@ -813,6 +817,7 @@ function makeFlareE(F, S) {
   out.glow = { paths: glowOf(halo, C.GLOW_A).paths, grad: chordGrad(F, S, stops.map((s) => [s[0], 0, C.GLOW_A, ember, s[4]])) };
   return out;
 }
+// [HALLOWEEN] begin — маляр WISP (кажани, рампа, makeWispE)
 /**
  * [v118] Силует кажана WISP: 12 вершин (парні — маляр і метрики читають смугу [L…, R…]), x — уздовж дотичної (±1 → ±BAT_W), y — геть від осі
  * (+1 → BAT_H), flap ∈ [−1, 1] — кінчики крил угору / вниз. |y| ≤ 0.7, |x| ≤ 1. Порт: msdf haunt_bat (BAT_BODY_D + BAT_WING_D haunt.mjs) квадом.
@@ -829,6 +834,15 @@ export const wispFlapPeriod = (F) => F.pick(Math.max(TRAIL_STYLE_E.WISP.FLAP_BEA
  * жарини-свічки й кажани, що злітають з хвоста (рівень — на долі). Своя барва (hue), голова — барва м'яча (ball).
  */
 const WISP_N = 36;                                             // зразків рівно по дузі (atS): хвиля й лахміття гладкі
+/** [HALLOWEEN] Рампа ектоплазми слиз → фіолет на ECTO_STEPS кроків — рядки барв раз на пару барв, а не flameHex на кожен зразок щокадру
+ *  (≈ 150 розборів і рядків на кадр). Порт: 1D-текстура рампи. */
+const ECTO_STEPS = 64, ECTO_LUTS = new Map();
+const ectoLut = (a, b) => {
+  const key = a + b;
+  let t = ECTO_LUTS.get(key);
+  if (!t) { t = []; for (let i = 0; i <= ECTO_STEPS; i++) t.push(flameHex(a, b, i / ECTO_STEPS)); ECTO_LUTS.set(key, t); }
+  return t;
+};
 function makeWispE(F, S) {
   const C = TRAIL_STYLE_E.WISP, X = LOOK_E, out = empty(), [violet, slime] = C.ECTO, env = F.env, still = F.reduced;
   const smp = [];
@@ -840,7 +854,7 @@ function makeWispE(F, S) {
   // (1 − f) ≥ 0: atS на кінці дуги може дати f на 1e-16 більше за 1
   const off = (p) => Math.max(0, env - p.dev - w0(p)) * C.SWAY_K * Math.pow(Math.max(0, 1 - p.f), C.SWAY_EXP) * Math.sin(TAU * (p.f * C.SWAY_WAVES + ph));
   // слиз тримається хвостової третини, фіолет — від ECTO_FROM + ECTO_LEN до голови (smoothstep між ними)
-  const ecto = (f) => flameHex(slime, violet, smooth01((f - C.ECTO_FROM) / C.ECTO_LEN)), ball = (f) => headBallOf(C, f);
+  const lut = ectoLut(slime, violet), ecto = (f) => lut[Math.round(smooth01((f - C.ECTO_FROM) / C.ECTO_LEN) * ECTO_STEPS)], ball = (f) => headBallOf(C, f);
   const stopsOf = (fn) => { const st = []; let last = 0; for (const p of smp) { last = Math.max(last, chordU(F, p.x, p.y)); st.push([last, ...fn(p)]); } return st; };
   const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, C.GLOW_A * (1 + C.BEAT_GLOW * F.beat));
   const halo = ribbon(S, smp, (p) => Math.min(w(p) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p), Math.max(0, env - p.dev - Math.abs(off(p)))), off);
@@ -882,6 +896,7 @@ function makeWispE(F, S) {
   }
   return out;
 }
+// [HALLOWEEN] end
 /** [v102] Барва вогню FLARE: лінійно EMBER → GOLD за w ∈ [0, 1], #rrggbb (той самий round, що mixHex маляра). */
 const flameHex = (a, b, w) => {
   const x = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16)), y = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
@@ -893,7 +908,7 @@ const flameHex = (a, b, w) => {
  * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
  */
 const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
-  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, flare: makeFlareE, wisp: makeWispE };
+  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, flare: makeFlareE, wisp: makeWispE };   // [HALLOWEEN]
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.

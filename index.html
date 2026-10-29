@@ -340,7 +340,7 @@ h1{font-weight:800;line-height:.94;letter-spacing:.14em;font-size:clamp(58px,12.
 h1 span{display:block;position:relative;width:max-content}
 h1 .o{color:#00e5ff;text-shadow:0 0 30px rgba(0,229,255,.45),0 0 9px rgba(0,229,255,.5)}
 h1 .d{color:var(--gold);text-shadow:0 0 30px rgba(255,213,74,.36),0 0 9px rgba(255,213,74,.45)}
-h1 span::after{content:attr(data-g);position:absolute;inset:0;color:transparent;opacity:var(--pulse);will-change:opacity;pointer-events:none}
+h1 span::after{content:attr(data-g);position:absolute;inset:0;color:transparent;opacity:calc(var(--pulse) * .5);will-change:opacity;pointer-events:none}
 h1 .o::after{text-shadow:0 0 56px rgba(0,229,255,.95),0 0 22px rgba(0,229,255,.65)}
 h1 .d::after{text-shadow:0 0 56px rgba(255,213,74,.9),0 0 22px rgba(255,213,74,.6)}
 .tag{font-weight:800;font-size:clamp(20px,2.4vw,27px);line-height:1.28;margin-top:22px;max-width:26ch}
@@ -360,7 +360,7 @@ h1 .d::after{text-shadow:0 0 56px rgba(255,213,74,.9),0 0 22px rgba(255,213,74,.
 .orbits b:nth-of-type(2){inset:18%;animation-duration:7.5s;animation-direction:reverse}
 .orbits b:nth-of-type(2)::before{width:9px;height:9px;margin-left:-4.5px;top:-4.5px;background:var(--acc2);box-shadow:0 0 14px 2px var(--acc2)}
 .orbits .glow{position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--acc) 30%,transparent),transparent 72%);
-  opacity:calc(.4 + .6 * var(--pulse));will-change:opacity}
+  opacity:calc(.55 + .3 * var(--pulse));will-change:opacity}
 .orbits svg{position:absolute;width:26px;height:26px;color:var(--acc3);filter:drop-shadow(0 0 8px var(--acc3));animation:spin 6s linear infinite}
 .orbits svg:nth-of-type(1){left:4%;top:24%}
 .orbits svg:nth-of-type(2){right:2%;top:58%;width:18px;height:18px;animation-duration:4.5s;animation-direction:reverse}
@@ -1644,11 +1644,16 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
     if (!cv || !cv.getContext) return null;
     var c = cv.getContext("2d"), W = 0, H = 0, dpr = 1, pts = [];
     function size() {
+      var w0 = W;
       dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-      var n = Math.round(Math.min(220, W * H / 7000));
-      pts = [];
-      for (var i = 0; i < n; i++) pts.push({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), tw: Math.random() * 6.3 });
+      // та сама ширина (на телефоні висота «дихає», коли при гортанні ховається адресний рядок) — зорі лишаються на місцях;
+      // нове небо — лише коли змінилась ширина (поворот, інше вікно), інакше зорі стрибали б щоразу — «мерехтіння»
+      if (!pts.length || W !== w0) {
+        var n = Math.round(Math.min(220, W * Math.max(H, screen.height || H) / 7000));
+        pts = [];
+        for (var i = 0; i < n; i++) pts.push({ x: Math.random() * W, y: Math.random() * H, z: Math.random(), tw: Math.random() * 6.3 });
+      }
       draw(0, 0);
     }
     function draw(dt, p) {
@@ -1660,7 +1665,7 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
         s.y += dt * (4 + 30 * s.z * s.z);
         if (s.y > H + 2) { s.y = -2; s.x = Math.random() * W; }
         s.tw += dt * (0.5 + 1.2 * s.z);
-        c.globalAlpha = Math.min(1, (0.1 + 0.42 * s.z) * (0.72 + 0.28 * Math.sin(s.tw)) + p * 0.35 * s.z);
+        c.globalAlpha = Math.min(1, (0.1 + 0.42 * s.z) * (0.72 + 0.28 * Math.sin(s.tw)) + p * 0.16 * s.z);
         var r = 0.5 + 1.3 * s.z;
         c.beginPath(); c.arc(s.x, s.y, r / 2 + 0.2, 0, 6.2832); c.fill();
       }
@@ -1674,7 +1679,7 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
 
   /* ── кадр: ритм героя → --pulse і смуга ритму; прев'ю; зорі ──────────────── */
   (function loop() {
-    var line = $("#beatline"), bars = [], shown = -1, last = performance.now();
+    var line = $("#beatline"), bars = [], shown = -1, last = performance.now(), ps = 0;
     if (line && !reduced) {
       var n = Math.max(24, Math.min(72, Math.round(innerWidth / 16)));
       for (var i = 0; i < n; i++) bars.push(line.appendChild(document.createElement("i")));
@@ -1685,7 +1690,11 @@ window.OD_LEVELS = [{"id":"first-light","name":"FIRST LIGHT","genre":"SYNTHWAVE"
       var dt = Math.min(0.05, Math.max(0, (t - last) / 1000));
       last = t;
       if (!document.hidden) {
-        var E = live ? live.frame(t, dt) : Env(), p = Math.max(E.k, E.m * 0.55);
+        var E = live ? live.frame(t, dt) : Env(), p0 = reduced ? 0 : Math.max(E.k, E.m * 0.55);
+        // пульс у такт — «дихання», не спалах: м'який наступ (~70 мс) і довше згасання (~200 мс); удар бочки 0 → 1 за кадр
+        // світив усім сяйвом заголовка й зорями разом — на сторінці це читалось як мерехтіння (власник 29.10)
+        ps += (p0 - ps) * (1 - Math.exp(-dt * (p0 > ps ? 14 : 5)));
+        var p = ps;
         if (heroVis && hero) {
           if (Math.abs(p - shown) > 0.008) { hero.style.setProperty("--pulse", p.toFixed(3)); shown = p; }
           for (var i = 0, n = bars.length; i < n; i++) {
