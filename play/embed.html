@@ -145,6 +145,10 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
   // мова гри = мова сторінки (?lang=…, сайт передає свою): «мова телефона» прототипу — вона; усі мовні пакети вже тут
   var LANG = Q.get("lang") && (SITE.langs || []).indexOf(Q.get("lang")) >= 0 ? Q.get("lang") : null;
   if (LANG) window.__orbitPhoneLangs = [LANG];
+  // [HALLOWEEN] сезон — як у сторінки: ?today=yyyy-mm-dd → дата прототипу; ?halloween=1|0 → вікно «Remote Config» прототипу (вкл. / вимк.)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(Q.get("today") || "")) window.__orbitToday = Q.get("today");
+  if (Q.get("halloween") === "1" || Q.get("halloween") === "0")
+    window.__orbitRemote = { live: { halloween: { on: Q.get("halloween") === "1", from: "2000-01-01", to: "2999-12-31" } } };
   window.__orbitPacks = "all";
   window.__orbitPublic = 1;      // без FPS, DEV і заглушки банера
   window.__orbitNoBrand = 1;     // без заставки Lewydo (її бачать у самій грі)
@@ -414,7 +418,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 })();
 </script>
 
-<script>window.__orbitRemote = {"live":{"halloween":{"on":false,"from":"2026-10-29","to":"2026-11-30"}}};</script>
+<script>window.__orbitRemote = window.__orbitRemote || {"live":{"halloween":{"on":false,"from":"2026-10-29","to":"2026-11-30"}}};</script>
 
 <div id="root"></div>
 <script>

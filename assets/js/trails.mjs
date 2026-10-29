@@ -134,9 +134,14 @@ export const TRAILS = [
   { id: "nova",   name: "NOVA",   level: "starborn",    desc: "A ring of light on every beat" },
   // [v81] ексклюзив RANKS: не продається й не дається рівнем — лише SUPERNOVA (4 × GOLD за тиждень, ranks.mjs RING_PERKS). perk — нагорода, що його дає
   { id: "flare",  name: "FLARE",  perk: "legend",       desc: "A blazing core · loops of fire burst on the beat" },
+  // [v118] сезонний подарунок HALLOWEEN: не продається й не дається рівнем — у SHOP лише у вікні сезону (haunt.mjs seasonOn), безкоштовно; узятий —
+  // свій назавжди (trailsOwned). season — id вікна SEASONS haunt.mjs. Назва — не перекладається (як усі хвости)
+  { id: "wisp",   name: "WISP",   season: "halloween",   desc: "A ghostly wisp · embers flicker, bats fly off on the beat" },
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
+/** [v118] Сезонний подарунок (WISP — HALLOWEEN): ні ціни, ні рівня, ні кільця — лише вікно сезону. */
+export const isSeasonTrail = (t) => !!t && typeof t.season === "string";
 /** [v47] Хвіст, який дає рівень (перший зарахований прохід), або null. */
 export const trailOfLevel = (levelId) => (typeof levelId === "string" && TRAILS.find((t) => t.level === levelId)) || null;
 /** [v47] Опис хвоста за id, або null. */
@@ -231,12 +236,37 @@ export const TRAIL_STYLE_E = {
     //   Той самий ball у кожному стопі ядра, серця й ореолу (стоп = зразок шляху), у петлі й іскрі — за f її точки. Ореол — градієнт хорди
     //   (стоп на зразок, α стала GLOW_A), не одна барва: інакше біля м'ячика — помаранчевий ореол. Нових малювань немає.
     HEAD_BALL: 1, HEAD_LEN: 0.42 },
+  // [v118] WISP — сезонний подарунок HALLOWEEN (власник 29.10: «придумай скін і хвіст»): блукаючий вогник-привид. Друга (після FLARE) своя барва —
+  //   ЕКТОПЛАЗМА ECTO = [VIOLET, SLIME]: біля голови фіолет, до хвоста — слизово-зелений (барви сезону HAUNT_COL haunt.mjs); голова — барва м'яча
+  //   (HEAD_BALL / HEAD_LEN — той самий рецепт, що FLARE: «хвіст хоча б починається кольором м'яча»). Примітиви ті самі, межі §5.5 ті самі.
+  //   ТІЛО — смуга BODY_K·hwE з рваним краєм привида: півширина × (1 − TATTER·(1 − f)·r), r = ½(1 + sin 2π(f·TATTER_N − фаза)) — «лахміття» біжить
+  //     до хвоста; вісь хвилюється вбік на SWAY_K вільного місця × (1 − f)^SWAY_EXP (у голові — 0: виходить з-під м'ячика), SWAY_WAVES хвиль
+  //     уздовж, фаза — час шлейфу / SWAY_T (рівень — SWAY_BEATS долі; «менше руху» — стоїть). Барва — ECTO: слиз до f = ECTO_FROM, далі
+  //     smoothstep до фіолету за ECTO_LEN; перелив GLIM до білого біжить до хвоста (GLIM_WAVES гребенів).
+  //   СЕРЦЕВИНА — CORE_K·hwE, бузково-біла CORE_MIX, α CORE_A·aE^CORE_EXP (inner), на тій самій хвилі.
+  //   ЖАРИНИ — N на сітці EMBER с (рівень — EMBER_BEATS долі), помаранчеві EMBERS по черзі, R ≤ PART_R_MAX; мерехтять як свічка
+  //     tw = TW_MIN + (1 − TW_MIN)·½(1 + sin 2π(t·FLICK_HZ + h)) (FLICK_HZ ≤ FLICKER_HZ_MAX; «менше руху» — 1), відпливають на DRIFT до хвоста;
+  //     рівень — на справжній бочці треку (kick у мить жарини) α і радіус × (KICK_BASE + (1 − KICK_BASE)·kick).
+  //   КАЖАНИ — силует BAT (12 вершин, крила махають за FLAP_T с; рівень — FLAP_BEATS долі, не частіше FLICKER_HZ_MAX) на сітці BAT_EVERY с,
+  //     рівень — на КОЖНІЙ долі (BAT_BEATS; у дропі DROP_LEVEL — двічі на долю BAT_DROP_BEATS): кажан злітає з осі вбік (по черзі),
+  //     відлітає на BAT_OFF0 → 1 вільного місця й гасне; ближче BAT_CLEAR дугою до голови — не малюється (голова під м'ячем); «менше руху» — без кажанів.
+  //   СВІТЛО — ореол тіла ×GLOW_MUL (біля голови — GLOW_HEAD_K, LOOK.PINCH_LEN), градієнт ECTO, α GLOW_A (рівень — × (1 + BEAT_GLOW·доля)).
+  //   Заливань 4 (ореол, тіло, серцевина, кажани) ≤ 4; малювань — N ≤ 30; частинок N ≤ 14. Порт: ті самі смуги / кола квадами, кажан — msdf haunt_bat.
+  WISP:   { ECTO: ["#a65cff", "#5cff94"], EMBERS: ["#ff8a1f", "#ffc35a"], HEAD_BALL: 1, HEAD_LEN: 0.3,
+    BODY_K: 0.72, BODY_A: 0.9, BODY_MIX: 0.1, GLIM: 0.4, ECTO_FROM: 0.15, ECTO_LEN: 0.6, GLIM_WAVES: 1.2, TATTER: 0.45, TATTER_N: 2.6,
+    SWAY_K: 0.8, SWAY_EXP: 1.3, SWAY_WAVES: 1.1, SWAY_T: 0.55, SWAY_BEATS: 1 / 2,
+    CORE_K: 0.3, CORE_MIX: 0.55, CORE_A: 0.9, CORE_EXP: 1.3,
+    EMBER: 0.05, EMBER_BEATS: 1 / 8, N: 7, R: [1.4, 2.3], EMBER_A: 0.95, EMBER_MIX: 0.35, DRIFT: 7, TW_MIN: 0.5, FLICK_HZ: 4, KICK_BASE: 0.55,
+    BAT_EVERY: 0.17, BAT_BEATS: 1, BAT_DROP_BEATS: 1 / 2, DROP_LEVEL: 2, BAT_MAX: 3, BAT_W: 5.2, BAT_H: 3.2, BAT_OFF0: 0.25, BAT_IN: 0.12,
+    BAT_A: 0.92, BAT_FADE: 0.5, BAT_MIX: 0.5, BAT_CLEAR: 14, FLAP_T: 0.2, FLAP_BEATS: 1 / 4,
+    GLOW_A: 0.42, GLOW_MUL: 1.9, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.5 },
 };
-/** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. */
-export const flareBallOf = (f) => {
-  const C = TRAIL_STYLE_E.FLARE, x = Math.min(1, Math.max(0, (f - (1 - C.HEAD_LEN)) / C.HEAD_LEN));
+/** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. [v118] той самий рецепт — headBallOf(WISP). */
+export const headBallOf = (C, f) => {
+  const x = Math.min(1, Math.max(0, (f - (1 - C.HEAD_LEN)) / C.HEAD_LEN));
   return C.HEAD_BALL * x * x * (3 - 2 * x);
 };
+export const flareBallOf = (f) => headBallOf(TRAIL_STYLE_E.FLARE, f);
 /**
  * [v47] Зерна h01 — ЛИШЕ від індексів сітки часу (ніколи Math.random чи годинник стіни): той самий кадр на тій самій
  * миті, після паузи, REVIVE і в автопрогоні. seed(g, k) = g·G + k·K; RADIUS — зсув зерна радіуса іскри EMBERS (§5.4 «+7»).
@@ -783,6 +813,75 @@ function makeFlareE(F, S) {
   out.glow = { paths: glowOf(halo, C.GLOW_A).paths, grad: chordGrad(F, S, stops.map((s) => [s[0], 0, C.GLOW_A, ember, s[4]])) };
   return out;
 }
+/**
+ * [v118] Силует кажана WISP: 12 вершин (парні — маляр і метрики читають смугу [L…, R…]), x — уздовж дотичної (±1 → ±BAT_W), y — геть від осі
+ * (+1 → BAT_H), flap ∈ [−1, 1] — кінчики крил угору / вниз. |y| ≤ 0.7, |x| ≤ 1. Порт: msdf haunt_bat (BAT_BODY_D + BAT_WING_D haunt.mjs) квадом.
+ */
+export const batShape = (flap) => [
+  [-1, 0.15 + 0.55 * flap], [-0.55, 0.28 + 0.2 * flap], [-0.2, 0.55], [0, 0.3], [0.2, 0.55], [0.55, 0.28 + 0.2 * flap],
+  [1, 0.15 + 0.55 * flap], [0.62, -0.2], [0.36, -0.06], [0, -0.55], [-0.36, -0.06], [-0.62, -0.2],
+];
+/** [v118] Період змаху крил WISP, с: рівень — FLAP_BEATS долі, не частіше FLICKER_HZ_MAX; безкінечний — FLAP_T. */
+export const wispFlapPeriod = (F) => F.pick(Math.max(TRAIL_STYLE_E.WISP.FLAP_BEATS * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX), TRAIL_STYLE_E.WISP.FLAP_T);
+
+/**
+ * [v118] WISP — блукаючий вогник-привид (числа й порт — TRAIL_STYLE_E.WISP): рвана смуга ектоплазми фіолет → слиз, що хвилюється до хвоста, серцевина,
+ * жарини-свічки й кажани, що злітають з хвоста (рівень — на долі). Своя барва (hue), голова — барва м'яча (ball).
+ */
+const WISP_N = 36;                                             // зразків рівно по дузі (atS): хвиля й лахміття гладкі
+function makeWispE(F, S) {
+  const C = TRAIL_STYLE_E.WISP, X = LOOK_E, out = empty(), [violet, slime] = C.ECTO, env = F.env, still = F.reduced;
+  const smp = [];
+  for (let i = 0; i < WISP_N; i++) smp.push(F.atS((F.len * i) / (WISP_N - 1)));
+  // хвиля й лахміття біжать від голови до хвоста (+фаза): «прапор» привида, що тріпоче за м'ячиком
+  const ph = still ? 0 : (F.tH - F.t0) / F.step(C.SWAY_BEATS, C.SWAY_T);
+  const w0 = (p) => C.BODY_K * X.hw(p.f);
+  const w = (p) => w0(p) * (1 - C.TATTER * (1 - p.f) * 0.5 * (1 + Math.sin(TAU * (p.f * C.TATTER_N + ph))));
+  // (1 − f) ≥ 0: atS на кінці дуги може дати f на 1e-16 більше за 1
+  const off = (p) => Math.max(0, env - p.dev - w0(p)) * C.SWAY_K * Math.pow(Math.max(0, 1 - p.f), C.SWAY_EXP) * Math.sin(TAU * (p.f * C.SWAY_WAVES + ph));
+  // слиз тримається хвостової третини, фіолет — від ECTO_FROM + ECTO_LEN до голови (smoothstep між ними)
+  const ecto = (f) => flameHex(slime, violet, smooth01((f - C.ECTO_FROM) / C.ECTO_LEN)), ball = (f) => headBallOf(C, f);
+  const stopsOf = (fn) => { const st = []; let last = 0; for (const p of smp) { last = Math.max(last, chordU(F, p.x, p.y)); st.push([last, ...fn(p)]); } return st; };
+  const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, C.GLOW_A * (1 + C.BEAT_GLOW * F.beat));
+  const halo = ribbon(S, smp, (p) => Math.min(w(p) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p), Math.max(0, env - p.dev - Math.abs(off(p)))), off);
+  out.glow = { paths: glowOf([halo]).paths, grad: chordGrad(F, S, stopsOf((p) => [0, ga, ecto(p.f), ball(p.f)])) };
+  out.fills.push({ paths: [ribbon(S, smp, w, off)], grad: chordGrad(F, S, stopsOf((p) => {
+    const g = 0.5 * (1 + Math.cos(TAU * (p.f * C.GLIM_WAVES + ph)));
+    return [C.BODY_MIX + C.GLIM * g * g, C.BODY_A * X.a(p.f), ecto(p.f), ball(p.f)];
+  })) });
+  out.fills.push({ paths: [ribbon(S, smp, (p) => C.CORE_K * X.hw(p.f), off)], inner: true,
+    grad: chordGrad(F, S, stopsOf((p) => [C.CORE_MIX, C.CORE_A * Math.pow(X.a(p.f), C.CORE_EXP), violet, ball(p.f)])) });
+  // кажани: злітають з осі вбік по черзі, відлітають і гаснуть (α — градієнт хорди: до хвоста слабшає); біля голови — ні
+  if (!still) {
+    const step = F.step(F.level(F.tH) >= C.DROP_LEVEL ? C.BAT_DROP_BEATS : C.BAT_BEATS, C.BAT_EVERY), flapT = wispFlapPeriod(F), bats = [];
+    for (const { g, t } of gridTimes(F, step, C.BAT_MAX).reverse()) {
+      const p = F.at(t);
+      if (!p || F.len - p.s < C.BAT_CLEAR) continue;
+      const q = clamp01((F.tH - t) / F.span), side = g % 2 ? 1 : -1, k = 1 - 0.25 * q, room = env - p.dev - C.BAT_H * k;
+      // крила (±BAT_W уздовж дотичної) — у межах шляху: за кінчиком хвоста конверт міряється до точки, і крило вийшло б за 9 (стрибок навпростець)
+      if (!(room > 0) || p.s < C.BAT_W * k) continue;
+      const d = side * room * (C.BAT_OFF0 + (1 - C.BAT_OFF0) * smooth01(q / (1 - C.BAT_IN)));
+      const flap = Math.sin(TAU * ((F.tH - t) / flapT + h01(seedOf(g, 1))));
+      const tx = -p.ny, ty = p.nx, cx = (p.x + p.nx * d) * S.pm, cy = (p.y + p.ny * d) * S.pm, W = C.BAT_W * k * S.sm, H = C.BAT_H * k * S.sm * side;
+      bats.push(batShape(flap).map(([u, v]) => [cx + tx * u * W + p.nx * v * H, cy + ty * u * W + p.ny * v * H]));
+    }
+    if (bats.length) out.fills.push({ paths: bats, grad: chordGrad(F, S, stopsOf((p) => [C.BAT_MIX, C.BAT_A * Math.pow(p.f, C.BAT_FADE), violet])) });
+  }
+  // жарини-свічки: на сітці EMBER, мерехтять (FLICK_HZ), у рівні спалахують на бочці
+  const rMax = TRAIL_RULES.PART_R_MAX, tNow = F.tH - F.t0;
+  for (const { g, t } of gridTimes(F, F.step(C.EMBER_BEATS, C.EMBER), C.N).reverse()) {
+    const p = F.at(t);
+    if (!p) continue;
+    const seed = seedOf(g), kick = F.pick(C.KICK_BASE + (1 - C.KICK_BASE) * F.kick(t), 1);
+    const r = Math.min((C.R[0] + (C.R[1] - C.R[0]) * h01(seed + TRAIL_SEED.RADIUS)) * kick, rMax, env - p.dev);
+    if (!(r > 0)) continue;
+    const room = Math.max(0, env - p.dev - r), dd = still ? 0 : Math.max(-room, Math.min(room, (1 + C.DRIFT * (1 - p.f)) * (2 * h01(seed) - 1)));
+    const tw = still ? 1 : C.TW_MIN + (1 - C.TW_MIN) * 0.5 * (1 + Math.sin(TAU * (tNow * C.FLICK_HZ + h01(seed + 3.3))));
+    const x = p.x + p.nx * dd, y = p.y + p.ny * dd, a = C.EMBER_A * Math.sqrt(X.a(p.f)) * tw * kick, hue = g % 2 ? C.EMBERS[1] : C.EMBERS[0];
+    out.dots.push({ x: x * S.pm, y: y * S.pm, r: r * S.sm, mixK: C.EMBER_MIX, alpha: a, spark: true, hue });
+  }
+  return out;
+}
 /** [v102] Барва вогню FLARE: лінійно EMBER → GOLD за w ∈ [0, 1], #rrggbb (той самий round, що mixHex маляра). */
 const flameHex = (a, b, w) => {
   const x = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16)), y = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
@@ -794,7 +893,7 @@ const flameHex = (a, b, w) => {
  * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
  */
 const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
-  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, flare: makeFlareE };
+  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, flare: makeFlareE, wisp: makeWispE };
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
