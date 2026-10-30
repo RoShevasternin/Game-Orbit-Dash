@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy Policy — Orbit Dash</title>
-<meta name="description" content="What Orbit Dash collects, who it is shared with, what RANKS stores and how to delete your RANKS profile, and what this website does (no ads; Google Analytics only if you allow it).">
+<meta name="description" content="What Orbit Dash collects, who it is shared with, how RANKS adds you and what it stores, how to leave and delete your RANKS profile, and what this website does (no ads; Google Analytics only if you allow it).">
 <meta name="theme-color" content="#0e1024">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="index,follow">
@@ -57,7 +57,7 @@ footer a{color:var(--dim);text-decoration:none}footer a:hover{color:var(--player
 
 <main class="wrap">
 <h1>Privacy Policy</h1>
-<p class="upd">Orbit Dash · com.lewydo.orbitdash · Last updated 2026-10-28</p>
+<p class="upd">Orbit Dash · com.lewydo.orbitdash · Last updated 2026-10-30</p>
 
 <h2>Who we are</h2>
 <p>Orbit Dash is made by <b>Lewydo</b>, a two-person independent game studio from Ukraine (Vlad and Lilya).
@@ -70,7 +70,10 @@ In this policy “we” means Lewydo, “the app” means the Orbit Dash applica
 tap Allow</b> in the small banner — until then, and if you tap Decline, Google Analytics sends nothing and sets no cookies;
 the fonts and the game itself come from this site (only RANKS, the optional leaderboards, uses other servers — see below). The app is free and pays for itself with ads, so it does share
 some data with Google (and, on Android, TikTok); everything it shares is listed below. Your game progress lives on your own device (joining RANKS sends your records to our server).
-Our own server is there only for RANKS, the optional leaderboards: it stores a profile only after you tap JOIN RANKS.
+Our own server is there only for RANKS, the game's leaderboards. In the app from version 2.3.0, it stores a RANKS profile once you
+have finished your first counted run and the game has told you so (“YOU'RE ON THE BOARDS” after GAME OVER or in the menu, or the
+RANKS screen itself if you open it first; in older versions, only after you tap JOIN RANKS); in the browser version, only if you open RANKS after playing or tap JOIN RANKS. You can leave RANKS at any time
+(see <a href="#ranks-auto">How you get on the boards</a>).
 The app also downloads public RANKS summaries from it in the background, even if you never open RANKS. If you have joined
 RANKS, the app also collects the gems your weekly rings have won when you start the game or come back to it, even if you
 don't open RANKS (see <a href="#ranks">RANKS in the app</a>). The server no
@@ -86,7 +89,7 @@ else while you read or play — unless you allow Google Analytics (see “Websit
 game (see below).</p>
 <ul>
 <li><b>No cookies unless you allow analytics or join RANKS.</b> We set none of our own; Google Analytics sets its cookies only after
-you tap Allow, and Google reCAPTCHA, which RANKS uses when you join, send results, change your profile, send a report, get a new recovery code or
+you tap Allow, and Google reCAPTCHA, which RANKS uses when you join (also when RANKS adds you as you open it after playing), send results, change your profile, send a report, get a new recovery code or
 restore a profile, may set Google's own cookie
 (see below).</li>
 <li><b>Blip's cartoon episodes</b> play in YouTube's own player (from <code>youtube-nocookie.com</code>, YouTube's
@@ -97,12 +100,14 @@ applies to it; closing the player removes it from the page.</li>
 <code>localStorage</code> on your own device. It never reaches us, and it is separate from the Android app's progress.
 Clearing your browser data erases it.</li>
 <li><b>Your language choice</b> is remembered the same way, in your browser only.</li>
-<li><b>RANKS in the browser version (web leaderboards).</b> Nothing is sent until you open RANKS; then the game loads the
+<li id="ranks-web"><b>RANKS in the browser version (web leaderboards).</b> Nothing is sent until you open RANKS; then the game loads the
 web boards from our own server (Google Cloud / Firebase, EU region; the board files are delivered through Firebase Hosting's
-content delivery network). Only if you tap JOIN RANKS does our server store the
-nickname you type, your country flag (you can hide it), your orb (ball, trail and colours) and the results of your runs,
-linked to a random ID kept in your browser. Joining also gives you a recovery code that moves the profile to another browser; we
-keep only a one-way code of it. Your nickname, flag, orb and results are shown publicly on the web boards,
+content delivery network). If you open RANKS after playing at least one run, the game adds you to the web boards by itself, with
+a name generated from our own word list, which you can change to a nickname of your own under <b>YOUR NAME</b> in RANKS; if you
+tap <b>JOIN RANKS</b> instead, you type your nickname yourself. Either way, our server then stores your nickname, your country flag
+(you can hide it), your orb (ball, trail and colours) and the results of your runs, linked to a random ID kept in your browser.
+Your web profile also has a recovery code that moves it to another browser (the game shows it when you join with JOIN RANKS, and
+<b>NEW PROFILE CODE</b> under YOUR NAME gives you a new one); we keep only a one-way code of it. Your nickname, flag, orb and results are shown publicly on the web boards,
 which are separate from the app's. Nicknames are checked automatically and replaced if they break the rules. To keep the
 boards fair, joining, sending results, changing your profile, sending a report, getting a new recovery code and
 restoring a profile use Google reCAPTCHA through Firebase App Check, which may set Google's own
@@ -110,7 +115,8 @@ cookie (<a href="https://policies.google.com/privacy" target="_blank" rel="noope
 look up your country from your connection and never store your IP address in your profile; since 26 October 2026
 (18:00 UTC) our server's request logs no longer record it either, and the older ones are deleted by 26 November 2026 (see <a href="#ranks-retention">How long RANKS data is kept</a>). Profiles
 not used for 24 months are deleted.
-To delete yours sooner, use RANKS → ⓘ → DELETE MY RANKS PROFILE, or write to <a href="mailto:roshevasternin@gmail.com">roshevasternin@gmail.com</a>
+To leave sooner, use RANKS → ⓘ → DELETE MY RANKS PROFILE: your profile is deleted, and the game in that browser no longer adds you by itself — only
+JOIN RANKS brings you back. You can also write to <a href="mailto:roshevasternin@gmail.com">roshevasternin@gmail.com</a>
 with your nickname (see <a href="#delete-ranks">Deleting your RANKS profile</a>).</li>
 <li><b>GitHub Pages</b> hosts the files. Like any web host, GitHub processes the technical request data (such as your
 IP address) needed to deliver a page. See
@@ -160,8 +166,10 @@ open them and, about once a day in the background, a short summary of them, even
 it asks for is the world's and that of the country your phone's region and language settings suggest (or the one shown
 on the JOIN RANKS screen, once you have opened it) — that country is
 the only thing these downloads say about you, and since 26 October 2026 (18:00 UTC) the server no longer logs them with
-your IP address; a profile is
-stored only if you join (see <a href="#ranks">RANKS in the app</a>). If you have joined RANKS, the app also collects from
+your IP address. A RANKS profile is stored only once you are on RANKS: from version 2.3.0 the game puts you there by itself after
+your first counted run, right after telling you so (“YOU'RE ON THE BOARDS” after GAME OVER or in the menu, or the RANKS screen
+itself if you open it first); in older versions, only if you tap JOIN RANKS (see
+<a href="#ranks-auto">How you get on the boards</a>). If you have joined RANKS, the app also collects from
 our server the gems your weekly rings have won when you start the game or come back to it after at least 30 seconds away,
 even if you don't open RANKS; it sends this request only when it knows that gems are waiting for you.</p>
 <p>What the app does send is handled by the SDKs below. Each is run by the company named, under that company's own
@@ -177,7 +185,7 @@ privacy policy, and each may process a device or advertising identifier.</p>
 <tr><td>Firebase Crashlytics</td><td>Crash and error reports: what broke, on which device and Android version, the screen, game mode, level and attempt you were on, and a short list of what happened just before it — the names of the latest Firebase Analytics events, plus two notes kept only here, with their details: a level continued with a revive (which attempt, how many revives and from how far into the level) and a reward doubled (where, and the gems added).</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Remote Config</td><td>Lets us change settings (such as how often ads appear) without shipping an update.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Cloud Messaging</td><td>Optional notifications. Android asks for your permission first, and the game works fully without it.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
-<tr><td>Google Play Games</td><td>Leaderboards. Only if you sign in — then your Play Games profile name and your score appear in the public ranking. If you join RANKS, it also confirms who you are (see <a href="#ranks">RANKS in the app</a>).</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a></td></tr>
+<tr><td>Google Play Games</td><td>Leaderboards. Only if you sign in — then your Play Games profile name and your score appear in the public ranking. RANKS also uses your Play Games sign-in to confirm who you are, and its name can be your RANKS nickname (see <a href="#ranks">RANKS in the app</a>).</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a></td></tr>
 <tr><td>Firebase App Check (Play&nbsp;Integrity)</td><td>Only when the game talks to the RANKS server: checks that requests come from the genuine app on a real device, to keep the boards fair.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Google Play Billing</td><td>Handles in-app purchases (Remove Ads). Payment details go to Google; we never see your card.</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a></td></tr>
 <tr><td>Google Play In-App Review</td><td>Shows the Play Store's own rating prompt inside the game.</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a></td></tr>
@@ -203,7 +211,7 @@ third-party services than the Android app:</p>
 <tr><td>Firebase Analytics</td><td>The same gameplay and RANKS events as in the Android app (see <a href="#android">The Android app</a>). It does not read the advertising identifier (IDFA). In the EEA, the UK and Switzerland it follows your answer in the consent form.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Crashlytics</td><td>Crash and error reports: what broke, on which device and iOS version, and the screen, game mode and level you were on, with the names of the latest Firebase Analytics events, as in the Android app.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Cloud Messaging</td><td>Optional notifications. iOS asks for your permission first, and the game works fully without it. To deliver them, your iPhone gets a push token from Apple and Firebase, and the app subscribes it to general topics (your language and time zone).</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
-<tr><td>Game Center (Apple)</td><td>Leaderboards. Only if you are signed in to Game Center on your iPhone (when the game starts, it may show Apple's sign-in window) — then your Game Center name and your scores appear in the game's public Game Center leaderboards, whether or not you join RANKS. If you join RANKS, Game Center also confirms who you are (see <a href="#ranks">RANKS in the app</a>).</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a></td></tr>
+<tr><td>Game Center (Apple)</td><td>Leaderboards. Only if you are signed in to Game Center on your iPhone (when the game starts, it may show Apple's sign-in window) — then your Game Center name and your scores appear in the game's public Game Center leaderboards, whether or not you join RANKS. RANKS also uses your Game Center sign-in to confirm who you are, and its name can be your RANKS nickname (see <a href="#ranks">RANKS in the app</a>).</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a></td></tr>
 <tr><td>App Attest / DeviceCheck (Apple) with Firebase App Check</td><td>Only when the game talks to the RANKS server: checks that requests come from the genuine app on a real device, to keep the boards fair.</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a> · <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>App Store purchases (Apple)</td><td>Handles the in-app purchase (Remove Ads) and Restore Purchases. Payment goes to Apple; we never see your card or Apple ID.</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a></td></tr>
 </tbody>
@@ -211,21 +219,35 @@ third-party services than the Android app:</p>
 <p>Daily reminders on iPhone are scheduled on the device itself; other notifications, if you allow them, arrive through Firebase Cloud Messaging (Apple Push Notification service). Nothing about them is sent to our own server.</p>
 
 <h2 id="ranks">RANKS in the app (Android and iPhone)</h2>
-<p>RANKS are the game's own leaderboards: weekly and all-time boards for your country and the world. They are
-<b>optional</b>. You can look at the boards without joining — the game downloads them as public files that carry nothing
+<p>RANKS are the game's own leaderboards: weekly and all-time boards for your country and the world. You can look at the
+boards without being on them — the game downloads them as public files that carry nothing
 about you beyond which board you ask for. Even if you never open RANKS, the app downloads a short public summary of the world's boards and of the
 country your phone's region and language settings suggest (or the one shown on the JOIN RANKS screen, once you have opened
 it), in the background and about once a day, so that it can invite
 you to RANKS after GAME OVER. Apart from that suggested country, these downloads carry nothing about you, and since
-26 October 2026 (18:00 UTC) the server no longer logs them with your IP address (see <a href="#ranks-retention">How long RANKS data is kept</a>). No
-profile is stored until you tap
-<b>JOIN RANKS</b>.</p>
+26 October 2026 (18:00 UTC) the server no longer logs them with your IP address (see <a href="#ranks-retention">How long RANKS data is kept</a>).</p>
+<p id="ranks-auto"><b>How you get on the boards.</b> From version 2.3.0 of the app, the game puts you on the RANKS boards by
+itself after your first counted run (an endless run or a level attempt; the tutorial, practice and AUTOPLAY don't count). It
+tells you first: <b>“YOU'RE ON THE BOARDS”</b> appears after GAME OVER or as a short message in the menu — or, if you open RANKS
+before that, the RANKS screen itself shows you on the boards. Only after that does our server create your RANKS profile and
+start receiving your runs. Your nickname is your Google Play Games or Game Center name when the game may use it, and a generated
+name otherwise (see “Your nickname” below). In older versions of the app, you get a profile only if you tap <b>JOIN RANKS</b>,
+and you can tap it in any version. In this policy, “joining” RANKS means getting a profile either way.</p>
+<p><b>Leaving the boards.</b> You can leave at any time with <b>RANKS → ⓘ → DELETE MY RANKS PROFILE</b>. Your profile is deleted
+(see <a href="#delete-ranks">Deleting your RANKS profile</a>), and the
+game on that device no longer adds you by itself — only tapping <b>JOIN RANKS</b> brings you back. The same happens on any device
+once it learns that your profile was deleted in another way (from another device with the same Google Play Games or Game Center
+account, at your request by email, or by us). The game keeps this choice in its
+data on your device: if you reinstall it or clear its data, it can add you again after your next counted run, again only after
+telling you so first (see above).</p>
 <p><b>What our server stores when you join:</b></p>
 <ul>
 <li><b>Your nickname.</b> Either your Google Play Games / Game Center player name after an automatic filter (it removes
 emoji, invisible characters, contact details and similar, and shortens long names), or a name generated from our own
-word list. You cannot type a free-form name. If Game Center marks your account as belonging to a minor, you always get
-a generated name.</li>
+word list. You cannot type a free-form name. If Game Center marks your account as belonging to a minor or as restricted
+from personalised communication, you always get a generated name. When the game adds you by itself, it uses your Play Games /
+Game Center name if you are signed in and the name passes the filter, and a generated name otherwise; you can change it later
+under <b>YOUR NAME</b> in RANKS.</li>
 <li><b>Your country.</b> The game suggests your country from your internet connection (and your phone's region and
 language settings). When you join or change your country, the game also sends your phone's regions and the game's language so
 that the server can check the choice; they are not stored, but your profile notes where the country came from (your
@@ -234,7 +256,8 @@ connection, your phone or the language). Our server looks the country up in a da
 code in your profile — <b>never your IP address</b>. Since 26 October 2026 (18:00 UTC) the server's standard request logs
 (Google Cloud), which used to record the IP address of each request, are no longer stored; entries from before then are
 deleted after 30 days, by 26 November 2026 (see <a href="#ranks-retention">How long RANKS data is kept</a>). You can change your country once every 30 days, or hide your flag at any time (you then appear only on the
-world boards, with a globe instead of a flag).</li>
+world boards, with a globe instead of a flag). When the game adds you by itself, it takes the first country it suggests; if our
+server does not accept that country, you are added without a flag.</li>
 <li><b>Your results and your orb:</b> your scores and totals on the boards (BEST, GEMS, SPARKS, CRASHES — this week and
 all time), the identifiers and results of your latest runs (up to 20, for up to 24 hours, to check them and to avoid
 counting a run twice; a run sent before it had ended is kept for each installation until that installation sends again),
@@ -254,6 +277,9 @@ gems and that code (the latest 16 weeks), and it counts these requests for the c
 <li><b>Identifiers.</b> To confirm it is really you, the game uses your Google Play Games sign-in on Android or Game Center
 on iPhone. We store only a one-way code derived from that account (a keyed hash) — never its ID, photo or friends. Without
 Play Games or Game Center, the game creates a random key on your device, and we store a one-way code of that key instead.
+If Google Play Games cannot confirm your sign-in when the game contacts our server, the game uses such a random key for the time
+being; once Play Games confirms you, your profile moves to your Play Games account (unless that account already has a RANKS
+profile of its own).
 We also store a random public player ID (used in the boards' data instead of any account ID) and random IDs of up to five
 installations of the game that use your profile.</li>
 <li><b>App integrity.</b> Before it talks to the RANKS server, the game proves it is the genuine app on a real device:
@@ -263,9 +289,13 @@ never depends on this check (see <a href="#delete-ranks">Deleting your RANKS pro
 </ul>
 <p><b>Who sees it:</b> your nickname, country flag (unless hidden), orb, results, rings and HONORS are shown to all
 players on the boards and on your player card. Your account codes, installation IDs and reports are never shown.</p>
-<p><b>Why:</b> what our server stores is used only to run RANKS and keep them fair. Legal bases: performance of the
-feature you asked for by joining (GDPR Art. 6(1)(b)) and our legitimate interest in preventing cheating and in keeping
-the server secure and working, which is also the basis for the server's logs (Art. 6(1)(f)). Your RANKS profile
+<p><b>Why:</b> what our server stores is used only to run RANKS and keep them fair. Legal bases: if the game put you on the
+boards by itself (in the app or in the browser version), our legitimate interest in running public leaderboards for everyone who
+plays (GDPR Art. 6(1)(f)) — the boards show only a game name, a country flag, an orb and game results, never your contact details
+or account IDs, and you can leave at any time (see <a href="#ranks-auto">How you get on the boards</a>);
+if you tapped JOIN RANKS, performance of the feature you asked for (Art. 6(1)(b)). For everyone on RANKS, our legitimate interest
+in preventing cheating and in keeping the server secure and working is also a basis, and it is the basis for the server's logs
+(Art. 6(1)(f)). Your RANKS profile
 is not used for ads, and your RANKS nickname, country and identifiers, and the players you report, are never sent to
 analytics. The app's own analytics is separate: on Android, Firebase Analytics receives the game's gameplay events —
 including the score, gems and sparks of every run, whether or not you join RANKS — and counts how RANKS is used, linked
@@ -305,7 +335,8 @@ if you have signed out of Google Play Games or Game Center or switched to anothe
 (and, if that sign-in has a profile of its own, shows it). To delete the other profile, sign back in with the account you
 joined with and delete it there. If you joined without them, the random key is gone after a
 reinstall; write to us instead (below). The browser version has its own RANKS profile; delete it the same way in the
-browser where you joined.</li>
+browser where you joined. After you delete your profile in the game, the game on that device (or in that browser) no longer
+adds you to RANKS by itself; only <b>JOIN RANKS</b> brings you back.</li>
 <li><b>Without the game</b> (for example, if it is no longer installed): write to
 <a href="mailto:roshevasternin@gmail.com?subject=Delete%20my%20RANKS%20profile">roshevasternin@gmail.com</a> with the subject “Delete my RANKS
 profile”, your nickname, your country flag (or that it was hidden) and whether you played on Android, iPhone or in the
@@ -334,9 +365,12 @@ ad personalisation there. In the EEA, the UK and Switzerland you can reopen the 
 Settings and change your answer at any time. The one-time <b>Remove Ads</b> purchase turns off the banner and
 the ads on opening the game; rewarded ads stay, and you only see them when you choose to.</li>
 <li><b>Notifications and vibration:</b> off in the system settings and in the game.</li>
-<li><b>Leaderboards:</b> do not sign in to Play Games (Android) or Game Center (iPhone: Settings → Game Center) and do
-not join RANKS, and nothing is published. In RANKS you
-can hide your flag, pick a generated name, or <a href="#delete-ranks">delete your profile</a>.</li>
+<li><b>Leaderboards:</b> do not sign in to Play Games (Android) or Game Center (iPhone: Settings → Game Center), and your
+scores stay off their leaderboards. RANKS adds you by itself — the app from version 2.3.0 after your first counted run, the
+browser version when you open RANKS after playing; to stay off, <a href="#delete-ranks">delete your profile</a> with
+<b>RANKS → ⓘ → DELETE MY RANKS PROFILE</b> (see <a href="#ranks-auto">How you get on the boards</a>; browser:
+<a href="#ranks-web">RANKS in the browser version</a>), and the game on that device (or in that browser) won't add you again by
+itself — only <b>JOIN RANKS</b> brings you back. In RANKS you can also hide your flag or pick a generated name.</li>
 <li><b>Everything else:</b> uninstalling the app stops all collection (a RANKS profile stays until you delete it or
 24 months pass). Data already sent to Google or TikTok is
 handled under their policies, linked above.</li>
@@ -373,6 +407,10 @@ Clauses). All traffic from the app and this site uses encrypted connections.</p>
 <h2>Changes to this policy</h2>
 <p>If we add or remove a service, we update this page and the date at the top before the change ships. Material
 changes are described here; the previous wording is available on request.</p>
+<p><b>30 October 2026:</b> RANKS now puts players on the boards automatically — in the app from version 2.3.0 after the first
+counted run and the notice “YOU'RE ON THE BOARDS”, in the browser version when you open RANKS after playing — and you can leave
+at any time with RANKS → ⓘ → DELETE MY RANKS PROFILE; the legal basis for this is our legitimate interest (see <a href="#ranks-auto">How you get on the boards</a>).
+Before this change (and in older versions of the app), a RANKS profile was created only when you tapped JOIN RANKS.</p>
 
 <h2>Contact</h2>
 <p>Lewydo · <a href="mailto:roshevasternin@gmail.com">roshevasternin@gmail.com</a> · <a href="https://roshevasternin.github.io/Game-Orbit-Dash/">https://roshevasternin.github.io/Game-Orbit-Dash/</a></p>
