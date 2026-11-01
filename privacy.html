@@ -72,7 +72,7 @@ the fonts and the game itself come from this site (only RANKS, the optional lead
 some data with Google (and, on Android, TikTok); everything it shares is listed below. Your game progress lives on your own device (joining RANKS sends your records to our server).
 Our own server is there only for RANKS, the game's leaderboards. In the app from version 2.3.0, it stores a RANKS profile once you
 have finished your first counted run and the game has told you so (“YOU'RE ON THE BOARDS” after GAME OVER or in the menu, or the
-RANKS screen itself if you open it first; in older versions, only after you tap JOIN RANKS); in the browser version, only if you open RANKS after playing or tap JOIN RANKS. You can leave RANKS at any time
+RANKS screen itself if you open it first; in older versions, only after you tap JOIN RANKS); in the browser version (on a phone or a computer) the same way since 1 November 2026 (before that, only if you opened RANKS after playing or tapped JOIN RANKS). You can leave RANKS at any time
 (see <a href="#ranks-auto">How you get on the boards</a>).
 The app also downloads public RANKS summaries from it in the background, even if you never open RANKS. If you have joined
 RANKS, the app also collects the gems your weekly rings have won when you start the game or come back to it, even if you
@@ -89,7 +89,7 @@ else while you read or play — unless you allow Google Analytics (see “Websit
 game (see below).</p>
 <ul>
 <li><b>No cookies unless you allow analytics or join RANKS.</b> We set none of our own; Google Analytics sets its cookies only after
-you tap Allow, and Google reCAPTCHA, which RANKS uses when you join (also when RANKS adds you as you open it after playing), send results, change your profile, send a report, get a new recovery code or
+you tap Allow, and Google reCAPTCHA, which RANKS uses when you join (also when RANKS adds you by itself after you play), send results, change your profile, send a report, get a new recovery code or
 restore a profile, may set Google's own cookie
 (see below).</li>
 <li><b>Blip's cartoon episodes</b> play in YouTube's own player (from <code>youtube-nocookie.com</code>, YouTube's
@@ -100,11 +100,12 @@ applies to it; closing the player removes it from the page.</li>
 <code>localStorage</code> on your own device. It never reaches us, and it is separate from the Android app's progress.
 Clearing your browser data erases it.</li>
 <li><b>Your language choice</b> is remembered the same way, in your browser only.</li>
-<li id="ranks-web"><b>RANKS in the browser version (web leaderboards).</b> Nothing is sent until you open RANKS; then the game loads the
-web boards from our own server (Google Cloud / Firebase, EU region; the board files are delivered through Firebase Hosting's
-content delivery network). If you open RANKS after playing at least one run, the game adds you to the web boards by itself, with
-a name generated from our own word list, which you can change to a nickname of your own under <b>YOUR NAME</b> in RANKS; if you
-tap <b>JOIN RANKS</b> instead, you type your nickname yourself. Either way, our server then stores your nickname, your country flag
+<li id="ranks-web"><b>RANKS in the browser version (web leaderboards).</b> Nothing is sent before you finish your first counted run.
+After it, the game loads the public web board summaries from our own server (Google Cloud / Firebase, EU region; the board files are
+delivered through Firebase Hosting's content delivery network) and, since 1 November 2026, puts you on the web boards by itself — on a
+phone or a computer — right after telling you so (“YOU'RE ON THE BOARDS” after GAME OVER or in the menu, or the RANKS screen itself if you
+open it first; before that date, only if you opened RANKS after playing). You get a name generated from our own word list, which you can
+change to a nickname of your own under <b>YOUR NAME</b> in RANKS; if you tap <b>JOIN RANKS</b> first, you type your nickname yourself. Either way, our server then stores your nickname, your country flag
 (you can hide it), your orb (ball, trail and colours) and the results of your runs, linked to a random ID kept in your browser.
 Your web profile also has a recovery code that moves it to another browser (the game shows it when you join with JOIN RANKS, and
 <b>NEW PROFILE CODE</b> under YOUR NAME gives you a new one); we keep only a one-way code of it. Your nickname, flag, orb and results are shown publicly on the web boards,
@@ -366,8 +367,8 @@ Settings and change your answer at any time. The one-time <b>Remove Ads</b> purc
 the ads on opening the game; rewarded ads stay, and you only see them when you choose to.</li>
 <li><b>Notifications and vibration:</b> off in the system settings and in the game.</li>
 <li><b>Leaderboards:</b> do not sign in to Play Games (Android) or Game Center (iPhone: Settings → Game Center), and your
-scores stay off their leaderboards. RANKS adds you by itself — the app from version 2.3.0 after your first counted run, the
-browser version when you open RANKS after playing; to stay off, <a href="#delete-ranks">delete your profile</a> with
+scores stay off their leaderboards. RANKS adds you by itself — the app from version 2.3.0 and the browser version since 1 November
+2026 after your first counted run; to stay off, <a href="#delete-ranks">delete your profile</a> with
 <b>RANKS → ⓘ → DELETE MY RANKS PROFILE</b> (see <a href="#ranks-auto">How you get on the boards</a>; browser:
 <a href="#ranks-web">RANKS in the browser version</a>), and the game on that device (or in that browser) won't add you again by
 itself — only <b>JOIN RANKS</b> brings you back. In RANKS you can also hide your flag or pick a generated name.</li>
