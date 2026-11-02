@@ -99,7 +99,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 </style>
 </head>
 <body>
-<script>window.__odSite = {"levels":[{"id":"first-light","name":"FIRST LIGHT","at":55.685,"dur":72.331},{"id":"slow-orbit","name":"SLOW ORBIT","at":60.3,"dur":96.986},{"id":"neon-drift","name":"NEON DRIFT","at":7.157,"dur":92.043},{"id":"hyperlane","name":"HYPERLANE","at":30.3,"dur":86.9},{"id":"starborn","name":"STARBORN","at":27.992,"dur":84.531}],"langs":["om","af","az","id","ms","bs","ca","cs","da","de","et","en","es","eu","fil","fr","gl","ha","hr","ig","zu","is","it","sw","lv","lt","hu","nl","nb","uz","pl","pt","ro","sq","sk","sl","so","fi","sv","vi","tr","tk","yo","be","bg","ky","mk","mn","sr","tg","uk","kk","el","ko","ja","zh-CN","zh-TW","hy","he","ur","ar","fa","ps","ne","mr","hi","as","bn","pa","gu","or","ta","te","kn","ml","si","th","lo","my","ka","am","km"]};</script>
+<script>window.__odSite = {"levels":[{"id":"first-light","name":"FIRST LIGHT","at":55.685,"dur":72.331,"tr":true},{"id":"slow-orbit","name":"SLOW ORBIT","at":60.3,"dur":96.986,"tr":true},{"id":"neon-drift","name":"NEON DRIFT","at":7.157,"dur":92.043,"tr":true},{"id":"hyperlane","name":"HYPERLANE","at":30.3,"dur":86.9,"tr":true},{"id":"starborn","name":"STARBORN","at":27.992,"dur":84.531,"tr":true},{"id":"blood-moon","name":"BLOOD MOON","at":62.564,"dur":79.881,"tr":false},{"id":"midnight-parade","name":"MIDNIGHT PARADE","at":52.3,"dur":79.1,"tr":false},{"id":"witchs-brew","name":"WITCH'S BREW","at":52.558,"dur":76.848,"tr":false}],"langs":["om","af","az","id","ms","bs","ca","cs","da","de","et","en","es","eu","fil","fr","gl","ha","hr","ig","zu","is","it","sw","lv","lt","hu","nl","nb","uz","pl","pt","ro","sq","sk","sl","so","fi","sv","vi","tr","tk","yo","be","bg","ky","mk","mn","sr","tg","uk","kk","el","ko","ja","zh-CN","zh-TW","hy","he","ur","ar","fa","ps","ne","mr","hi","as","bn","pa","gu","or","ta","te","kn","ml","si","th","lo","my","ka","am","km"]};</script>
 <script>/* ─────────────────────────────────────────────────────────────────────────────
    ЖИВА ГРА ДЛЯ САЙТІВ — play/embed.html (site/build.py вшиває цей скрипт у прототип перед бандлом).
 
@@ -299,7 +299,8 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
     return true;
   }
   function next() {
-    var ids = SITE.levels.map(function (l) { return l.id; });
+    // трейлер — лише головні рівні (tr); святковий (🎃, обраний карткою) по кінці шматка передає трейлеру перший головний
+    var ids = SITE.levels.filter(function (l) { return l.tr !== false; }).map(function (l) { return l.id; });
     return ids[(ids.indexOf(level) + 1) % ids.length];
   }
   // ready — коли кадр уже живий (рівень біжить), а не одразу: сторінка тримає свій постер (той самий кадр, media.cjs
