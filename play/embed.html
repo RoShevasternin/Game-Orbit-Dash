@@ -111,8 +111,8 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
    треку: previewAt із файлу рівня), сам собою (AUTOPLAY гравця, «чистий кадр» __orbitClean — без кнопок
    і написів), потім наступний рівень. ?level=<id> чи повідомлення level — лише цей рівень, по колу.
    ГРАТИ (тап у кадрі). Повний трек рівня (раз ~1.5–2 МБ) і рівень з початку — твій, уже з музикою.
-   Кнопки ‹ WATCH і SOUND унизу кадру — поки на екрані немає панелі кінця рівня (смерть, LEVEL COMPLETE): там
-   унизу її власні кнопки (PRACTICE · LEVELS, RETRY · LEVELS), і кнопки поверх кадру ховаються (клас .panel).
+   Кнопки ‹ WATCH і SOUND унизу кадру — поки на екрані немає панелі кінця рівня (смерть, LEVEL COMPLETE) чи SETTINGS: там
+   унизу її власні кнопки (PRACTICE · LEVELS, RETRY · LEVELS; SHARE THE GAME і CLOSE), і кнопки поверх кадру ховаються (клас .panel).
 
    Звук і годинник. Браузер не пускає звук без дотику, а годинник рівня в прототипі — годинник
    AudioContext: поки контекст стоїть, гра стояла б. Тож до першого дотику годинник «тихий» (від
@@ -126,7 +126,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 
    Сховище — у пам'яті: справжній сейв гравця (play/) живий-здоровий, вбудована гра його не бачить.
 
-   Сторінка-батько → сюди (postMessage { od: … }):
+   Сторінка-батько свого походження → сюди (postMessage { od: … }; від чужого походження й не від батька — нічого):
      level {id}     лише цей рівень (у тому ж режимі); id: null — знову трейлер
      visible {on}   поза екраном — годинник стоїть (і звук), назад — іде далі
      labels {…}     підписи мовою сторінки: tap, sound, watch, loading (сама гра в кадрі — тією ж мовою: ?lang=…)
@@ -319,8 +319,8 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
     var i = info();
     // гра: на панелі кінця рівня (смерть — QUICK і DECISION, LEVEL COMPLETE) кнопки WATCH і SOUND ховаються: вони лежать
     // на її нижньому ряду (PRACTICE · LEVELS, RETRY · LEVELS) і з'їдали б тапи. До перевірок нижче — щоб клас знявся й тоді,
-    // коли рівня вже немає (LEVELS) чи режим знову «дивитися»
-    if (box) box.classList.toggle("panel", mode === "play" && !!(i && (i.panel || i.state === "dead" || i.state === "done")));
+    // коли рівня вже немає (LEVELS) чи режим знову «дивитися». [302] Так само в SETTINGS: низ панелі — SHARE THE GAME і CLOSE
+    if (box) box.classList.toggle("panel", mode === "play" && !!((i && (i.panel || i.state === "dead" || i.state === "done")) || document.querySelector("[data-settings-scroll]")));
     if (!i) return;
     // рівень вантажиться асинхронно: поки біжить попередній забіг (інший рівень чи той самий з іншої миті), його
     // кадри не наші — інакше «кінець шматка» спрацював би вдруге й перезапустив рівень уже без перемотки
@@ -337,6 +337,9 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
     if (i.t > segFrom + 0.6 + len || i.state === "dying" || i.state === "dead" || i.state === "done" || (i.end && i.t > i.end)) { log("segment end", i.id, i.t.toFixed(2), i.state); go(hold ? level : next(), true); }
   }, 125);
   window.addEventListener("message", function (e) {
+    // Лише сторінка-батько свого походження (сайт гри й сайт студії — один домен, обидва шлють із ціллю location.origin). Вставити кадр чи відкрити цю сторінку вікном може будь-хто:
+    // чужому відправнику тут нічого робити
+    if (e.source !== parent || e.origin !== location.origin) return;
     var m = e.data;
     if (!m || typeof m !== "object" || typeof m.od !== "string") return;
     if (m.od === "level") {
@@ -347,7 +350,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
       go(hold, true);
     }
     else if (m.od === "visible") freeze(!m.on);
-    else if (m.od === "labels") { for (var k in m) if (k !== "od") L[k] = m[k]; paint(); }
+    else if (m.od === "labels") { ["tap", "sound", "watch", "loading"].forEach(function (k) { if (typeof m[k] === "string") L[k] = m[k]; }); paint(); }
   });
 
   /** Грати: повний трек цього рівня — і з початку, гравець. */
@@ -408,7 +411,8 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
   function paint() {
     if (!box) return;
     tapEl.querySelector("span").textContent = L.tap;
-    sndEl.innerHTML = (soundOn ? I_ON : I_OFF) + "<span>" + L.sound + "</span>";
+    sndEl.innerHTML = soundOn ? I_ON : I_OFF;                  // лише наша стала розмітка; підпис із повідомлення — текстом
+    var sp = document.createElement("span"); sp.textContent = L.sound; sndEl.appendChild(sp);
     sndEl.setAttribute("aria-pressed", String(soundOn));
     sndEl.setAttribute("aria-label", L.sound);
     backEl.textContent = "‹ " + L.watch;

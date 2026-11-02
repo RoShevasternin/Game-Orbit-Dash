@@ -180,7 +180,8 @@
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[href]");
     if (!a) return;
-    var h = a.href || "", store = /play\.google\.com/.test(h) ? "google_play" : /apps\.apple\.com|itms-apps:/.test(h) ? "app_store" : null;
+    // за хостом, а не за всією адресою: «Грати» несе мітки відвідувача (play/?utm_source=play.google.com), і тап по ньому — не перехід у магазин
+    var h = a.href || "", store = a.hostname === "play.google.com" ? "google_play" : a.hostname === "apps.apple.com" || a.protocol === "itms-apps:" ? "app_store" : null;
     if (!store) return;
     var place = a.getAttribute("data-place");
     if (!place && MODE === "play") place = a.hasAttribute("data-rk-appprizes") ? "ranks_prizes" : /\/dev\?|\/developer\//.test(h) ? "more_games" : "review_sheet";

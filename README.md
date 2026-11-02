@@ -1,9 +1,9 @@
 # Orbit Dash — site and web version
 
-The site of the game **Orbit Dash**: https://roshevasternin.github.io/Game-Orbit-Dash/
+The site of the game **Orbit Dash**: https://roshevasternin.github.io/Game-Orbit-Dash/?utm_source=github&utm_medium=page&utm_campaign=readme
 
-- **Play in your browser:** https://roshevasternin.github.io/Game-Orbit-Dash/play/
-- **Google Play:** https://play.google.com/store/apps/details?id=com.lewydo.orbitdash
+- **Play in your browser:** https://roshevasternin.github.io/Game-Orbit-Dash/play/?utm_source=github&utm_medium=page&utm_campaign=readme
+- **Google Play:** https://play.google.com/store/apps/details?id=com.lewydo.orbitdash&referrer=utm_source%3Dgithub%26utm_medium%3Dpage%26utm_campaign%3Dreadme
 - **Privacy Policy:** https://roshevasternin.github.io/Game-Orbit-Dash/privacy.html
 - **Studio:** https://roshevasternin.github.io/ · brand standard: https://roshevasternin.github.io/brand/
 
