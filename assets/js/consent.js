@@ -204,6 +204,7 @@
       else if (name === "level_complete") { send("level_complete", { level_name: String(p.level_name || "") }); askAgain(); }
       else if (name === "ranks_open") send("ranks_open", { source: String(p.source || ""), state: String(p.state || "") });
       else if (name === "ranks_join" && p.step === 2) send("ranks_join", { outcome: String(p.outcome || "") });
+      else if (name === "share_game") send("share_game", { source: String(p.source || ""), method: String(p.method || "") });
     };
     // SETTINGS гри → PRIVACY OPTIONS: той самий банер; done — «✓ PRIVACY SAVED» на рядку гри
     window.__orbitPrivacy = function (done) { show(true, done); };
