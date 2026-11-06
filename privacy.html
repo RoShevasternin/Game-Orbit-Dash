@@ -450,29 +450,37 @@ Before this change (and in older versions of the app), a RANKS profile was creat
 })();
 </script>
 <style>
-.odc{position:fixed;z-index:70;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));box-sizing:border-box;margin:0 auto;
-  max-width:560px;padding:12px 14px;border-radius:16px;background:rgba(20,23,48,.95);color:#fff;text-align:start;
-  box-shadow:0 10px 34px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14);font:500 14px/1.45 Inter,system-ui,sans-serif;
-  letter-spacing:0;text-transform:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:opacity .2s,visibility .2s}
+/* Власник 06.11.2026 (правило студії docs/ux/analytics-consent.md, як CubePix): смуга на всю ширину внизу, темна напівпрозора з розмиттям,
+   світла лінія зверху — видно напевно, відповідають напевно. Кнопки ОДНАКОВІ — розмір, вигляд, контраст: відмовити так само легко, як
+   дозволити (GDPR / EDPB про темні патерни). Більше «так» — лише словами, іконкою гри й моментом (сяйво в play/ після забігу чи рівня). */
+.odc{position:fixed;z-index:70;left:0;right:0;bottom:0;box-sizing:border-box;margin:0;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:rgba(12,14,36,.84);color:#fff;text-align:start;border-top:1px solid rgba(126,240,255,.4);box-shadow:0 -12px 34px rgba(0,0,0,.45);
+  font:500 14px/1.45 Inter,system-ui,sans-serif;letter-spacing:0;text-transform:none;
+  -webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2)}
 .odc[hidden]{display:none}
-.odc.odc-away{opacity:0;visibility:hidden}
-.odc.odc-nudge{animation:odc-nudge .8s ease-out 2}
-@keyframes odc-nudge{0%{box-shadow:0 10px 34px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14),0 0 0 0 rgba(126,240,255,.55)}100%{box-shadow:0 10px 34px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14),0 0 0 14px rgba(126,240,255,0)}}
-@media (prefers-reduced-motion:reduce){.odc.odc-nudge{animation:none;box-shadow:0 10px 34px rgba(0,0,0,.45),inset 0 0 0 2px #7ef0ff}}
-.odc p{margin:0;color:rgba(255,255,255,.88)}
-.odc .odc-t{margin:0 0 4px;color:#fff;font:800 15px/1.3 Inter,system-ui,sans-serif}
+.odc-in{max-width:1152px;margin:0 auto;display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-areas:"i t" "p p" "b b";gap:8px 12px;align-items:center}
+.odc-i{grid-area:i;display:block;width:40px;height:40px;border-radius:10px;box-shadow:0 0 0 1px rgba(126,240,255,.4)}
+.odc p{margin:0;color:rgba(255,255,255,.86)}
+.odc .odc-t{grid-area:t;color:#fff;font:800 16px/1.3 Inter,system-ui,sans-serif}
+.odc .odc-p{grid-area:p}
 .odc a{color:#7ef0ff;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
-.odc-b{display:flex;gap:8px;margin-top:10px}
-.odc-b button{flex:1 1 0;min-width:0;min-height:44px;margin:0;padding:6px 12px;border:0;border-radius:12px;background:rgba(255,255,255,.1);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);color:#fff;font:700 14px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
-.odc-b button:hover{background:rgba(255,255,255,.16)}
-.odc-b button:focus-visible{outline:2px solid #7ef0ff;outline-offset:2px}
-.odc-b button[aria-pressed=true]{box-shadow:inset 0 0 0 2px #7ef0ff}
-@media (min-width:720px){.odc{left:auto;right:16px;bottom:16px;width:380px}}
-.odc.odc-corner{left:16px;right:auto;bottom:16px;margin:0}
-html.odc-flow .odc{left:0;right:0;bottom:0;width:auto;max-width:none;margin:0;border-radius:16px 16px 0 0;
-  padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}</style>
-<div id="odc" class="odc" role="region" aria-label="Cookie settings" data-ta="aria-label:consent.settings" hidden><p class="odc-t" data-t="consent.title">Help us make the game better</p><p><span data-t="consent.text">We&#x27;re a two-person indie studio. May we count visits with Google Analytics? It shows us which levels you love, so we know what to make next. No ad tracking, nothing sold.</span> <a href="privacy.html#analytics" data-t="foot.privacy">Privacy</a></p><div class="odc-b"><button type="button" data-odc="denied" data-t="consent.decline">Decline</button><button type="button" data-odc="granted" data-t="consent.allow">Allow</button></div></div>
+.odc a:focus-visible{outline:2px solid #7ef0ff;outline-offset:2px;border-radius:4px}
+.odc-b{grid-area:b;display:flex;gap:10px;margin-top:4px}
+.odc-b button{flex:1 1 0;min-width:0;min-height:48px;margin:0;padding:8px 14px;border:0;border-radius:14px;background:rgba(255,255,255,.08);
+  box-shadow:inset 0 0 0 2px rgba(126,240,255,.5);color:#fff;font:800 16px/1.2 Inter,system-ui,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.odc-b button:hover{background:rgba(126,240,255,.14)}
+.odc-b button:focus-visible{outline:3px solid #7ef0ff;outline-offset:2px}
+.odc-b button[aria-pressed=true]{background:rgba(126,240,255,.2);box-shadow:inset 0 0 0 2px #7ef0ff}
+.odc.odc-nudge{animation:odc-glow 1s ease-out 2}
+@keyframes odc-glow{0%{box-shadow:0 -12px 34px rgba(0,0,0,.45),inset 0 2px 0 #7ef0ff,0 -4px 30px rgba(126,240,255,.5)}
+  100%{box-shadow:0 -12px 34px rgba(0,0,0,.45),inset 0 2px 0 rgba(126,240,255,0),0 -4px 30px rgba(126,240,255,0)}}
+@media (prefers-reduced-motion:reduce){.odc.odc-nudge{animation:none;box-shadow:0 -12px 34px rgba(0,0,0,.45),inset 0 2px 0 #7ef0ff}}
+@media (min-width:760px){.odc{padding-top:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  .odc-in{grid-template-columns:48px minmax(0,1fr) 340px;grid-template-areas:"i t b" "i p b";gap:2px 18px}
+  .odc-i{width:48px;height:48px;border-radius:12px}
+  .odc .odc-t{align-self:end}.odc .odc-p{align-self:start}.odc-b{margin:0}}</style>
+<div id="odc" class="odc" role="region" aria-label="Cookie settings" data-ta="aria-label:consent.settings" hidden><div class="odc-in"><img class="odc-i" src="apple-touch-icon.png" alt="" width="48" height="48"><p class="odc-t" data-t="consent.title">Help us make the game better</p><p class="odc-p"><span data-t="consent.text">We&#x27;re a two-person indie studio. May we count visits with Google Analytics? It shows us which levels you love, so we know what to make next. No ad tracking, nothing sold.</span> <a href="privacy.html#analytics" data-t="foot.privacy">Privacy</a></p><div class="odc-b"><button type="button" data-odc="denied" data-t="consent.decline">Decline</button><button type="button" data-odc="granted" data-t="consent.allow">Allow</button></div></div></div>
 <script>window.__odConsent = {"id":"G-KDLF8656QS","mode":"privacy"};</script>
 <script src="assets/js/consent.js"></script>
 

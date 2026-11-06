@@ -42,8 +42,8 @@
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (e) { /* лише на цей захід */ } }
 
   var state = load(), loaded = false, sent = 0, played = null, gameSent = false;
-  // [2.2.1] /play/ (власник 29.10): питаємо на вході, як і всюди, а хто не вибрав нічого — ще раз після першого кінця забігу / рівня:
-  // банер, що вже стоїть, коротко підсвічується (odc-nudge), схований — з'являється знову. «Відхилити» — вибір: після нього не питаємо
+  // [2.2.1] /play/ (власник 29.10): питаємо на вході, як і всюди, а хто не вибрав нічого — ще раз після першого кінця забігу / рівня,
+  // коли людина вже задоволена: смуга, що вже стоїть, легко сяє лінією зверху (odc-nudge; «менше руху» — лише лінія), схована — з'являється знову. «Відхилити» — вибір: після нього не питаємо
   // (GDPR — відмову поважаємо, знову спитаємо лише через TTL). Раз за захід на сторінку.
   var ASK_END = 1200, nudged = false;
   function askAgain() {
@@ -94,23 +94,40 @@
   // «Хтось справді грав» — game_start раз за захід на сторінку; дозволили посеред гри — піде одразу після «Allow»
   function flushGame() { if (played && !gameSent && state === "granted") { gameSent = true; send("game_start", { mode: played }); } }
 
-  /* ── банер ──────────────────────────────────────────────────────────────── */
-  var open = false, forced = false, after = null;
+  /* ── банер: смуга на всю ширину внизу (власник 06.11.2026, правило студії docs/ux/analytics-consent.md) ── */
+  // До вибору смуга стоїть і не ховається (раніше картка в куті зникала, щойно лягала на «Грати», — на ПК її при вході не було
+  // видно зовсім). Нічого не губиться під нею: сторінка (і політика) отримує знизу запас висоти смуги, а фокус клавіатури
+  // прокручується над нею (scroll-padding); /play/ — гра стає на висоту смуги нижчою (--od-bottom у prototype), тапи по грі
+  // працюють, вибір можна відкласти. Хрестика й «закрити без вибору» немає.
+  var open = false, after = null, back = null;
+  function fit() {
+    if (!open) return;
+    var h = box.offsetHeight + "px";
+    if (MODE === "play") {
+      if (root.style.getPropertyValue("--od-bottom") !== h) { root.style.setProperty("--od-bottom", h); window.dispatchEvent(new Event("resize")); }
+      return;
+    }
+    document.body.style.paddingBottom = h;
+    root.style.scrollPaddingBottom = h;
+  }
   function show(force, done) {
-    open = true; forced = !!force; after = done || null;
+    open = true; after = done || null;
+    back = force && document.activeElement !== document.body ? document.activeElement : null;   // кнопка, що відкрила, — фокус повернеться туди
     [].forEach.call(box.querySelectorAll("[data-odc]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-odc") === state)); });
     box.hidden = false;
-    root.classList.add("odc-open");
-    layout();
+    root.classList.add("odc-shown");      // не «odc-open»: так у політиці зветься кнопка Cookie settings — <html> брав би її стиль
+    fit();
     if (force) { var b = box.querySelector('[data-odc="' + (state || "granted") + '"]'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { /* */ } }
   }
   function hide() {
+    var inside = box.contains(document.activeElement);
     open = false;
     box.hidden = true;
-    root.classList.remove("odc-open", "odc-flow");
-    root.style.removeProperty("--od-bottom");
-    box.classList.remove("odc-away");
-    if (MODE === "play") window.dispatchEvent(new Event("resize"));
+    root.classList.remove("odc-shown");
+    if (MODE === "play") { root.style.removeProperty("--od-bottom"); window.dispatchEvent(new Event("resize")); }
+    else { document.body.style.paddingBottom = ""; root.style.scrollPaddingBottom = ""; }
+    if (inside && back && back.isConnected) try { back.focus({ preventScroll: true }); } catch (e) { /* */ }
+    back = null;
   }
   function choose(v) {
     state = v; save(v); hide();
@@ -125,44 +142,8 @@
     e.preventDefault();
     show(true);
   });
-
-  /* Розкладка. Сторінка: картка внизу; якщо вона лягла б на «Грати», Google Play чи перемикач рівнів, які зараз на
-     екрані, — ховається, доки вони не відʼїдуть (банер ніколи не накриває кнопки). /play/: широкий екран — картка в
-     порожньому полі збоку від гри; вузький — смуга під грою, а сама гра стає на її висоту нижчою (нічого не накрито,
-     тапи по грі працюють, вибір можна відкласти). */
-  var PROTECT = "a[data-play],.btn,.lvc";
-  function hit(r) {
-    var els = document.querySelectorAll(PROTECT);
-    for (var i = 0; i < els.length; i++) {
-      if (box.contains(els[i])) continue;
-      var q = els[i].getBoundingClientRect();
-      if (!q.width || q.bottom < 0 || q.top > innerHeight) continue;
-      if (q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top) return true;
-    }
-    return false;
-  }
-  function layout() {
-    if (!open) return;
-    if (MODE === "play") {
-      var side = (innerWidth - innerHeight * 0.47) / 2;
-      var corner = side >= 330;
-      box.classList.toggle("odc-corner", corner);
-      box.style.width = corner ? Math.min(360, side - 32) + "px" : "";
-      root.classList.toggle("odc-flow", !corner);
-      root.style.setProperty("--od-bottom", corner ? "0px" : box.offsetHeight + "px");   // гра (prototype) стає нижчою на смугу
-      window.dispatchEvent(new Event("resize"));
-      return;
-    }
-    box.classList.toggle("odc-away", !forced && hit(box.getBoundingClientRect()));
-  }
-  var raf = 0;
-  function relayout() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; layout(); }); }
-  if (MODE !== "play") {
-    addEventListener("scroll", relayout, { passive: true });
-    addEventListener("load", relayout);
-    try { new ResizeObserver(relayout).observe(document.body); } catch (e) { /* старий браузер — вистачить scroll / resize */ }
-  }
-  addEventListener("resize", function (e) { if (MODE !== "play" || e.isTrusted) relayout(); });
+  // висота смуги міняється з шириною екрана й мовою (сторінка перекладає її своїм page.js) — запас і гра йдуть за нею
+  try { new ResizeObserver(fit).observe(box); } catch (e) { addEventListener("resize", function (ev) { if (MODE !== "play" || ev.isTrusted) fit(); }); }
 
   /* /play/: тексти банера мовою гри (<html lang> ставить гра) */
   function translate() {
@@ -171,7 +152,7 @@
     var lab = P["consent.settings"] || E["consent.settings"];
     if (lab) box.setAttribute("aria-label", lab);
     box.dir = (C.rtl || []).indexOf(L) >= 0 ? "rtl" : "ltr";
-    if (open) relayout();
+    fit();
   }
   if (MODE === "play" && C.S) {
     translate();
