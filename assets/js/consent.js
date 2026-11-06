@@ -24,7 +24,10 @@
   var box = document.getElementById("odc");
   if (!box || !/^G-[A-Z0-9]+$/.test(ID || "")) return;
   var root = document.documentElement;
-  // Кука _ga — лише для сайту гри (/Game-Orbit-Dash/…), не для всього roshevasternin.github.io (там і сайт студії)
+  // Кука _ga — лише для сайту гри. З 06.11.2026 він живе в корені власного хоста (orbitdash.lewydo.com), тож шлях — «/» (корінь сайту, рахуємо
+  // від цього скрипта: assets/js/ → ../../). Домен — явно цей хост: типове «auto» gtag кладе _ga на найвищий домен (.lewydo.com), і кука
+  // їздила б на сайт студії (lewydo.com) і CubePix (cubepix.lewydo.com). Хост сайту гри й нижчі (*.orbitdash.lewydo.com — їх немає), не вище
+  var HOST = location.hostname;
   var BASE = (function () {
     try { return new URL("../../", (document.currentScript || {}).src || location.href).pathname; } catch (e) { return "/"; }
   })();
@@ -64,7 +67,7 @@
     gtag("js", new Date());
     gtag("consent", "default", { analytics_storage: "granted", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
     gtag("config", ID, {
-      cookie_path: BASE, cookie_expires: 34128000,            // 395 днів — як і сама згода
+      cookie_domain: HOST, cookie_path: BASE, cookie_expires: 34128000,   // лише хост сайту гри; 395 днів — як і сама згода
       allow_google_signals: false, allow_ad_personalization_signals: false,
     });
     var s = document.createElement("script");
@@ -76,11 +79,11 @@
   function stop() {
     window["ga-disable-" + ID] = true;
     if (loaded) gtag("consent", "update", { analytics_storage: "denied" });
-    // відкликали — куки GA геть (на нашому шляху й, про всяк випадок, на корені)
+    // відкликали — куки GA геть (на нашому шляху й, про всяк випадок, на корені; на хості й без домену)
     document.cookie.split(";").forEach(function (c) {
       var n = c.split("=")[0].trim();
       if (n !== "_ga" && n.indexOf("_ga_") !== 0) return;
-      [BASE, "/"].forEach(function (p) { document.cookie = n + "=; Max-Age=0; path=" + p; document.cookie = n + "=; Max-Age=0; path=" + p + "; domain=" + location.hostname; });
+      [BASE, "/"].forEach(function (p) { document.cookie = n + "=; Max-Age=0; path=" + p; document.cookie = n + "=; Max-Age=0; path=" + p + "; domain=" + HOST; });
     });
   }
   function send(name, params) {

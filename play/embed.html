@@ -126,15 +126,22 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 
    Сховище — у пам'яті: справжній сейв гравця (play/) живий-здоровий, вбудована гра його не бачить.
 
-   Сторінка-батько свого походження → сюди (postMessage { od: … }; від чужого походження й не від батька — нічого):
+   Сторінка-батько → сюди (postMessage { od: … }). Слухаємо лише батька (e.source === parent) з дозволеного походження: сайт гри
+   (своє походження), сайт студії (PARENT_ORIGINS — з 06.11.2026 це інший хост: lewydo.com, а гра — orbitdash.lewydo.com) і
+   http://localhost / 127.0.0.1 будь-якого порту (розробка сайту студії). Решта — нічого; вставити кадр чи відкрити сторінку вікном
+   може будь-хто. Батько шле з ціллю — походженням кадру (new URL(src кадру).origin), ніколи не «*»:
      level {id}     лише цей рівень (у тому ж режимі); id: null — знову трейлер
      visible {on}   поза екраном — годинник стоїть (і звук), назад — іде далі
      labels {…}     підписи мовою сторінки: tap, sound, watch, loading (сама гра в кадрі — тією ж мовою: ?lang=…)
-   Звідси: ready · state {mode, level, sound, trailer} · tick {t, end, bg, level} (~8 разів за с).
+   Звідси (parent.postMessage(…, "*") — нічого приватного): ready · state {mode, level, sound, trailer} · tick {t, end, bg, level} (~8 разів за с).
    ───────────────────────────────────────────────────────────────────────────── */
 (function () {
   "use strict";
   var Q = new URLSearchParams(location.search);
+  // Хто ще, крім сайту гри (своє походження), може керувати кадром: сайт студії (блок Orbit Dash на головній). Точні походження, без «*.»
+  var PARENT_ORIGINS = ["https://lewydo.com"];
+  var LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;          // розробка сайту студії на своєму комп'ютері
+  var parentOk = function (o) { return o === location.origin || PARENT_ORIGINS.indexOf(o) >= 0 || LOCAL_ORIGIN.test(o); };
   var SITE = window.__odSite || { levels: [] };            // збірка: [{ id, name, at, dur }] — рівні в порядку гри
   var LV = {};
   SITE.levels.forEach(function (l) { LV[l.id] = l; });
@@ -337,9 +344,9 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
     if (i.t > segFrom + 0.6 + len || i.state === "dying" || i.state === "dead" || i.state === "done" || (i.end && i.t > i.end)) { log("segment end", i.id, i.t.toFixed(2), i.state); go(hold ? level : next(), true); }
   }, 125);
   window.addEventListener("message", function (e) {
-    // Лише сторінка-батько свого походження (сайт гри й сайт студії — один домен, обидва шлють із ціллю location.origin). Вставити кадр чи відкрити цю сторінку вікном може будь-хто:
-    // чужому відправнику тут нічого робити
-    if (e.source !== parent || e.origin !== location.origin) return;
+    // Лише сторінка-батько з дозволеного походження (сайт гри, сайт студії, localhost — parentOk). Вставити кадр чи відкрити цю сторінку
+    // вікном може будь-хто: чужому відправнику тут нічого робити
+    if (e.source !== parent || !parentOk(e.origin)) return;
     var m = e.data;
     if (!m || typeof m !== "object" || typeof m.od !== "string") return;
     if (m.od === "level") {
