@@ -152,6 +152,10 @@ export const TRAILS = [
   //   docs/levels/just-a-blip/LEVEL.md §6): лінія ніби від руки «кипить» і на кожну долю дорисовує каракулю; числа — TRAIL_STYLE_E.SCRIBBLE, форма —
   //   makeScribbleE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
   { id: "scribble", name: "SCRIBBLE", level: "just-a-blip", desc: "A hand-drawn line · doodles on every beat" },
+  // [07.11.2026] хвіст рівня FREEFALL (MAIN, INSANE, стрибок зі стратосфери; план — Orbit Dash/docs/levels/new-levels-2026-11/PLAN.md §1.3, звіт —
+  //   docs/levels/freefall/LEVEL.md §6): інверсійний слід, на снейр за м'ячем — конус пари «звукового бар'єра»; числа — TRAIL_STYLE_E.MACH, форма —
+  //   makeMachE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
+  { id: "mach", name: "MACH", level: "freefall", desc: "A vapor trail · breaks the sound barrier on the snare" },
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -378,6 +382,32 @@ export const TRAIL_STYLE_E = {
     DOODLE_BEATS: 1, DOODLE_T: 0.55, DOODLE_MAX: 3, DRAW_BEATS: 1 / 8, DRAW_T: 0.07, DOODLE_OFF: 1.4, DOODLE_R: 6.4, DOODLE_W: 1.5, DOODLE_MIX: 0.55,
     DOODLE_A: 0.95, FADE_EXP: 0.4, DOODLE_JIT: 0.06, SPIRAL_TURNS: 1.6, SPIRAL_N: 17, LOOP_N: 25,
     GLOW_MUL: 1.9, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.4 },
+  // [07.11.2026] MACH — інверсійний слід, хвіст рівня FREEFALL (стрибок зі стратосфери; liquid DnB → нейро). Барва — м'яча, як у 9 стилів (своєї немає).
+  //   ПАРА — м'яка смуга, що ШИРШАЄ до хвоста (слід розходиться в повітрі; решта 15 стилів до хвоста звужуються): півширина VAPOR_HEAD біля голови →
+  //     VAPOR_MAX (smoothstep від VAPOR_D0 до VAPOR_D0 + VAPOR_D1 юн. ДУГОЮ від голови — не за f: на стрибку й старті точки злипаються біля голови, і голова
+  //     лишається під м'ячем), кінчик хвоста закруглено (√, останні VAPOR_TIP юн.), × fit; КЛУБИ — × (1 + PUFF·½(1 − cos 2π·фаза)),
+  //     фаза — мить зразка на сітці часу (рівень — PUFF_BEATS долі, ∞ — PUFF_T с): клуби прив'язані до миті й лишаються в повітрі позаду; біля голови
+  //     гаснуть (LOOK.PINCH_LEN). α VAPOR_A, у хвості — smoothstep до 0 від f = VAPOR_F1 до VAPOR_F0 (щільна пара, а не пелена: у смугу пелени α 0.05…0.35
+  //     потрапляє лише коротке згасання), білувата VAPOR_MIX. Усе — у конверті env − dev.
+  //     ПЕЛЕНА: пара прозора — fit ≤ 1 підганяє її ширину так, щоб пелена всього кадру (пара + ядро + конус) ≤ VEIL_K·VEIL_MAX (прийом тіла ZAP).
+  //   ЯДРО — яскрава смуга CORE_K·hwE (CORE_MIX 0.3 — барва м'яча, світліша), α CORE_A·aE^CORE_EXP; у ньому DIAM_N «ДІАМАНТІВ ТИСКУ» (ромби — підшляхи того
+  //     самого заливання) за DIAM_FROM + k·DIAM_GAP дугою від голови, півширина DIAM_W·hwE, довжина 2·DIAM_L; мерехтять на вісімках (рівень — DIAM_BEATS
+  //     долі, не частіше FLICKER_HZ_MAX; ∞ — DIAM_T): парні / непарні по черзі ×1 / ×DIAM_DIM.
+  //   КОНУС ПАРИ («звуковий бар'єр») — підпис хвоста: на кожен снейр (рівень — непарна доля такту, 2 і 4; у дропі, рівень такту ≥ DROP_LEVEL, — кожна доля;
+  //     ∞ — раз на CONE_T с) за м'ячем виникає параболічна оболонка, що розкривається назад: вершина — CONE_BACK дугою позаду миті долі, довжина CONE_L,
+  //     півширина CONE_W·√(d / L) (обидва × (1 + CONE_GROW·q), q — вік / життя), у конверті env − dev; прив'язана до миті (лежить на дорозі — «ковзає
+  //     назад» відносно м'яча), спалахує й тане за CONE_LIFE (не довше шлейфу): α CONE_A·(1 − q)^CONE_FADE, обідки оболонки — 2 штрихи RIM_W (RIM_MIX).
+  //     Живий — найновіший (≤ CONE_MAX).
+  //   СВІТЛО — ореол пари ×GLOW_MUL (біля голови — GLOW_HEAD_K, LOOK.PINCH_LEN), α LOOK.GLOW_A·(1 + BEAT_GLOW·доля + CONE_GLOW·спалах конуса).
+  //   «Менше руху»: конус лише на сильну долю (∞ — раз на 2·CONE_T), ромби не мерехтять.
+  //   Заливань 4 (ореол, пара, ядро з ромбами, конус) ≤ 4; малювань ≤ 2·CONE_MAX ≤ 30; частинок немає. Порт: смуги й ромби квадами, обідки — полілінії.
+  MACH: { VAPOR_HEAD: 4.2, VAPOR_MAX: 8.2, VAPOR_D0: 8, VAPOR_D1: 60, VAPOR_TIP: 10, VAPOR_A: 0.42, VAPOR_F0: 0.06, VAPOR_F1: 0.3, VAPOR_MIX: 0.45,
+    PUFF: 0.22, PUFF_BEATS: 1 / 8, PUFF_T: 0.05, VEIL_K: 0.9,
+    CORE_K: 0.3, CORE_A: 0.95, CORE_EXP: 0.8, CORE_MIX: 0.3,
+    DIAM_N: 3, DIAM_FROM: 6, DIAM_GAP: 7, DIAM_L: 2.4, DIAM_W: 0.58, DIAM_DIM: 0.6, DIAM_BEATS: 1 / 2, DIAM_T: 1 / 6,
+    CONE_BEATS: 1, CONE_T: 0.7, CONE_LIFE: 0.3, CONE_BACK: 2, CONE_L: 22, CONE_W: 7.5, CONE_GROW: 0.35, CONE_N: 10, CONE_MAX: 1,
+    CONE_A: 0.3, CONE_FADE: 1.2, CONE_MIX: 0.55, RIM_W: 1.1, RIM_A: 0.85, RIM_MIX: 0.6, DROP_LEVEL: 3,
+    GLOW_MUL: 1.6, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.4, CONE_GLOW: 0.6 },
 };
 /** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. [v118] той самий рецепт — headBallOf(WISP). */
 export const headBallOf = (C, f) => {
@@ -1391,6 +1421,116 @@ function makeScribbleE(F, S) {
   }
   return out;
 }
+// ================================================================ MACH — інверсійний слід (FREEFALL, 07.11.2026; числа — TRAIL_STYLE_E.MACH)
+
+/** [MACH] Період мерехтіння діамантів тиску, с: рівень — DIAM_BEATS долі (вісімка), не частіше FLICKER_HZ_MAX; ∞ — DIAM_T. */
+export const machDiamPeriod = (F) => F.pick(Math.max(TRAIL_STYLE_E.MACH.DIAM_BEATS * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX), TRAIL_STYLE_E.MACH.DIAM_T);
+/** [MACH] Чи б'є конус на клітинці g (рівень — доля від t0, мить t; ∞ — клітинка CONE_T): снейр — непарна доля, у дропі — кожна; «менше руху» — сильна доля (∞ — кожна друга). */
+export const machConeOn = (F, g, t) => {
+  if (F.mode !== TRAIL_MODE.LEVEL) return F.reduced ? ((g % 2) + 2) % 2 === 0 : true;
+  if (F.reduced) return ((g % 4) + 4) % 4 === 0;
+  return ((g % 2) + 2) % 2 === 1 || F.level(t) >= TRAIL_STYLE_E.MACH.DROP_LEVEL;
+};
+/** [MACH] Півширина пари без клубів і fit: dHead — дуга від голови, sTail — від хвоста (юн.): VAPOR_HEAD → VAPOR_MAX до хвоста, кінчик — √. */
+export const machVaporHalf = (dHead, sTail) => {
+  const C = TRAIL_STYLE_E.MACH;
+  const w = C.VAPOR_HEAD + (C.VAPOR_MAX - C.VAPOR_HEAD) * smooth01((dHead - C.VAPOR_D0) / C.VAPOR_D1);
+  return sTail < C.VAPOR_TIP ? w * Math.sqrt(Math.max(0, sTail) / C.VAPOR_TIP) : w;
+};
+const MACH_N = 40;                                             // зразків пари й ядра рівно по дузі (atS): клуби гладкі
+/** [MACH] Пелена смуги [L…, R…] (як trailMetrics: чотирикутники з α у смузі VEIL_A0…VEIL_A1), α — aAt(cx, cy). */
+const veilOfRibbon = (poly, aAt) => {
+  const T = LEVEL_TRAIL, m = poly.length / 2;
+  let v = 0;
+  for (let k = 0; k + 1 < m; k++) {
+    const q = [poly[k], poly[k + 1], poly[poly.length - 2 - k], poly[poly.length - 1 - k]];
+    let area = 0, cx = 0, cy = 0;
+    for (let i = 0; i < 4; i++) { const p = q[i], r = q[(i + 1) % 4]; area += p[0] * r[1] - r[0] * p[1]; cx += p[0] / 4; cy += p[1] / 4; }
+    const a = aAt(cx, cy);
+    if (a >= T.VEIL_A0 && a <= T.VEIL_A1) v += Math.abs(area) / 2;
+  }
+  return v;
+};
+/**
+ * [07.11.2026] MACH — інверсійний слід (FREEFALL): пара, що ширшає до хвоста клубами, яскраве ядро з діамантами тиску, і на снейр — конус пари
+ * «звукового бар'єра» за м'ячем (параболічна оболонка розкривається назад, лежить на дорозі й тане). Барва — м'яча.
+ */
+function makeMachE(F, S) {
+  const C = TRAIL_STYLE_E.MACH, X = LOOK_E, T = LEVEL_TRAIL, out = empty(), env = F.env;
+  const smp = [];
+  for (let i = 0; i < MACH_N; i++) smp.push(F.atS((F.len * i) / (MACH_N - 1)));
+  // пара (до fit): клуби на сітці часу, біля голови — рівно
+  const pStep = F.step(C.PUFF_BEATS, C.PUFF_T);
+  const puff = (p) => 1 + C.PUFF * X.pk(1, 0, F, p) * (0.5 - 0.5 * Math.cos(TAU * ((p.t - F.t0) / pStep)));
+  const vw = smp.map((p) => machVaporHalf(F.len - p.s, p.s) * puff(p));
+  const vA = (p) => C.VAPOR_A * smooth01((p.f - C.VAPOR_F0) / (C.VAPOR_F1 - C.VAPOR_F0));
+  // ядро з діамантами тиску (підшляхи одного заливання): мерехтять на вісімках парні / непарні по черзі
+  const half = (p) => Math.min(C.CORE_K * X.hw(p.f), env - p.dev);
+  const nD = F.reduced ? 0 : Math.floor((F.tH - F.t0) / machDiamPeriod(F) + EPS_T);
+  const diams = [];
+  for (let k = 0; k < C.DIAM_N; k++) {
+    const d = C.DIAM_FROM + k * C.DIAM_GAP;
+    if (d + C.DIAM_L > F.len) break;
+    const p = F.atS(F.len - d), tx = -p.ny, ty = p.nx, kk = F.reduced || (nD + k) % 2 === 0 ? 1 : C.DIAM_DIM;
+    const w = Math.min(C.DIAM_W * X.hw(p.f) * kk, env - p.dev - 1e-6), l = C.DIAM_L * (0.6 + 0.4 * kk);
+    diams.push({ p, tx, ty, w, l });
+  }
+  const diamPoly = (Sc, q) => [[(q.p.x - q.tx * q.l) * Sc.pm, (q.p.y - q.ty * q.l) * Sc.pm], [q.p.x * Sc.pm + q.p.nx * q.w * Sc.sm, q.p.y * Sc.pm + q.p.ny * q.w * Sc.sm],
+    [(q.p.x + q.tx * q.l) * Sc.pm, (q.p.y + q.ty * q.l) * Sc.pm], [q.p.x * Sc.pm - q.p.nx * q.w * Sc.sm, q.p.y * Sc.pm - q.p.ny * q.w * Sc.sm]];
+  const coreA = (p) => C.CORE_A * Math.pow(X.a(p.f), C.CORE_EXP);
+  // конус пари: найновіша клітинка, що б'є (снейр / дроп), у межах шлейфу й життя
+  const life = Math.min(C.CONE_LIFE, F.span);
+  let cone = null;
+  for (const { g, t } of gridTimes(F, F.step(C.CONE_BEATS, C.CONE_T), 4)) {
+    if (!machConeOn(F, g, t)) continue;
+    const age = F.tH - t, q = clamp01(age / life), p = age <= life + EPS_T ? F.at(t) : null;
+    if (p && q < 1) cone = { p, q, a: C.CONE_A * Math.pow(1 - q, C.CONE_FADE) };
+    break;
+  }
+  let coneSmp = null, coneW = null;
+  if (cone && cone.a > 0.005) {
+    const grow = 1 + C.CONE_GROW * cone.q, Lc = C.CONE_L * grow, s0 = cone.p.s - C.CONE_BACK;
+    if (s0 > 0.5) {
+      coneSmp = []; coneW = [];
+      for (let i = 0; i < C.CONE_N; i++) {
+        const d = Math.min(Lc, s0) * (1 - i / (C.CONE_N - 1)), p = F.atS(s0 - d);      // хвіст → вершина
+        coneSmp.push(p);
+        coneW.push(Math.max(0, Math.min(C.CONE_W * grow * Math.sqrt(d / Lc), env - p.dev - C.RIM_W / 2 - 1e-6)));
+      }
+    }
+  }
+  // пелена: ядро, ромби й конус — як є; пара — × fit, щоб усе разом ≤ VEIL_K·VEIL_MAX (рахунок на кадрі без масштабу прев'ю)
+  const coreGradU = pointGrad(F, UNIT, smp, C.CORE_MIX, coreA);
+  let other = veilOfRibbon(ribbon(UNIT, smp, half), (x, y) => gradAlpha(coreGradU, x, y));
+  for (const q of diams) other += veilOfRibbon(diamPoly(UNIT, q), (x, y) => gradAlpha(coreGradU, x, y));
+  const ra = cone ? C.RIM_A * Math.pow(1 - cone.q, C.CONE_FADE) : 0;
+  if (coneSmp) {
+    if (cone.a >= T.VEIL_A0 && cone.a <= T.VEIL_A1) other += veilOfRibbon(ribbon(UNIT, coneSmp, (p, i) => coneW[i]), () => cone.a);
+    if (ra >= T.VEIL_A0 && ra <= T.VEIL_A1) {
+      let l = 0;
+      for (let i = 1; i < coneSmp.length; i++) l += Math.hypot(coneSmp[i].x - coneSmp[i - 1].x, coneSmp[i].y - coneSmp[i - 1].y);
+      other += 2 * l * C.RIM_W;
+    }
+  }
+  const vGradU = pointGrad(F, UNIT, smp, C.VAPOR_MIX, vA);
+  const vVeil = veilOfRibbon(ribbon(UNIT, smp, (p, i) => Math.min(vw[i], env - p.dev)), (x, y) => gradAlpha(vGradU, x, y));
+  const budget = Math.max(0, C.VEIL_K * T.VEIL_MAX - other), fit = vVeil > budget ? budget / vVeil : 1;
+  const vapor = (p, i) => Math.max(0, Math.min(vw[i] * fit, env - p.dev - 1e-6));
+  // світло — ореол пари; спалах конуса підсилює
+  const flash = coneSmp ? Math.pow(1 - cone.q, 2) : 0;
+  const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, TRAIL_STYLE_E.LOOK.GLOW_A * (1 + C.BEAT_GLOW * F.beat + C.CONE_GLOW * flash));
+  out.glow = glowOf([ribbon(S, smp, (p, i) => vapor(p, i) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p))], ga);
+  out.fills.push({ paths: [ribbon(S, smp, vapor)], grad: pointGrad(F, S, smp, C.VAPOR_MIX, vA) });
+  out.fills.push({ paths: [ribbon(S, smp, half), ...diams.map((q) => pos(diamPoly(S, q)))], grad: pointGrad(F, S, smp, C.CORE_MIX, coreA) });
+  if (coneSmp) {
+    out.fills.push({ paths: [ribbon(S, coneSmp, (p, i) => coneW[i])], grad: flatGrad(F, S, C.CONE_MIX, cone.a) });
+    for (const side of [1, -1]) {
+      out.strokes.push({ pts: coneSmp.map((p, i) => [p.x * S.pm + p.nx * coneW[i] * side * S.sm, p.y * S.pm + p.ny * coneW[i] * side * S.sm]),
+        w: C.RIM_W * S.sm, grad: flatGrad(F, S, C.RIM_MIX, ra) });
+    }
+  }
+  return out;
+}
 // [HALLOWEEN] begin — маляр WISP (кажани, рампа, makeWispE)
 /**
  * [v118] Силует кажана WISP: 12 вершин (парні — маляр і метрики читають смугу [L…, R…]), x — уздовж дотичної (±1 → ±BAT_W), y — геть від осі
@@ -1483,7 +1623,7 @@ const flameHex = (a, b, w) => {
  */
 const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
   pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE,   // [HALLOWEEN]
-  fern: makeFernE, scribble: makeScribbleE };
+  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE };
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
