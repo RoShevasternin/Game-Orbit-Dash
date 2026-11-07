@@ -64,6 +64,8 @@
 //   α градієнта в центрі; круги πr²; кільця 2πrw; штрихи довжина·w), × z²; parts — частинок; fills — заливань (з glow);
 //   draws — дрібних малювань (штрихи + кільця + круги). Ліміти — §5.5: LEVEL lenFu·z ≤ 120.5, outerHalfFu·z ≤ 8.11 (COMET) ·
 //   ≤ 9·min(1, z) (решта, v102); ENDLESS outerHalfFu ≤ 9; veil ≤ 800; parts ≤ 14; fills ≤ 4; draws ≤ 30.
+//   [CAPE · b3] виняток з конверта лише для CAPE (trailEnvOf): W ≤ 16·min(1, z) (ENDLESS 16), усе в смузі ±16 довкола останніх 66 од. шляху
+//   (trailExtent bandFu), попереду центру м'яча ≤ ½ радіуса (aheadFu) — REDESIGN.md §5.2 THE LAST TOCCATA.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ================================================================ ЕФЕКТИ ЯК У ГРІ — шлейф (перенесено з JSX у v47, числа ті самі)
@@ -143,6 +145,13 @@ export const TRAILS = [
   //   Orbit Dash/docs/levels/last-toccata/TRAIL.md, числа — TRAIL_STYLE_E.CAPE, форма — makeCapeE. У КІНЦІ каталогу: код орбіти RANKS (ranks.mjs ORB.TRAILS)
   //   лише дописується, а ranks.test.mjs звіряє його з TRAILS один в один (порядок SHOP — за рівнем, не за цим списком)
   { id: "cape",   name: "CAPE",   level: "last-toccata", desc: "The Count's velvet cape · whips on the beat, gold on the kick" },
+  // [06.11.2026] хвіст рівня MOSSLIGHT (MAIN, EASY, калімба; план — Orbit Dash/docs/levels/new-levels-2026-11/PLAN.md §1.1, звіт — docs/levels/mosslight/LEVEL.md
+  //   §6): папороть, що розгортає листок на долю; числа — TRAIL_STYLE_E.FERN, форма — makeFernE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
+  { id: "fern",   name: "FERN",   level: "mosslight",    desc: "A fern frond · unfurls a new leaf on every beat" },
+  // [07.11.2026] хвіст рівня JUST A BLIP (MAIN, NORMAL, троль «фейковий дроп»; план — Orbit Dash/docs/levels/new-levels-2026-11/PLAN.md §1.2, звіт —
+  //   docs/levels/just-a-blip/LEVEL.md §6): лінія ніби від руки «кипить» і на кожну долю дорисовує каракулю; числа — TRAIL_STYLE_E.SCRIBBLE, форма —
+  //   makeScribbleE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
+  { id: "scribble", name: "SCRIBBLE", level: "just-a-blip", desc: "A hand-drawn line · doodles on every beat" },
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -242,44 +251,53 @@ export const TRAIL_STYLE_E = {
     //   Той самий ball у кожному стопі ядра, серця й ореолу (стоп = зразок шляху), у петлі й іскрі — за f її точки. Ореол — градієнт хорди
     //   (стоп на зразок, α стала GLOW_A), не одна барва: інакше біля м'ячика — помаранчевий ореол. Нових малювань немає.
     HEAD_BALL: 1, HEAD_LEN: 0.42 },
-  // [06.11.2026] CAPE — плащ графа, легендарний хвіст DEMON THE LAST TOCCATA (спека, рецензія й правки — Orbit Dash/docs/levels/last-toccata/TRAIL.md).
-  //   Третя своя барва (після FLARE і WISP): оксамит RED, складка — вино DARK (≥ 1.8:1 на тлі гри й рівня; рампа capeLut DARK → RED, LUT_STEPS
-  //   кроків, раз), світло гребеня SHINE (теплий відблиск свічки), золотий поділ GOLD, фібула — золотий диск з рубіном RUBY, попіл і жарини MOTES.
-  //   Барва м'яча — лише під м'ячем: ball(d) сходить дугою до фібули (back0 = BALL_R·zs + CLASP_GAP), далі — оксамит (без «мотузки» барви м'яча).
-  //   СИЛУЕТ — трикутник плаща: півширина W_NECK під м'ячем → W_HEM на кінці (gh^FLARE_EXP, gh — 0 комір … 1 кінець); плащ не довший за CAP_LEN
-  //     (кадр: ENDLESS на 230 °/с — 250+ од. шляху, решта не малюється — пропорції плаща за будь-якої швидкості). Кінець — ЗУБЧАСТИЙ поділ
-  //     (кажанячі крила плаща графа): DAG_N вістер на останніх ld = min(DAG_L, DAG_FRAC·довжини), кожне — третина перерізу, звужується
-  //     (1 − t)^DAG_EXP і відлітає назовні (DAG_SWEEP); зовнішнє найдовше (DAG_LK). Зразків N: перші DAG_SUB + 1 — сітка вістер, решта — до голови.
-  //   БАТІГ — увесь плащ хльостає вбік, як прапор, з ВІЛЬНОГО місця конверту (як WISP): off = (room − w)·m·(LEAN·side + min(1 − LEAN, WHIP_K·amp)·cw),
-  //     room = env − dev, m — 0 біля фібули … 1 від M_LEN (плащ прикріплено до коміра); на гребені — ширшає (BILLOW). cw = cos 2π(d/FOLD_L − φ),
-  //     d — дуга від голови, FOLD_L — довжина складки в одиницях кадру (довший плащ — більше складок). φ = n + 1 − (1 − fr)^EXP раз на WAVE_BEATS
-  //     долі (∞ — WAVE_T с): гребінь зривається з коміра рівно на долю й біжить до поділу. Западина — винна складка, гребінь ловить світло.
-  //   ДРОП (рівень такту ПОСЕРЕДИНІ долі ≥ DROP_LEVEL: SHATTER! · RISE! · TOCCATA!): kd 0 → 1 за KD_IN долі (вихід — назад) — складок удвічі
-  //     (друга гармоніка), розмах ×(1 + DROP_AMP·kd), ореол ×(1 + DROP_GLOW·kd), тріск WHIP_EXP_DROP; перша доля дропу ще ×(1 + ENTRY_AMP·entry) —
-  //     найбільший помах на ударі. Бочка спалахує золотом (KICK_FLASH у мить точки) і розширює поділ (HEM_KICK_W у мить голови).
-  //   ПРИМІТИВИ: ореол (кайма GLOW_MUL тіла, вістря ×GLOW_DAG) → тіло й DAG_N вістер (одне заливання, рампа, α aB) → світло NAP (inner, SHINE) →
-  //     тінь досередини SHADE (inner, DARK) → золотий поділ HEM_W ЛИШЕ на зовнішньому краї аж до кінчика зовнішнього вістря (найяскравіше в плащі;
-  //     стібки 16-х, промінь гребеня; на стрибку — плавно на обидва краї за часткою h) → фібула (обідок RIM, золотий диск CLASP_R, рубін, відблиск на
-  //     долю; проявляється за CLASP_MIN_LEN) → попіл і жарини (сітка MOTE_BEATS = ¼ долі завжди; непарні — лише в дропі: зерна живих не міняються).
-  //   Заливань 4 ≤ 4; малювань ≤ 1–2 + 1 + 3 + MOTE_N = 12 ≤ 30; частинок ≤ MOTE_N ≤ 14. «Пелена» — оксамит непрозорий (≤ 160 од.² на сітці проти
-  //   VEIL_K·VEIL_MAX = 720; стереже trails.test.mjs, у рушії fit немає).
-  //   Порт: TrailStyles CAPE — FloatArray під N зразків, смуги квадами (тіло + 3 вістря, світло, тінь, ореол), ≤ 2 полілінії, обідок і 3 круги фібули
-  //   msdf.circle, capeLut — 1D-таблиця; індекс рампи — floor(xp·LUT_STEPS + 0.5) (як JS Math.round, НЕ kotlin.math.round — той half-even).
-  CAPE:   { RED: "#a8102c", DARK: "#72203e", GOLD: "#f2c35a", RUBY: "#9e0b2a", SHINE: "#c6583e", MOTES: ["#ff9a4a", "#cbbcae"],
-    HEAD_BALL: 1, N: 40, CAP_LEN: 130, DAG_N: 3, DAG_SUB: 6, DAG_L: 12, DAG_FRAC: 0.28, DAG_LK: [1, 0.75, 0.55], DAG_EXP: 0.55, DAG_SWEEP: 0.3,
-    W_NECK: 2.2, W_HEM: 6.0, FLARE_EXP: 0.9, M_LEN: 0.65, LEAN: 0.25, BILLOW: 0.1,
-    FOLD_L: 58, WAVE_BEATS: 1, WAVE_T: 0.36, WHIP_EXP: 2, WHIP_EXP_DROP: 3.2, DROP_LEVEL: 3, KD_IN: 0.25,
-    AMP_L: 0.8, AMP_E: 0.85, AMP_STILL: 0.6, WHIP_K: 0.6, DROP_AMP: 0.45, ENTRY_AMP: 0.3, SIDE_SOFT: 0.35,
-    FOLD_DARK: -0.6, FOLD_SOFT: 0.7, SHEEN: 0.25, CREST_SHEEN: 0.32, LUT_STEPS: 64,
-    BODY_A: 0.95, A_TAIL: 0.85, BODY_MIX: 0.06,
-    NAP_K: 0.42, NAP_OFF: 0.35, NAP_MIX: 0.3, NAP_A: 0.85, NAP_STILL: 0.35, NAP_EXP: 1.5, SHADE_K: 0.35, SHADE_OFF: 0.55, SHADE_A: 0.55,
-    HEM_W: 2.0, HEM_KICK_W: 0.35, HEM_A: 0.95, HEM_MIX: 0.22, KICK_FLASH: 0.3, STITCH: 0.15, STITCH_BEATS: 1 / 4, STITCH_EXP: 4, CREST: 0.2,
-    GLOW_A: 0.6, GLOW_MUL: 1.8, GLOW_DAG: 1.35, GLOW_HEAD_K: 1.0, BEAT_GLOW: 0.5, DROP_GLOW: 0.6,
-    MOTE_N: 6, MOTE_BEATS: 1 / 4, MOTE_T: 0.09, MOTE_R: [0.9, 1.7], MOTE_A: 0.9, MOTE_MIX: [0.25, 0.1], MOTE_DRIFT: 0.6, MOTE_CLEAR: 14,
+  // [06.11.2026 · редизайн b3] CAPE — ПЛАЩ ГРАФА, варіант C (власник 06.11: «плащ на м'ячі треба краще зробити»; REDESIGN.md §5, макети
+  //   redesign/21–22; спека й заміри — Orbit Dash/docs/levels/last-toccata/TRAIL.md). Перша версія (стрічка 130 × ±6 із золотою лінією по всій
+  //   довжині) читалась як подерта червона стрічка; тепер — короткий широкий плащ, що читається з першого погляду:
+  //   КОМІР — стоячий віяло-комір за м'ячем: кільцевий сектор ±COLLAR_ANG рад довкола спини м'яча, від COLLAR_IN·м'яча (під м'ячем) до
+  //     м'яч + COLLAR_W, на кінцях два вістря вперед-назовні (COLLAR_TIP, COLLAR_TIP_ANG); кармін підкладки, золотий кант RIM_W; на ньому —
+  //     фібула (золотий диск з рубіном = медальйон графа).
+  //   ТІЛО — трапеція оксамиту: півширина W_NECK під коміром → W_HEM біля подолу (g^FLARE_EXP), довжина CAP_LEN — коротко й широко = плащ.
+  //     Майже чорний VELVET з фіолетовим полиском (SHEEN — смуга на зовнішній половині, світлішає на гребені хвилі); ВІЯЛО СКЛАДОК: 2 гребені CREST
+  //     сходяться біля коміра й розходяться до двох внутрішніх вістер подолу, западина VALLEY — до середньої виїмки.
+  //   ПІДКЛАДКА — кармін-атлас LINING (рампа 7A0A20 → B0122E → D06A88 до подолу) клином уздовж ВНУТРІШНЬОГО краю (до центру орбіти): від
+  //     LINE_K[0] ширини під коміром до LINE_K[1] біля подолу, кант полиску SATIN (FF8A9A) по межі клину — плащ, вивернутий на повороті.
+  //   ПОДІЛ — HEM_N = 3 ЗАОКРУГЛЕНІ «кажанячі» фестони (рішення сесії 06.11: не гострий зигзаг — той читається як ZAP): HEM_N + 1 вістер на
+  //     ξ = 1 − 2j/HEM_N (ξ — частка півширини від осі плаща), між ними — увігнуті дуги глибиною depth = min(HEM_DEPTH, HEM_FRAC·L); край дуги
+  //     e(δ) = tip + (depth − tip)·sin(π/2 · δ·HEM_N), δ — відстань ξ до вістря (≤ 1/HEM_N); зовнішнє вістря найдовше (TIPS — частки глибини).
+  //     ЗОЛОТО ЛИШЕ ТУТ: кант HEM_W по фестонах (бочка — спалах і ширше) + тонкий EDGE_W по зовнішньому краю від EDGE_FROM довжини (по центру — ніколи).
+  //   ХЛЬОСТ — один плавний вигин (довжина хвилі WAVE_L·CAP_LEN): off = A·m·cos 2π(d/λ − φ), A = AMP_L (∞ AMP_E) ×(1 + DROP_AMP·kd + ENTRY_AMP·entry),
+  //     m — 0 біля коміра … 1 від M_LEN (плащ пришито до коміра, хльостає поділ); на гребені плащ ширшає (BILLOW). φ — capeBeat: раз на долю
+  //     (∞ — WAVE_T с); у дропі (рівень такту посередині долі ≥ DROP_LEVEL: SHATTER! · RISE! · TOCCATA!) — тріск WHIP_EXP_DROP і ×1.6, перша доля — ще помах входу.
+  //   ОРЕОЛ — м'який багрянець підкладки (GLOW) під плащем, lighter: тіло ×GLOW_K + GLOW_ADD, вістря ×GLOW_TOOTH (виїмки фестонів лишаються темними).
+  //   ВИНЯТОК З КОНВЕРТА (лише CAPE, REDESIGN §5.2; trailEnvOf): півширина намальованого ≤ ENV·min(1, z) (16; решта стилів — 9), уся дуга від голови
+  //     ≤ LEN_MAX·min(1, z) (66 од. екрана), попереду центру м'яча — не далі AHEAD_MAX·BALL_R (trailExtent). Габарит 2·16·64 = 2048 од.² — не більший
+  //     за колишню стрічку 2·9·120 = 2160. Хвіст малюється ДО сутностей (шипи, геми й іскри — над плащем), плащ увесь позаду м'яча.
+  //   ПОПІЛ і ЖАРИНИ (MOTES, сітка ¼ долі — непарні лише в дропі, як було) — на зовнішній половині плаща. «Менше руху» — плащ стоїть (φ = 0, без дропу).
+  //   Заливань 4 (ореол; оксамит: тіло + HEM_N + 1 вістер; підкладка: клин + вістря + комір; полиск — inner) ≤ 4; малювань: 7 штрихів (поділ, край,
+  //   кант коміра, кант атласу, 2 гребені, западина) + обідок + 3 круги фібули + ≤ MOTE_N = 17 ≤ 30; частинок ≤ 6 ≤ 14.
+  //   Порт (TrailStyles CAPE, поки PORT_PENDING): FloatArray зразків (x, y, n, s, t, d, g, m, cw, off, w), смуги квадами, ≤ 7 поліліній, обідок і 3 круги
+  //   фібули, ≤ 6 кругів попелу; рампи — 1D-таблиці, індекс floor(x·LUT_STEPS + 0.5) (як JS Math.round, НЕ kotlin.math.round — той half-even).
+  CAPE:   { VELVET: ["#120a1a", "#2a1a38"], SHEEN: "#6a5490", LINING: ["#7a0a20", "#b0122e", "#d06a88"], SATIN: "#ff8a9a", CREST: "#8a74b0", VALLEY: "#000000",
+    GOLD: "#f2c35a", RUBY: "#9e0b2a", RIM: "#0e0812", GLOW: "#b0122e", MOTES: ["#ff9a4a", "#cbbcae"],
+    ENV: 16, LEN_MAX: 66, AHEAD_MAX: 0.5,
+    CAP_LEN: 64, N: 30, HEM_SUB: 8, W_NECK: 9, W_HEM: 13.6, FLARE_EXP: 0.8, NECK_K: 0.55,
+    HEM_N: 3, HEM_DEPTH: 7.5, HEM_FRAC: 0.16, TIPS: [0, 0.14, 0.28, 0.42], HEM_PTS: 8,
+    COLLAR_N: 12, COLLAR_ANG: 1.45, COLLAR_TIP_ANG: 0.3, COLLAR_IN: 0.75, COLLAR_W: 3.6, COLLAR_TIP: 5.6, RIM_W: 1.2, RIM_MIX: 0.1, COLLAR_X: 0.5,
+    LINE_K: [0.08, 0.58], LINE_EXP: 1.1, LINE_WHIP: 0.3, LINE_MAX: 0.68, LINE_A: 0.95, LINE_MIX: 0.04, LINE_CREST: 0.22,
+    SATIN_W: 0.8, SATIN_A: 0.7, SATIN_FROM: 0.3, SATIN_MIX: 0.1,
+    BODY_A: 0.95, BODY_MIX: 0.03, CREST_MIX: 0.12,
+    SHEEN_IN: 0.22, SHEEN_OUT: 0.86, SHEEN_A: 0.5, SHEEN_STILL: 0.45, SHEEN_EXP: 1.5, SHEEN_MIX: 0.05,
+    FOLD_FROM: 2.5, FOLD_IN: 0.1, FOLD_EXP: 0.8, FOLD_W: 1.0, FOLD_A: 0.85, FOLD_MIX: 0.12, FOLD_STILL: 0.55, FOLD_TIP: 0.45, VALLEY_W: 1.4, VALLEY_A: 0.6,
+    HEM_W: 2.0, HEM_KICK_W: 0.35, HEM_A: 0.95, HEM_MIX: 0.18, KICK_FLASH: 0.35, EDGE_W: 1.1, EDGE_FROM: 0.35, EDGE_IN: 0.1, EDGE_A: 0.9, EDGE_MIX: 0.1,
+    WAVE_L: 2.2, WAVE_BEATS: 1, WAVE_T: 0.36, WHIP_EXP: 2, WHIP_EXP_DROP: 3.2, DROP_LEVEL: 3, KD_IN: 0.25,
+    AMP_L: 2.2, AMP_E: 2.4, AMP_STILL: 1.2, DROP_AMP: 0.6, ENTRY_AMP: 0.3, M_LEN: 0.6, BILLOW: 0.12, SIDE_SOFT: 0.35,
+    GLOW_A: 0.3, GLOW_K: 1.0, GLOW_ADD: 1.6, GLOW_TOOTH: 1.15, BEAT_GLOW: 0.4, DROP_GLOW: 0.5,
+    MOTE_N: 6, MOTE_BEATS: 1 / 4, MOTE_T: 0.09, MOTE_R: [0.9, 1.7], MOTE_A: 0.9, MOTE_MIX: [0.25, 0.1], MOTE_IN: [0.3, 0.85], MOTE_CLEAR: 18,
     TW_MIN: 0.55, TW_HZ: 3,
-    BALL_R: 10, CLASP_GAP: 0.8, CLASP_MIN_LEN: 16, CLASP_R: 2.8, CLASP_MIX: 0.18, RIM_W: 1.0, RIM_A: 0.9, RUBY_R: 1.3, RUBY_MIX: 0.12,
+    BALL_R: 10, CLASP_GAP: 0.8, CLASP_MIN_LEN: 16, CLASP_R: 2.8, CLASP_MIX: 0.18, CLASP_RIM_W: 1.0, RIM_A: 0.9, RUBY_R: 1.3, RUBY_MIX: 0.12,
     GLINT_R: 0.7, GLINT_MIX: 0.6, GLINT_A: 0.95, GLINT_BASE: 0.35, GLINT_E: 0.6,
-    VEIL_K: 0.9 },
+    LUT_STEPS: 64, VEIL_K: 0.9 },
   // [HALLOWEEN] begin — числа стилю WISP
   // [v118] WISP — сезонний подарунок HALLOWEEN (власник 29.10: «придумай скін і хвіст»): блукаючий вогник-привид. Друга (після FLARE) своя барва —
   //   ЕКТОПЛАЗМА ECTO = [VIOLET, SLIME]: біля голови фіолет, до хвоста — слизово-зелений (барви сезону HAUNT_COL haunt.mjs); голова — барва м'яча
@@ -306,6 +324,60 @@ export const TRAIL_STYLE_E = {
     BAT_A: 0.92, BAT_FADE: 0.5, BAT_MIX: 0.5, BAT_CLEAR: 14, FLAP_T: 0.2, FLAP_BEATS: 1 / 4,
     GLOW_A: 0.42, GLOW_MUL: 1.9, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.5 },
   // [HALLOWEEN] end
+  // [06.11.2026] FERN — папороть, хвіст рівня MOSSLIGHT (нічна галявина, калімба). Четверта своя барва (після FLARE, CAPE і WISP): зелень FROND = [LIGHT, DEEP] —
+  //   від хвоста глибока DEEP до голови світла LIGHT (рампа fernLut, LUT_STEPS кроків), біля голови — барва м'яча (HEAD_BALL / HEAD_LEN — рецепт FLARE / WISP:
+  //   у MOSSLIGHT м'яч — бурштиновий світлячок, і папороть ніби світиться від нього). Без зеленого листок не читається як папороть. Спори — блідо-лимонні SPORE.
+  //   СТЕБЛО — смуга STEM_K·hwE (тонка, звужується до хвоста), α STEM_A·aE.
+  //   ЛИСТКИ — перисті, на сітці часу GRID с (рівень — GRID_BEATS долі), N_MAX новіших, почергово ліворуч / праворуч під кутом ANG° НАЗАД (обтічні, як оперення
+  //     стріли — нічого не стирчить попереду м'яча), трохи серпом (CURVE): ланцетна смуга вздовж жилки на LEAF_N + 1 точках, півширина W_K·ℓ·sin(π·u^W_SKEW)^W_EXP
+//     (найширше біля кореня, довгий кінчик — перо папороті, а не кругленький листок плюща).
+  //     Прив'язані до at(t) — лежать на дорозі й не ковзають. Довжина ℓ росте до голови (L_TAIL → L_MAX за f^L_EXP); ближче L_PINCH дугою до голови — молоді
+  //     L_HEAD (листочки біля завитка, голова під м'ячем); біля хвоста гаснуть розміром (TAIL_FADE — не зникають стрибком); новий розкривається за OPEN_BEATS
+  //     долі (∞ — OPEN с). Увесь листок — у конверті env − dev від свого кореня (вершини ×fit). α LEAF_A·(A_TAIL + (1 − A_TAIL)·f) ≥ 0.5 — щільні, «пелени» немає.
+  //     Сітка 1/24 долі · 0.015 с / N_MAX 26 (план — 1/16 · 0.03 / 12): на знімках крупно листки на 1/16 долі й 0.03 с стояли рідко — «гілочка плюща»,
+  //     а не перо папороті (у безкінечному на 280 °/с шлейф ~300 од.); кут 62° (план 55°) — пір'їни відкриваються ширше, силует пера повніший.
+  //   ЖИЛКИ — серединна смуга кожного листка (VEIN_FROM … VEIN_TO довжини) півшириною VEIN_K·ℓ, світла (VEIN_MIX), inner.
+  //   НА ДОЛЮ — ЗАВИТОК (равлик молодої вайї): за CROZ_S дугою від голови (одразу за м'ячем), з одного боку (по черзі на долю) — штрих CROZ_W довжиною CROZ_LEN
+  //     на CROZ_N точках, кривина росте до кінчика; за долю (expoOut) розгортається з CURL[0]° до CURL[1]° (∞ — за CROZ_T с); ХВИЛЯ розкриття — листки
+  //     ×(1 + BUMP·гаусіан ширини WAVE_W) біжить від голови до хвоста за WAVE_BEATS долі (∞ — WAVE_T с) і слабне.
+  //   ДРОП (рівень такту ≥ DROP_LEVEL) — листки тріпочуть ±FLUTTER° на вісімках (FLUTTER_BEATS долі, не частіше FLICKER_HZ_MAX) і злітають спори: сітка
+  //     SPORE_BEATS долі, SPORE_N новіших, R ≤ PART_R_MAX, відпливають убік на SPORE_DRIFT вільного місця й гаснуть.
+  //   СВІТЛО — ореол: стебло ×GLOW_MUL (біля голови — GLOW_HEAD_K, LOOK.PINCH_LEN) і листки ×GLOW_LEAF від кореня (у конверті), градієнт FROND, α GLOW_A
+  //     (рівень — × (1 + BEAT_GLOW·доля)).
+  //   «Менше руху»: листки розкриті й нерухомі (без розкриття, хвилі й тріпотіння), завиток стоїть на CURL_STILL°, без спор.
+  //   Заливань 4 (ореол, стебло, листки, жилки) ≤ 4; малювань 1 + SPORE_N = 7 ≤ 30; частинок ≤ SPORE_N ≤ 14. Листки й жилки — додатного обходу (pos): ліві й праві —
+  //   дзеркальні, і в одному заливанні nonzero вони б вирізали одне одного. Порт: смуги й листки квадами, завиток — полілінія, спори — msdf.circle, fernLut — 1D-таблиця
+  //   (індекс floor(x·LUT_STEPS + 0.5), як JS Math.round).
+  FERN:   { FROND: ["#7cff9e", "#2fd27a"], SPORE: "#e6ffb3", HEAD_BALL: 1, HEAD_LEN: 0.3, LUT_STEPS: 64,
+    STEM_K: 0.12, STEM_A: 0.95, STEM_MIX: 0.05,
+    GRID: 0.015, GRID_BEATS: 1 / 24, N_MAX: 26, ANG: 62, CURVE: 0.14, LEAF_N: 4,
+    L_TAIL: 4.0, L_MAX: 8.6, L_EXP: 0.7, L_HEAD: 3.0, L_PINCH: 12, TAIL_FADE: 0.18, W_K: 0.25, W_EXP: 0.75, W_SKEW: 0.65,
+    OPEN_BEATS: 1 / 8, OPEN: 0.06, LEAF_A: 0.92, A_TAIL: 0.55, LEAF_MIX: 0.06,
+    VEIN_K: 0.045, VEIN_FROM: 0.08, VEIN_TO: 0.85, VEIN_MIX: 0.45, VEIN_A: 0.8,
+    WAVE_BEATS: 1 / 2, WAVE_T: 0.3, WAVE_W: 0.16, BUMP: 0.22,
+    CROZ_S: 15, CROZ_LEN: 13, CROZ_N: 20, CROZ_W: 1.3, CROZ_ANG: 70, CURL: [540, 90], CURL_STILL: 300, CROZ_BEATS: 1, CROZ_T: 0.55, CROZ_MIX: 0.3, CROZ_A: 0.95,
+    FLUTTER: 8, FLUTTER_BEATS: 1 / 2, DROP_LEVEL: 2,
+    SPORE_N: 6, SPORE_BEATS: 1 / 4, SPORE_R: [0.9, 1.6], SPORE_A: 0.9, SPORE_MIX: 0.3, SPORE_DRIFT: 0.7,
+    GLOW_A: 0.34, GLOW_MUL: 2.4, GLOW_HEAD_K: 1.3, GLOW_LEAF: 1.2, BEAT_GLOW: 0.4 },
+  // [07.11.2026] SCRIBBLE — каракуля від руки, хвіст рівня JUST A BLIP (вечірка Бліпа; кивок у бік «кривих малюнків» культури GD без копіювання чужого).
+  //   Барва — м'яча, як у 9 стилів (своєї немає).
+  //   ТІЛО — «маркер»: смуга BODY_K·hwE (α BODY_A·aE^BODY_EXP) уздовж «кипучої» осі і світліша серцевина CORE_K тієї ж ширини (CORE_MIX ≤ MIX_MAX, inner) —
+  //     як наліпка. КИПІННЯ (line boil класичної мальованої анімації): вісь зсунута вздовж нормалі — KNOTS вузлів на дузі (рівно від хвоста до голови),
+  //     зсув вузла (2·h01(seed(кадр, k)) − 1)·JIT_K·hwE, між вузлами — косинусом (хвилі плавні: гострий зигзаг — це ZAP); біля голови зсув гасне
+  //     (LOOK.PINCH_LEN — лінія виходить з-під м'яча), і зсув + півширина — у конверті env − dev. Кадр кипіння — номер вісімки треку (BOIL_BEATS долі;
+  //     128 BPM → 4.3 Гц), у безкінечному BOIL_T = 1/6 с (6 Гц = FLICKER_HZ_MAX); BOIL_N «малюнків» по колу (кадр mod BOIL_N) — як у мультфільмі.
+  //   НА ДОЛЮ (рівень — DOODLE_BEATS, ∞ — DOODLE_T с) — КАРАКУЛЯ: зірочка (пентаграма одним штрихом), спіраль, петлі — по колу, з боків по черзі;
+  //     прив'язана до миті долі (F.at — лежить на дорозі, як листки FERN): центр на DOODLE_OFF від осі, розмір DOODLE_R (усе — у конверті env − dev,
+  //     ×fit), штрих DOODLE_W; «дорисовується» за DRAW_BEATS долі (∞ — DRAW_T с) — видно частку ламаної, — і гасне до хвоста α·(1 − q)^FADE_EXP;
+  //     живих ≤ DOODLE_MAX; каракуля теж «кипить» (DOODLE_JIT).
+  //   СВІТЛО — ореол: тіло ×GLOW_MUL (біля голови — GLOW_HEAD_K, LOOK.PINCH_LEN), α LOOK.GLOW_A·(1 + BEAT_GLOW·доля).
+  //   «Менше руху»: без кипіння (кадр 0 — малюнок стоїть), каракулі одразу намальовані цілком.
+  //   Заливань 3 (ореол, тіло, серцевина) ≤ 4; малювань ≤ DOODLE_MAX ≤ 30; частинок немає. Порт: смуги квадами, каракулі — полілінії.
+  SCRIBBLE: { BODY_K: 0.62, BODY_A: 0.95, BODY_EXP: 0.55, CORE_K: 0.4, CORE_MIX: 0.45, CORE_A: 0.95, CORE_EXP: 1.1,
+    KNOTS: 7, JIT_K: 0.42, BOIL_BEATS: 1 / 2, BOIL_T: 1 / 6, BOIL_N: 3,
+    DOODLE_BEATS: 1, DOODLE_T: 0.55, DOODLE_MAX: 3, DRAW_BEATS: 1 / 8, DRAW_T: 0.07, DOODLE_OFF: 1.4, DOODLE_R: 6.4, DOODLE_W: 1.5, DOODLE_MIX: 0.55,
+    DOODLE_A: 0.95, FADE_EXP: 0.4, DOODLE_JIT: 0.06, SPIRAL_TURNS: 1.6, SPIRAL_N: 17, LOOP_N: 25,
+    GLOW_MUL: 1.9, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.4 },
 };
 /** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. [v118] той самий рецепт — headBallOf(WISP). */
 export const headBallOf = (C, f) => {
@@ -860,23 +932,30 @@ function makeFlareE(F, S) {
   return out;
 }
 
-// ================================================================ CAPE — плащ графа (THE LAST TOCCATA, 06.11.2026; числа — TRAIL_STYLE_E.CAPE)
+// ================================================================ CAPE — плащ графа (THE LAST TOCCATA; редизайн b3 06.11.2026 — варіант C; числа — TRAIL_STYLE_E.CAPE)
 
-/** [CAPE] Рампа оксамиту DARK (винна складка) → RED (кривава підкладка) на LUT_STEPS кроків — рядки барв раз на модуль. Порт: 1D-таблиця. */
-let CAPE_LUT = null;
-export const capeLut = () => {
-  if (!CAPE_LUT) {
-    const C = TRAIL_STYLE_E.CAPE;
-    CAPE_LUT = [];
-    for (let i = 0; i <= C.LUT_STEPS; i++) CAPE_LUT.push(flameHex(C.DARK, C.RED, i / C.LUT_STEPS));
+/** [CAPE] Рампа барв cols (рівні відрізки) на steps кроків — #rrggbb (той самий round, що mixHex маляра). */
+const capeRamp = (cols, steps) => {
+  const out = [];
+  for (let i = 0; i <= steps; i++) {
+    const x = (i / steps) * (cols.length - 1), k = Math.min(cols.length - 2, Math.floor(x));
+    out.push(flameHex(cols[k], cols[k + 1], x - k));
   }
-  return CAPE_LUT;
+  return out;
 };
-/** [CAPE] Період хвилі (батога), с: рівень — WAVE_BEATS долі, не частіше FLICKER_HZ_MAX; безкінечний — WAVE_T. */
+let CAPE_LUTS = null;
+/** [CAPE] Рампи раз на модуль: body — оксамит VELVET (западина → гребінь), lining — атлас LINING (тінь → комір → поділ). Порт: 1D-таблиці. */
+export const capeLuts = () => {
+  if (!CAPE_LUTS) { const C = TRAIL_STYLE_E.CAPE; CAPE_LUTS = { body: capeRamp(C.VELVET, C.LUT_STEPS), lining: capeRamp(C.LINING, C.LUT_STEPS) }; }
+  return CAPE_LUTS;
+};
+/** [CAPE] Барва рампи на x ∈ [0, 1]: індекс floor(x·LUT_STEPS + 0.5) (порт — НЕ kotlin.math.round). */
+const capeAt = (lut, x) => lut[Math.floor(clamp01(x) * TRAIL_STYLE_E.CAPE.LUT_STEPS + 0.5)];
+/** [CAPE] Період хвилі (хльосту), с: рівень — WAVE_BEATS долі, не частіше FLICKER_HZ_MAX; безкінечний — WAVE_T. */
 export const capeWaveT = (F) => F.pick(Math.max(TRAIL_STYLE_E.CAPE.WAVE_BEATS * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX), TRAIL_STYLE_E.CAPE.WAVE_T);
 /**
- * [CAPE] Доля батога на мить голови: { ph — фаза φ (у періодах хвилі), kd — сила дропу 0…1, entry — перша доля дропу 0…1 }.
- *   φ = n + 1 − (1 − fr)^EXP — ease-out у межах періоду (гребінь зривається з коміра на долю й осідає), неперервна.
+ * [CAPE] Доля хльосту на мить голови: { ph — фаза φ (у періодах хвилі), kd — сила дропу 0…1, entry — перша доля дропу 0…1 }.
+ *   φ = n + 1 − (1 − fr)^EXP — ease-out у межах періоду (вигин зривається з коміра на долю й осідає), неперервна.
  *   Рівень такту — ПОСЕРЕДИНІ періоду (t0 + (n + ½)·waveT): мить t0 + n·waveT може округлитись у попередній такт (рецензія: перша доля
  *   RISE! діставала рівень 2). EXP міняється лише на межі періоду, де ease(0) = 0.
  *   kd — дроп (рівень ≥ DROP_LEVEL): за KD_IN періоду від першої долі дропу 0 → 1 (вихід — 1 → 0), неперервно; entry — перша доля дропу
@@ -890,127 +969,195 @@ export const capeBeat = (F) => {
   return { ph: n + 1 - Math.pow(1 - fr, cur ? C.WHIP_EXP_DROP : C.WHIP_EXP),
     kd: cur ? (prev ? 1 : kIn) : prev ? 1 - kIn : 0, entry: cur && !prev ? kIn * (1 - smooth01(fr)) : 0 };
 };
-/** [CAPE] Фаза батога φ (capeBeat). */
+/** [CAPE] Фаза хльосту φ (capeBeat). */
 export const capePhase = (F) => capeBeat(F).ph;
 /**
- * [CAPE] Бік поділу sideC ∈ [−1, 1]: проєкція нормалі голови на напрям від центру орбіти, /SIDE_SOFT — неперервно (на радіальному стрибку
- * плавно сходить до 0: зубці й золото переходять на другий край поступово, а не перескакують). +1 — поділ на +n.
+ * [CAPE] Бік sideC ∈ [−1, 1]: проєкція нормалі голови на напрям від центру орбіти, /SIDE_SOFT — неперервно (на радіальному стрибку плавно
+ * сходить до 0: золотий край, атлас і довжини вістер переходять на другий бік поступово, а не перескакують). +1 — зовнішній край на +n.
  */
 export const capeSide = (F) => {
   const H = F.pts[F.M - 1], n = F.nrm[F.M - 1], r = Math.hypot(H[0], H[1]);
   return r > 1e-6 ? Math.max(-1, Math.min(1, (n[0] * H[0] + n[1] * H[1]) / r / TRAIL_STYLE_E.CAPE.SIDE_SOFT)) : 0;
 };
 /**
- * [CAPE] Геометрія плаща кадру: s0 — дуга від хвоста шляху, де починається плащ (не довший за CAP_LEN), Lc — його довжина, ld — довжина зубців
- * поділу min(DAG_L, DAG_FRAC·Lc), back0 — дуга від голови до фібули в кадрі (м'яч BALL_R·zs + CLASP_GAP): до неї — барва м'яча (під м'ячем),
- * від неї — оксамит і хвиля.
+ * [CAPE] Геометрія плаща кадру: s0 — дуга від хвоста шляху до кінчиків подолу (плащ не довший за CAP_LEN: решту шляху не малює — пропорції
+ * плаща однакові за будь-якої швидкості), Lc — довжина плаща, depth — глибина фестонів min(HEM_DEPTH, HEM_FRAC·Lc), dN — шия (дуга від голови,
+ * де починається тіло, під м'ячем), back0 — дуга від голови до фібули (м'яч BALL_R·zs·bm + CLASP_GAP).
+ * us — у скільки разів розміри прев'ю більші за позиції (S.sm / S.pm = wMul; кадр без масштабу — 1): у прев'ю (SHOP, картки) усі довжини ВЗДОВЖ
+ * шляху теж ×us — плащ на сцені тих самих пропорцій, що в грі (ширина й довжина ×wMul разом), а не короткий і товстий. bm — м'яч прев'ю / BALL_R.
  */
-export const capeGeom = (F) => {
-  const C = TRAIL_STYLE_E.CAPE, zs = F.zs || 1, s0 = Math.max(0, F.len - C.CAP_LEN), Lc = F.len - s0;
-  return { s0, Lc, zs, ld: Math.min(C.DAG_L, C.DAG_FRAC * Lc), back0: C.BALL_R * zs + C.CLASP_GAP };
+export const capeGeom = (F, us = 1, bm = 1) => {
+  const C = TRAIL_STYLE_E.CAPE, zs = F.zs || 1, s0 = Math.max(0, F.len - C.CAP_LEN * us), Lc = F.len - s0, depth = Math.min(C.HEM_DEPTH * us, C.HEM_FRAC * Lc);
+  return { s0, Lc, zs, us, depth, dN: Math.min(C.NECK_K * C.BALL_R * zs * bm, 0.5 * Math.max(0, Lc - depth)), back0: C.BALL_R * zs * bm + C.CLASP_GAP * us };
 };
 /**
- * [CAPE] Дуга i-го зразка від хвоста шляху: перші DAG_SUB + 1 — рівно по зубцях поділу (спільна сітка трьох вістер, i = DAG_SUB — основа
- * зубців = кінець тіла), решта — рівно до голови. Геометрія G — capeGeom(F).
+ * [CAPE] Дуга i-го зразка від хвоста шляху: перші HEM_SUB + 1 — по фестонах (e = depth·sin(π/2·i/HEM_SUB): густіше біля основи дуг, де край
+ * крутий; i = HEM_SUB — основа фестонів = кінець тіла), решта — рівно до шиї dN.
  */
 export const capeS = (F, G, i) => {
-  const C = TRAIL_STYLE_E.CAPE;
-  return i <= C.DAG_SUB ? G.s0 + (G.ld * i) / C.DAG_SUB : G.s0 + G.ld + ((G.Lc - G.ld) * (i - C.DAG_SUB)) / (C.N - 1 - C.DAG_SUB);
+  const C = TRAIL_STYLE_E.CAPE, H = C.HEM_SUB;
+  return i <= H ? G.s0 + G.depth * Math.sin((Math.PI / 2) * (i / H)) : G.s0 + G.depth + ((G.Lc - G.dN - G.depth) * (i - H)) / (C.N - 1 - H);
 };
 /**
- * [CAPE] Профіль плаща в зразку p (s, dev): { gh — 0 комір … 1 кінець плаща, d — дуга від голови, e — дуга від кінця, m — сила хвилі
- * (0 біля фібули … 1), cw — хвиля, xp — «підкладка» (1 — RED, 0 — DARK), off — зсув центру, w — півширина (у конверті room = env − dev),
- * ball — частка барви м'яча }. Кадр K = { ph, kd, amp, side }, геометрія G = capeGeom(F).
+ * [CAPE] Профіль у зразку p (s, dev): { d — дуга від голови, e — дуга від кінчиків подолу, g — 0 шия … 1 поділ, m — сила хльосту (0 біля коміра … 1),
+ * cw — хвиля, off — зсув осі плаща, w — півширина (off ± w — у межах room = ENV − dev), room }. Кадр K = { ph, kd, amp }, геометрія G = capeGeom(F).
  */
 export const capeProf = (F, K, G, p) => {
   const C = TRAIL_STYLE_E.CAPE, sv = Math.max(p.s, G.s0), d = Math.max(0, F.len - sv), e = sv - G.s0;
-  const gh = G.Lc > 0 ? clamp01(d / G.Lc) : 1;
+  const g = clamp01((d - G.dN) / Math.max(1e-6, G.Lc - G.dN));
   const m = smooth01((d - G.back0) / Math.max(1e-6, C.M_LEN * (G.Lc - G.back0)));
-  // хвиля: складка завдовжки FOLD_L дугою від голови (довший плащ — більше складок); у дропі — удвічі частіше (друга гармоніка, kd)
-  const th = d / C.FOLD_L - K.ph, c1 = Math.cos(TAU * th), cw = c1 + K.kd * (Math.cos(2 * TAU * th) - c1);
-  // силует — трикутник плаща: вузький комір W_NECK, розкльошується до W_HEM (gh^FLARE_EXP). Батіг — з ВІЛЬНОГО місця конверту (як WISP):
-  // увесь плащ хльостає вбік, як прапор, на (room − w)·WHIP_K·amp·m, трохи відхилившись назовні (LEAN·side); на гребені — ширшає (BILLOW)
-  const room = Math.max(0, F.env - p.dev), w0 = Math.min(room, C.W_NECK + (C.W_HEM - C.W_NECK) * Math.pow(gh, C.FLARE_EXP)), free = room - w0;
-  const off = free * m * (C.LEAN * K.side + Math.min(1 - C.LEAN, C.WHIP_K * K.amp) * cw);
-  const w = Math.max(0, Math.min(room - Math.abs(off), w0 * (1 + C.BILLOW * m * cw)));
-  const xp = 1 - m * (1 - smooth01((cw - C.FOLD_DARK) / C.FOLD_SOFT));
-  return { gh, d, e, m, cw, xp, off, w, room, ball: C.HEAD_BALL * smooth01(1 - d / G.back0) };
+  // один плавний вигин: довжина хвилі WAVE_L·CAP_LEN (не частка Lc — вигляд той самий за будь-якої довжини), гребінь біжить від коміра до подолу
+  const us = G.us || 1, th = TAU * (d / (C.WAVE_L * C.CAP_LEN * us) - K.ph), cw = Math.cos(th), sw = -Math.sin(th);
+  // хльост — з конверта: зсув осі ±A·m, півширина — що лишилось (на гребені вигину плащ трохи ширшає: BILLOW, на чверть хвилі позаду зсуву)
+  const room = Math.max(0, C.ENV - p.dev), off = Math.max(-room, Math.min(room, K.amp * m * cw));
+  const w0 = (C.W_NECK + (C.W_HEM - C.W_NECK) * Math.pow(g, C.FLARE_EXP)) * (1 + C.BILLOW * m * sw);
+  return { d, e, g, m, cw, sw, off, w: Math.max(0, Math.min(w0, room - Math.abs(off))), room };
+};
+/** [CAPE] Довжина вістря j (частка глибини: TIPS — від зовнішнього краю), зовнішній край — бік sideC; на стрибку міняються місцями плавно (hp). */
+const capeTip = (G, j, side) => {
+  const C = TRAIL_STYLE_E.CAPE, hp = 0.5 + 0.5 * side;
+  return (hp * C.TIPS[j] + (1 - hp) * C.TIPS[C.HEM_N - j]) * G.depth;
 };
 /**
- * [CAPE] Вістря поділу j (0 — край +n … DAG_N − 1 — край −n) у профілі q кінця плаща: { c — центр, h — півширина } (зсув від осі).
- * Основа (e = ld) — j-та третина перерізу [off − w, off + w]; до кінчика звужується (1 − t)^DAG_EXP і відлітає назовні (side) на DAG_SWEEP
- * своєї ширини — кажанячі крила / зубчастий поділ плаща графа. Довжина — DAG_LK від зовнішнього (найдовше) до внутрішнього; на стрибку
- * (side → −side) довжини плавно міняються місцями (частка hp), вістря не перескакують.
+ * [CAPE] Вістря j (0 … HEM_N; ξ_j = 1 − 2j/HEM_N) на дузі e від кінчиків подолу: [a, b] у частках півширини від осі плаща (крайні — половина).
+ * Півширина вістря h = (2/π)·asin(t)/HEM_N, t = (e − tip)/(depth − tip): до кінчика — 0 (гостре вістря), на основі дуги — 1/HEM_N (сусіди
+ * сходяться, дуга дотична до основи). Між вістрями — увігнуті заокруглені фестони, не зигзаг.
  */
-export const capeDag = (G, q, j, side) => {
-  const C = TRAIL_STYLE_E.CAPE, n = C.DAG_N, seg = (2 * q.w) / n, hp = 0.5 + 0.5 * side;
-  const lk = hp * C.DAG_LK[j] + (1 - hp) * C.DAG_LK[n - 1 - j], t = clamp01((G.ld - q.e) / Math.max(1e-6, lk * G.ld));
-  const h = 0.5 * seg * Math.pow(1 - t, C.DAG_EXP), lim = Math.max(0, q.room - h);
-  return { c: Math.max(-lim, Math.min(lim, q.off + q.w - seg * (j + 0.5) + side * C.DAG_SWEEP * seg * t)), h };
+export const capeTooth = (G, e, j, side) => {
+  const n = TRAIL_STYLE_E.CAPE.HEM_N, xj = 1 - (2 * j) / n, tip = capeTip(G, j, side);
+  const h = ((2 / Math.PI) * Math.asin(clamp01((e - tip) / Math.max(1e-6, G.depth - tip)))) / n;
+  return [j === n ? -1 : xj - h, j === 0 ? 1 : xj + h];
 };
-/** [CAPE] α оксамиту профілю q: комір BODY_A, до кінчика поділу — ×A_TAIL (непрозорий до самого краю: «пелени» немає). */
-const capeBodyA = (q) => { const C = TRAIL_STYLE_E.CAPE; return C.BODY_A * (1 - (1 - C.A_TAIL) * q.gh); };
+/** [CAPE] Дуга від кінчиків до краю подолу на ξ ∈ [−1, 1]: найменша з сусідніх вістер — tip + (depth − tip)·sin(π/2·δ·HEM_N), δ — відстань до вістря. */
+export const capeHemE = (G, xi, side) => {
+  const n = TRAIL_STYLE_E.CAPE.HEM_N;
+  let e = G.depth;
+  for (let j = 0; j <= n; j++) {
+    const dl = Math.abs(xi - (1 - (2 * j) / n));
+    if (dl * n > 1 + 1e-9) continue;
+    const tip = capeTip(G, j, side);
+    e = Math.min(e, tip + (G.depth - tip) * Math.sin((Math.PI / 2) * Math.min(1, dl * n)));
+  }
+  return e;
+};
 
 /**
- * [CAPE] Плащ графа — легендарний хвіст DEMON THE LAST TOCCATA (шапка TRAIL_STYLE_E.CAPE, спека TRAIL.md): оксамитовий плащ зі зубчастим
- * поділом, що хльостає вбік раз на долю (складки біжать від коміра), золотий поділ назовні (бочка, стібки, промінь), винна складка, світло
- * й тінь оксамиту, золота фібула з рубіном — шов між м'ячем і плащем, попіл і жарини світанку. Своя барва (hue), м'яч — лише під м'ячем (ball).
+ * [CAPE] Плащ графа — легендарний хвіст DEMON THE LAST TOCCATA, варіант C (шапка TRAIL_STYLE_E.CAPE, спека TRAIL.md): стоячий комір за м'ячем,
+ * трапеція чорного оксамиту з фіолетовим полиском і віялом складок, кармін-атлас на повороті, поділ із трьох заокруглених кажанячих фестонів у
+ * золоті, фібула-медальйон; хльостає раз на долю, у дропах — сильніше. Своя барва (hue) — барва м'яча не домішується.
  */
 function makeCapeE(F, S) {
-  const C = TRAIL_STYLE_E.CAPE, X = LOOK_E, R = TRAIL_RULES, LV = F.mode === TRAIL_MODE.LEVEL, still = F.reduced, lut = capeLut();
-  const B = capeBeat(F), G = capeGeom(F), side = capeSide(F);
-  const K = { ph: B.ph, kd: B.kd, side, amp: (still ? C.AMP_STILL : F.pick(C.AMP_L, C.AMP_E)) * (1 + C.DROP_AMP * B.kd + C.ENTRY_AMP * B.entry) };
-  const stitchT = C.STITCH_BEATS * F.unit, smp = [], pr = [], u = [], kk = [], st = [];
+  const C = TRAIL_STYLE_E.CAPE, R = TRAIL_RULES, LV = F.mode === TRAIL_MODE.LEVEL, still = F.reduced, LUT = capeLuts(), n = C.HEM_N, hs = C.HEM_SUB;
+  const B = capeBeat(F), us = S.sm / S.pm, G = capeGeom(F, us, S.bm || 1), side = capeSide(F), sg = side >= 0 ? 1 : -1, sa = Math.abs(side);
+  const K = { ph: B.ph, kd: B.kd, amp: (still ? C.AMP_STILL : F.pick(C.AMP_L, C.AMP_E)) * (1 + C.DROP_AMP * B.kd + C.ENTRY_AMP * B.entry) };
+  const smp = [], pr = [], u = [];
   for (let i = 0, last = 0; i < C.N; i++) {
     const p = F.atS(capeS(F, G, i));
     smp.push(p); pr.push(capeProf(F, K, G, p));
     last = Math.max(last, chordU(F, p.x, p.y)); u.push(last);
-    // бочка й стібок — раз на зразок (обидва краї читають той самий)
-    kk.push(LV ? F.kick(p.t) : 0);
-    st.push(LV ? Math.pow(0.5 + 0.5 * Math.cos((TAU * (p.t - F.t0)) / stitchT), C.STITCH_EXP) : 0);
   }
-  // тіло — зразки від основи зубців (DAG_SUB) до голови; зубці — DAG_N вістер на спільній сітці кінця (0 … DAG_SUB)
-  const b0 = C.DAG_SUB, sB = smp.slice(b0), pB = pr.slice(b0), sD = smp.slice(0, b0 + 1), dags = [];
-  for (let j = 0; j < C.DAG_N; j++) dags.push(pr.slice(0, b0 + 1).map((q) => capeDag(G, q, j, side)));
+  /** Смуга [a, b] (частки півширини, ab(i)) по зразках i0…i1; k — множник півширини (ореол), add — + од. */
+  const band = (i0, i1, ab, k = 1, add = 0) => ribbon(S, smp.slice(i0, i1 + 1),
+    (p, j) => { const q = pr[i0 + j], x = ab(i0 + j); return (0.5 * Math.max(0, x[1] - x[0]) * q.w) * k + (x[1] > x[0] ? add : 0); },
+    (p, j) => { const q = pr[i0 + j], x = ab(i0 + j); return q.off + 0.5 * (x[0] + x[1]) * q.w; });
+  /** Точка перерізу зразка (p, q) на ξ (частка півширини від осі плаща), у межах room − pad. */
+  const at = (p, q, xi, pad) => {
+    const lim = Math.max(0, q.room - pad), d = Math.max(-lim, Math.min(lim, q.off + xi * q.w));
+    return [p.x * S.pm + p.nx * d * S.sm, p.y * S.pm + p.ny * d * S.sm];
+  };
+  const FULL = [-1, 1], tooth = (j) => (i) => capeTooth(G, pr[i].e, j, side);
+  // межі шматків: тіло — від основи фестонів (hs) до шиї; за коміром (полиск, складки) — де d ≥ back0 + COLLAR_W
+  let iBack = hs + 1, iCol = hs + 1;
+  for (let i = hs; i < C.N; i++) { if (pr[i].d >= G.back0) iBack = i; if (pr[i].d >= G.back0 + C.COLLAR_W * us) iCol = i; }
+  iBack = Math.max(hs + 1, iBack); iCol = Math.max(hs + 1, iCol);
   const out = empty();
-  // ореол: багряна кайма довкола оксамиту, у дропі — сильніша; у голові — під м'ячем (GLOW_HEAD_K)
+  // ── ореол: м'який багрянець підкладки під плащем (за м'ячем: від back0), вістря — вужче (виїмки фестонів темні)
   const ga = Math.min(R.HEAD_A_MAX, C.GLOW_A * (1 + C.BEAT_GLOW * F.beat) * (1 + C.DROP_GLOW * B.kd));
-  // (тіло ×GLOW_MUL, вістря — ×GLOW_DAG: між зубцями — темні вирізи, а не суцільна заграва)
-  const halo = [ribbon(S, sB, (p, i) => Math.min(pB[i].w * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p), pB[i].room - Math.abs(pB[i].off)), (p, i) => pB[i].off),
-    ...dags.map((D) => ribbon(S, sD, (p, i) => Math.min(D[i].h * C.GLOW_DAG, pr[i].room - Math.abs(D[i].c)), (p, i) => D[i].c))];
-  out.glow = { paths: glowOf(halo).paths, grad: chordGrad(F, S, pr.map((q, i) => [u[i], 0, ga, C.RED, q.ball])) };
-  // тіло: рампа DARK → RED за xp (індекс — floor(x + 0.5), як Math.round JS), атлас на лініях складки, промінь на гребені
-  out.fills.push({ paths: [ribbon(S, sB, (p, i) => pB[i].w, (p, i) => pB[i].off), ...dags.map((D) => ribbon(S, sD, (p, i) => D[i].h, (p, i) => D[i].c))],
-    grad: chordGrad(F, S, pr.map((q, i) => {
-    const s = 4 * q.xp * (1 - q.xp), cr = Math.max(0, q.cw);
-    return [u[i], C.BODY_MIX + C.SHEEN * s * s + C.CREST_SHEEN * q.m * cr * cr * cr, capeBodyA(q), lut[Math.floor(q.xp * C.LUT_STEPS + 0.5)], q.ball];
+  const halo = [band(hs, iBack, () => FULL, C.GLOW_K, C.GLOW_ADD)];
+  for (let j = 0; j <= n; j++) halo.push(band(0, hs, tooth(j), C.GLOW_TOOTH, C.GLOW_ADD));
+  out.glow = { paths: halo.map(pos), grad: chordGrad(F, S, [[0, 0, ga, C.GLOW], [1, 0, ga, C.GLOW]]) };
+  // ── оксамит: тіло + HEM_N + 1 вістер одним заливанням; гребінь хвилі світлішає (рампа VELVET), западина — темніє
+  const body = [band(hs, C.N - 1, () => FULL)];
+  for (let j = 0; j <= n; j++) body.push(band(0, hs, tooth(j)));
+  // (смуги тіла й вістер — один обхід за будовою: L — бік +n; комір нижче розвертаємо під обхід тіла — nonzero не «вирізає» перетин)
+  const turn = Math.sign(area2(body[0])) || 1, orient = (poly) => (area2(poly) * turn < 0 ? poly.slice().reverse() : poly);
+  out.fills.push({ paths: body, grad: chordGrad(F, S, pr.map((q, i) => {
+    const cr = Math.max(0, q.cw);
+    return [u[i], C.BODY_MIX + C.CREST_MIX * q.m * cr * cr * cr, C.BODY_A, capeAt(LUT.body, 0.5 + 0.5 * q.m * q.cw)];
   })) });
-  // світло на гребені: опукла частина оксамиту (бік поділу) ловить світло; на винній складці гасне
-  out.fills.push({ paths: [ribbon(S, sB, (p, i) => C.NAP_K * pB[i].w, (p, i) => pB[i].off + side * C.NAP_OFF * pB[i].w)], inner: true,
-    grad: chordGrad(F, S, pB.map((q, i) => [u[b0 + i], C.NAP_MIX, C.NAP_A * capeBodyA(q) * (C.NAP_STILL + (1 - C.NAP_STILL) * Math.pow(Math.max(0, q.cw), C.NAP_EXP)) * q.xp, C.SHINE, q.ball])) });
-  // тінь досередини: внутрішній бік оксамиту в тіні (там і золота немає — плащ не «капсула в обводці»)
-  out.fills.push({ paths: [ribbon(S, sB, (p, i) => C.SHADE_K * pB[i].w, (p, i) => pB[i].off - side * C.SHADE_OFF * pB[i].w)], inner: true,
-    grad: chordGrad(F, S, pB.map((q, i) => [u[b0 + i], 0, C.SHADE_A * capeBodyA(q), C.DARK, q.ball])) });
-  // золотий поділ — ЛИШЕ зовнішній край (бік sideC; на стрибку — плавно на обидва за часткою h): найяскравіше в плащі, по зубцях до вістря.
-  // Зовнішній піксель штриха = край тіла; бочка (у мить голови) розширює поділ, бочка в мить точки й стібки 16-х — спалахують золотом
-  const kH = LV ? F.kick(F.tH) : 0, wHem = C.HEM_W * (1 + C.HEM_KICK_W * kH);
-  for (const sg of [1, -1]) {
-    const h = 0.5 + 0.5 * sg * side;
-    if (h < 0.05) continue;
-    const w = wHem * (0.5 + 0.5 * h), pts = [], stops = [];
-    for (let i = 0; i < C.N; i++) {
-      // кінець — по зовнішньому краю крайнього вістря до кінчика
-      const p = smp[i], q = pr[i], lim = Math.max(0, q.room - w / 2), cr = Math.max(0, q.cw), D = i < b0 ? dags[sg > 0 ? 0 : C.DAG_N - 1][i] : null;
-      if (D && D.h < 0.5 * w) continue;                          // вістря тонше за штрих — золото закінчується на ньому, не стирчить
-      const c = D ? D.c : q.off, hw = D ? D.h : q.w;
-      const dd = Math.max(-lim, Math.min(lim, sg > 0 ? Math.max(c, c + hw - w / 2) : Math.min(c, c - hw + w / 2)));
-      pts.push([p.x * S.pm + p.nx * dd * S.sm, p.y * S.pm + p.ny * dd * S.sm]);
-      stops.push([u[i], Math.min(0.92, C.HEM_MIX + C.KICK_FLASH * kk[i] + C.STITCH * st[i] + C.CREST * q.m * cr * cr * cr), C.HEM_A * h, C.GOLD, 0]);
-    }
-    out.strokes.push({ pts, w: w * S.sm, grad: chordGrad(F, S, stops) });
+  // ── підкладка (кармін-атлас) клином уздовж внутрішнього краю: LINE_K[0] → LINE_K[1] ширини (на стрибку — ×|side|: переходить на другий край
+  // через нуль, без перескоку); на вістрях — перетин клину з вістрям; комір — той самий атлас
+  const lineOf = (i) => { const q = pr[i], l = 2 * sa * Math.min(C.LINE_MAX, (C.LINE_K[0] + (C.LINE_K[1] - C.LINE_K[0]) * Math.pow(q.g, C.LINE_EXP)) * (1 + C.LINE_WHIP * (1 + B.kd) * q.m * q.cw * sg)); return sg > 0 ? [-1, -1 + l] : [1 - l, 1]; };
+  const cut = (x, y) => { const a = Math.max(x[0], y[0]), b = Math.min(x[1], y[1]); return b > a ? [a, b] : [a, a]; };
+  const lining = [band(hs, C.N - 1, lineOf)];
+  for (let j = 0; j <= n; j++) lining.push(band(0, hs, (i) => cut(lineOf(i), capeTooth(G, pr[i].e, j, side))));
+  // комір: віяло ±(COLLAR_ANG + COLLAR_TIP_ANG) довкола спини м'яча; зовні — м'яч + COLLAR_W (до вістер COLLAR_TIP), у межах ENV − ½ канта;
+  // всередині — COLLAR_IN·м'яча (під м'ячем), на вістрях сходиться до краю — гострі кінці вперед-назовні
+  const H = F.pts[F.M - 1], nH = F.nrm[F.M - 1], tx = nH[1], ty = -nH[0], hx = H[0] * S.pm, hy = H[1] * S.pm;
+  const rB = C.BALL_R * G.zs * (S.bm || 1) * S.pm, thTip = C.COLLAR_ANG + C.COLLAR_TIP_ANG, rCap = (C.ENV - C.RIM_W / 2) * S.sm;
+  const colOut = [], colIn = [];
+  for (let k = 0; k <= C.COLLAR_N; k++) {
+    const th = -thTip + (2 * thTip * k) / C.COLLAR_N, a = Math.abs(th);
+    const kt = smooth01((a - 0.55 * C.COLLAR_ANG) / (thTip - 0.55 * C.COLLAR_ANG)), kp = smooth01((a - C.COLLAR_ANG) / C.COLLAR_TIP_ANG);
+    const ro = Math.min(rCap, rB + (C.COLLAR_W + (C.COLLAR_TIP - C.COLLAR_W) * kt) * S.sm), ri0 = Math.min(ro, C.COLLAR_IN * rB);
+    const ri = ri0 + (Math.max(ri0, ro - 0.8 * S.sm) - ri0) * kp, dx = -tx * Math.cos(th) + nH[0] * Math.sin(th), dy = -ty * Math.cos(th) + nH[1] * Math.sin(th);
+    colOut.push([hx + dx * ro, hy + dy * ro]); colIn.push([hx + dx * ri, hy + dy * ri]);
   }
-  // попіл і жарини світанку: сітка ¼ долі завжди (стоять у світі), непарні — лише в дропі (рівень такту в мить частинки): зерно живої частинки на
-  // межі дропу не міняється. Біля поділу, відпливають назовні до кінчика; ближче MOTE_CLEAR до голови і поза плащем — ні
+  lining.push(orient([...colOut, ...colIn.slice().reverse()]));
+  out.fills.push({ paths: lining, grad: chordGrad(F, S, [...pr.map((q, i) => {
+    const cr = Math.max(0, q.cw), tr = Math.max(0, -q.cw);
+    return [u[i], C.LINE_MIX + C.LINE_CREST * q.m * cr * cr, C.LINE_A, capeAt(LUT.lining, C.COLLAR_X + (1 - C.COLLAR_X) * q.g * q.g - 0.3 * q.m * tr)];
+  }), [1, C.LINE_MIX, C.LINE_A, capeAt(LUT.lining, C.COLLAR_X)]]) });
+  // ── фіолетовий полиск оксамиту (inner): смуга на зовнішній половині (центр ×side — на стрибку плавно), гребінь хвилі — яскравіше
+  const shIn = C.SHEEN_IN, shOut = C.SHEEN_OUT;
+  out.fills.push({ paths: [band(hs, iCol, () => [side * 0.5 * (shIn + shOut) - 0.5 * (shOut - shIn), side * 0.5 * (shIn + shOut) + 0.5 * (shOut - shIn)])], inner: true,
+    grad: chordGrad(F, S, pr.slice(hs, iCol + 1).map((q, k) => [u[hs + k], C.SHEEN_MIX,
+      C.SHEEN_A * (C.SHEEN_STILL + (1 - C.SHEEN_STILL) * Math.pow(Math.max(0, q.cw), C.SHEEN_EXP)) * smooth01(q.g / 0.25), C.SHEEN])) });
+  // ── штрихи (хвіст → голова, стопи неспадні): кант атласу, западина, 2 гребені складок, золотий край, кант коміра, золотий поділ
+  const line = (pts, stops, w) => { if (pts.length >= 2) out.strokes.push({ pts, w: w * S.sm, grad: chordGrad(F, S, stops) }); };
+  const trace = (from, to, ok, xiOf, pad, stopOf) => {
+    const pts = [], stops = [];
+    let last = 0;
+    for (let i = from; i <= to; i++) {
+      if (!ok(i)) continue;
+      const p = smp[i], q = pr[i], v = at(p, q, xiOf(i), pad);
+      last = Math.max(last, chordU(F, v[0] / S.pm, v[1] / S.pm));
+      pts.push(v); stops.push([last, ...stopOf(q, i)]);
+    }
+    return [pts, stops];
+  };
+  // кант атласу (SATIN) по межі клину: «вивернутий» край ловить світло
+  line(...trace(hs, C.N - 1, (i) => pr[i].g >= C.SATIN_FROM, (i) => lineOf(i)[sg > 0 ? 1 : 0], C.SATIN_W / 2,
+    (q) => [C.SATIN_MIX, C.SATIN_A * sa * smooth01((q.g - C.SATIN_FROM) / 0.15), C.SATIN]), C.SATIN_W);
+  // віяло складок: від коміра (d ≥ back0 + COLLAR_W + FOLD_FROM, ξ ±FOLD_IN) — гребені до внутрішніх вістер, западини — до виїмок між ними
+  const dF = G.back0 + (C.COLLAR_W + C.FOLD_FROM) * us, gF = (q) => clamp01((q.d - dF) / Math.max(1e-6, G.Lc - G.depth - dF));
+  const fadeF = (q) => smooth01((q.d - dF) / (6 * us));
+  for (let j = 1; j < n - 1; j++) {
+    const xv = 1 - (2 * j + 1) / n;
+    line(...trace(hs, C.N - 1, (i) => pr[i].d >= dF, () => xv, C.VALLEY_W / 2, (q) => [0, C.VALLEY_A * fadeF(q), C.VALLEY]), C.VALLEY_W);
+  }
+  for (let j = 1; j < n; j++) {
+    const xj = 1 - (2 * j) / n, x0 = Math.sign(xj) * C.FOLD_IN, tipE = (gg) => capeTip(gg, j, side);
+    line(...trace(0, C.N - 1, (i) => (i < hs ? pr[i].e >= tipE(G) + C.FOLD_TIP * (G.depth - tipE(G)) : pr[i].d >= dF),
+      (i) => (i < hs ? xj : x0 + (xj - x0) * Math.pow(gF(pr[i]), C.FOLD_EXP)), C.FOLD_W / 2,
+      (q) => [C.FOLD_MIX, C.FOLD_A * (C.FOLD_STILL + (1 - C.FOLD_STILL) * Math.max(0, q.cw)) * fadeF(q), C.CREST]), C.FOLD_W);
+  }
+  // золотий край — ЛИШЕ зовнішній (бік sideC; на стрибку α ×|side|), від EDGE_FROM довжини до кінчика крайнього вістря; зовнішній піксель = край
+  const tipO = capeTip(G, sg > 0 ? 0 : n, side);
+  line(...trace(0, C.N - 1, (i) => (i < hs ? pr[i].e >= tipO : pr[i].g >= C.EDGE_FROM), (i) => sg * (1 - (0.5 * C.EDGE_W) / Math.max(C.EDGE_W, pr[i].w)), C.EDGE_W / 2,
+    (q) => [C.EDGE_MIX, C.EDGE_A * sa * smooth01((q.g - C.EDGE_FROM) / C.EDGE_IN), C.GOLD]), C.EDGE_W);
+  // кант коміра (золото, RIM_W) по зовнішньому краю віяла
+  out.strokes.push({ pts: colOut, w: C.RIM_W * S.sm, grad: chordGrad(F, S, [[0, C.RIM_MIX, C.HEM_A, C.GOLD], [1, C.RIM_MIX, C.HEM_A, C.GOLD]]) });
+  // золотий поділ по фестонах (HEM_PTS точок на фестон): бочка (у мить голови) — ширше й спалах; у межах room − ½ штриха
+  const kH = LV ? F.kick(F.tH) : 0, wHem = C.HEM_W * (1 + C.HEM_KICK_W * kH), hem = [];
+  for (let k = 0, kn = n * C.HEM_PTS; k <= kn; k++) {
+    const xi = 1 - (2 * k) / kn, p = F.atS(G.s0 + capeHemE(G, xi, side));
+    hem.push(at(p, capeProf(F, K, G, p), xi, wHem / 2));
+  }
+  const mk = Math.min(0.92, C.HEM_MIX + C.KICK_FLASH * kH);
+  out.strokes.push({ pts: hem, w: wHem * S.sm, grad: chordGrad(F, S, [[0, mk, C.HEM_A, C.GOLD], [1, mk, C.HEM_A, C.GOLD]]) });
+  // ── попіл і жарини світанку: сітка ¼ долі завжди (стоять у світі), непарні — лише в дропі (рівень такту в мить частинки): зерно живої частинки
+  // на межі дропу не міняється. На зовнішній половині плаща (не на фестонах і не під коміром); з віком — до краю
   const rMax = R.PART_R_MAX * F.scr, tNow = F.tH - F.t0, motes = [];
   for (const gt of gridTimes(F, F.step(C.MOTE_BEATS, C.MOTE_T), 2 * C.MOTE_N)) {
     if (motes.length >= C.MOTE_N) break;
@@ -1019,30 +1166,228 @@ function makeCapeE(F, S) {
   }
   for (const { g, t } of motes.reverse()) {
     const p = F.at(t);
-    if (!p || p.s < G.s0 || F.len - p.s < C.MOTE_CLEAR * G.zs) continue;
+    if (!p || p.s < G.s0 + G.depth || F.len - p.s < C.MOTE_CLEAR * G.zs * us) continue;
     const q = capeProf(F, K, G, p), seed = seedOf(g);
-    const r = Math.min(C.MOTE_R[0] + (C.MOTE_R[1] - C.MOTE_R[0]) * h01(seed + TRAIL_SEED.RADIUS), rMax, q.room);
+    const r = Math.min(C.MOTE_R[0] + (C.MOTE_R[1] - C.MOTE_R[0]) * h01(seed + TRAIL_SEED.RADIUS), rMax, 0.5 * q.w);
     if (!(r > 0)) continue;
-    const edge = q.off + side * q.w, free = Math.max(0, q.room - Math.abs(edge) - r), lim = Math.max(0, q.room - r);
-    const d = Math.max(-lim, Math.min(lim, q.off + side * (q.w - 0.5 * r) + (still ? 0 : side * C.MOTE_DRIFT * q.gh * h01(seed) * free)));
-    const tw = still ? 1 : C.TW_MIN + (1 - C.TW_MIN) * 0.5 * (1 + Math.sin(TAU * (tNow * C.TW_HZ + h01(seed + 3.3))));
+    const age = still ? 0 : clamp01((F.tH - t) / F.span), xi = C.MOTE_IN[0] + (C.MOTE_IN[1] - C.MOTE_IN[0]) * clamp01(0.6 * h01(seed) + 0.4 * age);
+    const v = at(p, q, side * xi, r), tw = still ? 1 : C.TW_MIN + (1 - C.TW_MIN) * 0.5 * (1 + Math.sin(TAU * (tNow * C.TW_HZ + h01(seed + 3.3))));
     const ash = h01(seed + 5.5) < 0.5;
-    out.dots.push({ x: p.x * S.pm + p.nx * d * S.sm, y: p.y * S.pm + p.ny * d * S.sm, r: r * S.sm, mixK: C.MOTE_MIX[ash ? 1 : 0],
-      alpha: C.MOTE_A * Math.sqrt(capeBodyA(q)) * tw, spark: true, hue: C.MOTES[ash ? 1 : 0] });
+    out.dots.push({ x: v[0], y: v[1], r: r * S.sm, mixK: C.MOTE_MIX[ash ? 1 : 0], alpha: C.MOTE_A * tw, spark: true, hue: C.MOTES[ash ? 1 : 0] });
   }
-  // фібула — шов між м'ячем і плащем: темний обідок, золотий диск, рубін, відблиск на долю. Центр — дугою BALL_R·zs (у прев'ю ×bm — м'яч прев'ю)
+  // ── фібула (медальйон графа) на комірі: темний обідок, золотий диск, рубін, відблиск на долю. Центр — дугою BALL_R·zs (у прев'ю ×bm — м'яч прев'ю)
   // + CLASP_GAP у мірі ширин від голови (диск заходить під м'яч); з'являється плавно, коли плащ довшає за CLASP_MIN_LEN (HOLD, старт)
-  const backP = C.BALL_R * G.zs * (S.bm || 1) + C.CLASP_GAP * (S.sm / S.pm);
+  const backP = G.back0;
   const ca = 0.95 * smooth01((F.len - backP - 0.5 * C.CLASP_MIN_LEN) / (0.5 * C.CLASP_MIN_LEN));
   if (ca > 0) {
-    const p = F.atS(F.len - backP), tx = p.ny, ty = -p.nx;
-    const cx = p.x * S.pm, cy = p.y * S.pm;
-    out.rings.push({ x: cx, y: cy, r: C.CLASP_R * S.sm, w: C.RIM_W * S.sm, mixK: 0, alpha: C.RIM_A * ca, hue: C.DARK });
+    const p = F.atS(F.len - backP), ux = p.ny, uy = -p.nx, cx = p.x * S.pm, cy = p.y * S.pm;
+    out.rings.push({ x: cx, y: cy, r: C.CLASP_R * S.sm, w: C.CLASP_RIM_W * S.sm, mixK: 0, alpha: C.RIM_A * ca, hue: C.RIM });
     out.dots.push({ x: cx, y: cy, r: C.CLASP_R * S.sm, mixK: C.CLASP_MIX, alpha: ca, hue: C.GOLD });
     out.dots.push({ x: cx, y: cy, r: C.RUBY_R * S.sm, mixK: C.RUBY_MIX, alpha: ca, hue: C.RUBY });
     const gl = LV && !still ? C.GLINT_BASE + (1 - C.GLINT_BASE) * F.beat : C.GLINT_E;
-    const gx = (p.nx * 0.45 * side + tx * 0.4) * C.RUBY_R * S.sm, gy = (p.ny * 0.45 * side + ty * 0.4) * C.RUBY_R * S.sm;
+    const gx = (p.nx * 0.45 * side + ux * 0.4) * C.RUBY_R * S.sm, gy = (p.ny * 0.45 * side + uy * 0.4) * C.RUBY_R * S.sm;
     out.dots.push({ x: cx + gx, y: cy + gy, r: C.GLINT_R * S.sm, mixK: C.GLINT_MIX, alpha: C.GLINT_A * gl * ca / 0.95, hue: C.GOLD });
+  }
+  return out;
+}
+// ================================================================ FERN — папороть (MOSSLIGHT, 06.11.2026; числа — TRAIL_STYLE_E.FERN)
+
+/** [FERN] Рампа зелені DEEP (хвіст) → LIGHT (голова) на LUT_STEPS кроків — рядки барв раз на модуль. Порт: 1D-таблиця. */
+let FERN_LUT = null;
+export const fernLut = () => {
+  if (!FERN_LUT) {
+    const C = TRAIL_STYLE_E.FERN;
+    FERN_LUT = [];
+    for (let i = 0; i <= C.LUT_STEPS; i++) FERN_LUT.push(flameHex(C.FROND[1], C.FROND[0], i / C.LUT_STEPS));
+  }
+  return FERN_LUT;
+};
+/** [FERN] Доля завитка: g — номер (рівень — долі по CROZ_BEATS, ∞ — періоду CROZ_T), u — частка 0…1 усередині. */
+export const fernBeat = (F) => {
+  const C = TRAIL_STYLE_E.FERN, x = (F.tH - F.t0) / F.step(C.CROZ_BEATS, C.CROZ_T), g = Math.floor(x + EPS_T);
+  return { g, u: clamp01(x - g) };
+};
+/** [FERN] Кут завитка, °: на долю CURL[0] → CURL[1] за expoOut (1 − 2^(−10u)); «менше руху» — CURL_STILL. */
+export const fernCurl = (F) => {
+  const C = TRAIL_STYLE_E.FERN;
+  if (F.reduced) return C.CURL_STILL;
+  const { u } = fernBeat(F), e = u >= 1 ? 1 : 1 - Math.pow(2, -10 * u);
+  return C.CURL[0] + (C.CURL[1] - C.CURL[0]) * e;
+};
+/** [FERN] Хвиля розкриття на f (0 хвіст … 1 голова): гаусіан WAVE_W, фронт біжить від голови до хвоста за WAVE_BEATS долі (∞ — WAVE_T с) і слабне; 0…1. */
+export const fernWave = (F, f) => {
+  const C = TRAIL_STYLE_E.FERN;
+  if (F.reduced) return 0;
+  const ph = (fernBeat(F).u * F.step(C.CROZ_BEATS, C.CROZ_T)) / F.step(C.WAVE_BEATS, C.WAVE_T);
+  if (ph >= 1) return 0;
+  return Math.exp(-(((f - (1 - ph)) / C.WAVE_W) ** 2)) * (1 - ph);
+};
+/** [FERN] Період тріпотіння в дропі, с: FLUTTER_BEATS долі, не частіше FLICKER_HZ_MAX. */
+export const fernFlutterPeriod = (F) => Math.max(TRAIL_STYLE_E.FERN.FLUTTER_BEATS * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX);
+const FERN_N = 30;                                             // зразків стебла рівно по дузі (atS)
+/**
+ * [FERN] Листок довжини 1 від кореня p: бік side, кут th (рад) назад від дотичної; серпаста жилка (CURVE), ланцетна смуга [L0 … LN, RN … R0] і жилка
+ * (смуга VEIN_FROM … VEIN_TO); reach — найдальша вершина від кореня (для конверту: масштаб листка ≤ lim / reach).
+ */
+const fernLeaf = (C, p, side, th) => {
+  const bx = -p.ny, by = p.nx, ox = p.nx * side, oy = p.ny * side, c = Math.cos(th), s = Math.sin(th);
+  const dx = c * bx + s * ox, dy = c * by + s * oy, n = C.LEAF_N;
+  const mid = (u) => [dx * u + bx * C.CURVE * u * u, dy * u + by * C.CURVE * u * u];
+  const nrm = (u) => { const tx = dx + 2 * bx * C.CURVE * u, ty = dy + 2 * by * C.CURVE * u, l = Math.hypot(tx, ty) || 1; return [-ty / l, tx / l]; };
+  const band = (us, wOf) => {
+    const L = [], R = [];
+    for (const u of us) { const m = mid(u), q = nrm(u), w = wOf(u); L.push([m[0] + q[0] * w, m[1] + q[1] * w]); R.push([m[0] - q[0] * w, m[1] - q[1] * w]); }
+    return [...L, ...R.reverse()];
+  };
+  const us = [];
+  for (let i = 0; i <= n; i++) us.push(i / n);
+  const poly = band(us, (u) => C.W_K * Math.pow(Math.sin(Math.PI * Math.pow(u, C.W_SKEW)), C.W_EXP));   // найширше біля кореня (u ≈ 0.34), довгий кінчик — перо папороті
+  const vein = band([C.VEIN_FROM, (C.VEIN_FROM + C.VEIN_TO) / 2, C.VEIN_TO], () => C.VEIN_K);
+  return { poly, vein, reach: Math.max(...poly.map((v) => Math.hypot(v[0], v[1]))) };
+};
+/**
+ * [06.11.2026] FERN — папороть (MOSSLIGHT): тонке стебло, перисті листки на сітці часу почергово з обох боків (назад під ANG°), світлі жилки, завиток за
+ * м'ячем, що розгортається на долю, і хвиля розкриття до хвоста; у дропі — тріпотіння й спори. Своя барва FROND (hue), голова — барва м'яча (ball).
+ */
+function makeFernE(F, S) {
+  const C = TRAIL_STYLE_E.FERN, X = LOOK_E, out = empty(), env = F.env, still = F.reduced, LV = F.mode === TRAIL_MODE.LEVEL;
+  const smp = [];
+  for (let i = 0; i < FERN_N; i++) smp.push(F.atS((F.len * i) / (FERN_N - 1)));
+  const lut = fernLut(), frond = (f) => lut[Math.round(clamp01(f) * C.LUT_STEPS)], ball = (f) => headBallOf(C, f);
+  const stopsOf = (fn) => { const st = []; let last = 0; for (const p of smp) { last = Math.max(last, chordU(F, p.x, p.y)); st.push([last, ...fn(p)]); } return st; };
+  const leafA = (f) => C.LEAF_A * (C.A_TAIL + (1 - C.A_TAIL) * f);
+  const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, C.GLOW_A * (1 + C.BEAT_GLOW * F.beat));
+  const halo = [ribbon(S, smp, (p) => C.STEM_K * X.hw(p.f) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p))];
+  out.fills.push({ paths: [ribbon(S, smp, (p) => C.STEM_K * X.hw(p.f))], grad: chordGrad(F, S, stopsOf((p) => [C.STEM_MIX, C.STEM_A * X.a(p.f), frond(p.f), ball(p.f)])) });
+  // листки: корінь на сітці часу (стоїть на дорозі), бік — по черзі; довжина — до голови, молоді біля м'яча, гаснуть розміром до хвоста
+  const flut = LV && !still && F.level(F.tH) >= C.DROP_LEVEL, fper = flut ? fernFlutterPeriod(F) : 1, leaves = [], veins = [];
+  const put = (p, v, k) => [p.x * S.pm + v[0] * k * S.sm, p.y * S.pm + v[1] * k * S.sm];
+  for (const { g, t } of gridTimes(F, F.step(C.GRID_BEATS, C.GRID), C.N_MAX).reverse()) {
+    const p = F.at(t);
+    if (!p) continue;
+    const base = C.L_TAIL + (C.L_MAX - C.L_TAIL) * Math.pow(p.f, C.L_EXP);
+    let len = (C.L_HEAD + (base - C.L_HEAD) * smooth01((F.len - p.s) / C.L_PINCH)) * smooth01(p.f / C.TAIL_FADE);
+    if (!still) len *= smooth01((F.tH - t) / F.step(C.OPEN_BEATS, C.OPEN)) * (1 + C.BUMP * fernWave(F, p.f));
+    const lim = env - p.dev - 1e-6;
+    if (!(len > 0.05) || !(lim > 0)) continue;
+    const th = (C.ANG + (flut ? C.FLUTTER * Math.sin(TAU * ((F.tH - F.t0) / fper + h01(seedOf(g, 2)))) : 0)) * D;
+    const lf = fernLeaf(C, p, g % 2 ? 1 : -1, th), k = Math.min(len, lim / lf.reach);
+    leaves.push(pos(lf.poly.map((v) => put(p, v, k))));
+    veins.push(pos(lf.vein.map((v) => put(p, v, k))));
+    halo.push(lf.poly.map((v) => put(p, v, Math.min(k * C.GLOW_LEAF, lim / lf.reach))));
+  }
+  if (leaves.length) {
+    out.fills.push({ paths: leaves, grad: chordGrad(F, S, stopsOf((p) => [C.LEAF_MIX, leafA(p.f), frond(p.f), ball(p.f)])) });
+    out.fills.push({ paths: veins, inner: true, grad: chordGrad(F, S, stopsOf((p) => [C.VEIN_MIX, (C.VEIN_A * leafA(p.f)) / C.LEAF_A, C.FROND[0], ball(p.f)])) });
+  }
+  // завиток за м'ячем: кривина росте до кінчика (Σ (2k + 1) / N² = 1 — повний поворот рівно curl), за долю розгортається CURL[0]° → CURL[1]°; бік — по черзі на долю
+  if (F.len - C.CROZ_S > 4) {
+    const p = F.atS(F.len - C.CROZ_S), side = still ? 1 : fernBeat(F).g % 2 ? 1 : -1, curl = fernCurl(F) * D;
+    const bx = -p.ny, by = p.nx, ox = p.nx * side, oy = p.ny * side, ds = C.CROZ_LEN / C.CROZ_N, loc = [[0, 0]];
+    let hd = C.CROZ_ANG * D, x = 0, y = 0;
+    for (let i = 0; i < C.CROZ_N; i++) {
+      x += Math.cos(hd) * ds; y += Math.sin(hd) * ds;
+      loc.push([x, y]);
+      hd -= (curl * (2 * i + 1)) / (C.CROZ_N * C.CROZ_N);
+    }
+    const lim = env - p.dev - C.CROZ_W / 2, reach = Math.max(...loc.map((v) => Math.hypot(v[0], v[1])));
+    if (lim > 0) {
+      const k = Math.min(1, lim / reach), a = C.CROZ_A * Math.max(0.6, X.a(p.f)), b = ball(p.f);
+      out.strokes.push({ pts: loc.map(([u, v]) => [p.x * S.pm + (bx * u + ox * v) * k * S.sm, p.y * S.pm + (by * u + oy * v) * k * S.sm]),
+        w: C.CROZ_W * S.sm, grad: chordGrad(F, S, [[0, C.CROZ_MIX, a, C.FROND[0], b], [1, C.CROZ_MIX, a, C.FROND[0], b]]) });
+    }
+  }
+  // спори в дропі: злітають з листків убік і гаснуть
+  if (flut) {
+    for (const { g, t } of gridTimes(F, F.step(C.SPORE_BEATS, 1), C.SPORE_N).reverse()) {
+      const p = F.at(t);
+      if (!p) continue;
+      const seed = seedOf(g, 5), q = clamp01((F.tH - t) / F.span);
+      const r = Math.min(C.SPORE_R[0] + (C.SPORE_R[1] - C.SPORE_R[0]) * h01(seed + TRAIL_SEED.RADIUS), TRAIL_RULES.PART_R_MAX, env - p.dev);
+      const room = Math.max(0, env - p.dev - r), a = C.SPORE_A * Math.pow(1 - q, 0.6);
+      if (!(r > 0) || !(a > 0)) continue;
+      const d = (g % 2 ? 1 : -1) * room * Math.min(1, 0.3 + C.SPORE_DRIFT * q) * (0.6 + 0.4 * h01(seed));
+      out.dots.push({ x: (p.x + p.nx * d) * S.pm, y: (p.y + p.ny * d) * S.pm, r: r * S.sm, mixK: C.SPORE_MIX, alpha: a, spark: true, hue: C.SPORE });
+    }
+  }
+  out.glow = { paths: glowOf(halo).paths, grad: chordGrad(F, S, stopsOf((p) => [0, ga, frond(p.f), ball(p.f)])) };
+  return out;
+}
+// ================================================================ SCRIBBLE — каракуля від руки (JUST A BLIP, 07.11.2026; числа — TRAIL_STYLE_E.SCRIBBLE)
+
+/** [SCRIBBLE] Період кипіння, с: рівень — BOIL_BEATS долі (вісімка), не частіше FLICKER_HZ_MAX; ∞ — BOIL_T. */
+export const scribbleBoilPeriod = (F) => F.pick(Math.max(TRAIL_STYLE_E.SCRIBBLE.BOIL_BEATS * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX), TRAIL_STYLE_E.SCRIBBLE.BOIL_T);
+/** [SCRIBBLE] Кадр кипіння: n — номер кадру, draw — «малюнок» по колу (n mod BOIL_N); «менше руху» — малюнок 0 стоїть. */
+export const scribbleBoil = (F) => {
+  const C = TRAIL_STYLE_E.SCRIBBLE;
+  if (F.reduced) return { n: 0, draw: 0 };
+  const n = Math.floor((F.tH - F.t0) / scribbleBoilPeriod(F) + EPS_T);
+  return { n, draw: ((n % C.BOIL_N) + C.BOIL_N) % C.BOIL_N };
+};
+/** [SCRIBBLE] Зсув осі (−1…1) на частці дуги u (0 хвіст … 1 голова) у «малюнку» draw: KNOTS вузлів h01, між вузлами — косинусом (плавно). */
+export const scribbleWobble = (draw, u) => {
+  const C = TRAIL_STYLE_E.SCRIBBLE, x = clamp01(u) * (C.KNOTS - 1), k = Math.min(C.KNOTS - 2, Math.floor(x)), w = x - k;
+  const a = 2 * h01(seedOf(draw, k + 11)) - 1, b = 2 * h01(seedOf(draw, k + 12)) - 1;
+  return a + (b - a) * (0.5 - 0.5 * Math.cos(Math.PI * w));
+};
+/** [SCRIBBLE] Каракулі в одиницях (|x|, |y| ≤ 1; x — уздовж дотичної до голови, y — геть від осі): 0 зірочка (пентаграма одним штрихом), 1 спіраль, 2 петлі. */
+const SCRIB_SHAPES = (() => {
+  const C = TRAIL_STYLE_E.SCRIBBLE, star = [], spiral = [], loops = [], raw = [];
+  for (let i = 0; i <= 5; i++) { const a = -Math.PI / 2 + (i * 4 * Math.PI) / 5; star.push([Math.cos(a), Math.sin(a)]); }
+  const th1 = C.SPIRAL_TURNS * TAU;
+  for (let i = 0; i < C.SPIRAL_N; i++) { const th = (th1 * i) / (C.SPIRAL_N - 1), r = 0.12 + 0.88 * (th / th1); spiral.push([r * Math.cos(th), r * Math.sin(th)]); }
+  for (let i = 0; i < C.LOOP_N; i++) { const th = (4 * Math.PI * i) / (C.LOOP_N - 1); raw.push([0.55 * th - Math.sin(th), -Math.cos(th)]); }   // трохоїда: петлі
+  const x0 = Math.min(...raw.map((v) => v[0])), x1 = Math.max(...raw.map((v) => v[0]));
+  for (const v of raw) loops.push([(2 * (v[0] - x0)) / (x1 - x0) - 1, 0.75 * v[1]]);
+  return [star, spiral, loops];
+})();
+export const scribbleShape = (k) => SCRIB_SHAPES[((k % 3) + 3) % 3];
+const SCRIB_N = 30;                                            // зразків осі рівно по дузі (atS)
+/**
+ * [07.11.2026] SCRIBBLE — каракуля від руки (JUST A BLIP): «маркер» (тіло + світліша серцевина) уздовж осі, що «кипить» BOIL_N малюнками по колу
+ * (плавні хвилі, біля голови — рівно), на кожну долю — каракуля (зірочка / спіраль / петлі) з боків по черзі: дорисовується й гасне до хвоста,
+ * лежить на дорозі. Барва — м'яча.
+ */
+function makeScribbleE(F, S) {
+  const C = TRAIL_STYLE_E.SCRIBBLE, X = LOOK_E, out = empty(), env = F.env, { draw } = scribbleBoil(F);
+  const smp = [];
+  for (let i = 0; i < SCRIB_N; i++) smp.push(F.atS((F.len * i) / (SCRIB_N - 1)));
+  const half = (p) => C.BODY_K * X.hw(p.f);
+  const off = smp.map((p, i) => {
+    const room = Math.max(0, env - p.dev - half(p) - 1e-6);
+    const j = C.JIT_K * X.hw(p.f) * X.pk(1, 0, F, p) * scribbleWobble(draw, i / (SCRIB_N - 1));
+    return Math.max(-room, Math.min(room, j));
+  });
+  const offOf = (p, i) => off[i];
+  const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, TRAIL_STYLE_E.LOOK.GLOW_A * (1 + C.BEAT_GLOW * F.beat));
+  out.glow = glowOf([ribbon(S, smp, (p) => half(p) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p), offOf)], ga);
+  out.fills.push({ paths: [ribbon(S, smp, half, offOf)], grad: pointGrad(F, S, smp, 0, (p) => C.BODY_A * Math.pow(X.a(p.f), C.BODY_EXP)) });
+  out.fills.push({ paths: [ribbon(S, smp, (p) => C.CORE_K * half(p), offOf)], inner: true,
+    grad: pointGrad(F, S, smp, C.CORE_MIX, (p) => C.CORE_A * Math.pow(X.a(p.f), C.CORE_EXP)) });
+  // каракулі на долю: прив'язані до миті долі (лежать на дорозі), бік і форма — по черзі; дорисовуються за DRAW і гаснуть до хвоста
+  const dDraw = F.step(C.DRAW_BEATS, C.DRAW_T);
+  for (const { g, t } of gridTimes(F, F.step(C.DOODLE_BEATS, C.DOODLE_T), C.DOODLE_MAX).reverse()) {
+    const p = F.at(t);
+    if (!p) continue;
+    const age = F.tH - t, a = C.DOODLE_A * Math.pow(1 - clamp01(age / F.span), C.FADE_EXP), u = F.reduced ? 1 : clamp01(age / dDraw);
+    const lim = env - p.dev - C.DOODLE_W / 2 - 0.1;
+    if (!(a > 0.01) || !(lim > 0)) continue;
+    const shape = scribbleShape(g), side = g % 2 ? 1 : -1, k = Math.min(1, lim / (C.DOODLE_OFF + C.DOODLE_R * (1 + C.DOODLE_JIT)));
+    const fx = p.ny, fy = -p.nx, nx = p.nx * side, ny = p.ny * side, R = C.DOODLE_R * k;
+    const cx = p.x + nx * C.DOODLE_OFF * k, cy = p.y + ny * C.DOODLE_OFF * k;
+    const pts = shape.map(([sx, sy], i) => {
+      const jx = F.reduced ? 0 : C.DOODLE_JIT * (2 * h01(seedOf(draw * 31 + i, g + 7)) - 1), jy = F.reduced ? 0 : C.DOODLE_JIT * (2 * h01(seedOf(draw * 31 + i, g + 8)) - 1);
+      const x = sx + jx, y = sy + jy;
+      return [(cx + (fx * x + nx * y) * R) * S.pm, (cy + (fy * x + ny * y) * R) * S.pm];
+    });
+    const m = u * (pts.length - 1), whole = Math.floor(m + 1e-9);
+    if (m < 0.05) continue;
+    const vis = pts.slice(0, whole + 1);
+    if (whole < pts.length - 1 && m - whole > 1e-6) {
+      const A = pts[whole], B = pts[whole + 1], w = m - whole;
+      vis.push([A[0] + (B[0] - A[0]) * w, A[1] + (B[1] - A[1]) * w]);
+    }
+    out.strokes.push({ pts: vis, w: C.DOODLE_W * S.sm, grad: flatGrad(F, S, C.DOODLE_MIX, a) });
   }
   return out;
 }
@@ -1137,7 +1482,8 @@ const flameHex = (a, b, w) => {
  * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
  */
 const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
-  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE };   // [HALLOWEEN]
+  pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE,   // [HALLOWEEN]
+  fern: makeFernE, scribble: makeScribbleE };
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
@@ -1250,6 +1596,49 @@ export function trailMetrics(F, prims) {
     fills: prims.fills.length + (prims.glow ? 1 : 0), draws: prims.strokes.length + prims.rings.length + prims.dots.length };
 }
 
+/**
+ * [CAPE] Конверт стилю id (кадр вигляду: на екрані ×min(1, z); безкінечний — юн. поля): { W — найдальший намальований піксель від осі (outerHalfFu),
+ * L — довжина: усе намальоване лежить у смузі ±W довкола ОСТАННІХ L од. шляху від голови (bandFu ≤ W; null — лише LEN_MAX шляху), ahead — найдальше
+ * попереду центру м'яча, частка BALL_R (aheadFu; null — не міряємо) }. Виняток — лише CAPE (REDESIGN §5.2: плащ читається від поділ / довжина ≥ 0.45):
+ * 16 / 66 / 0.5; решта стилів — ENDLESS_ENV 9. COMET у рівні — свій v46.
+ */
+export const trailEnvOf = (id) => (id === "cape"
+  ? { W: TRAIL_STYLE_E.CAPE.ENV, L: TRAIL_STYLE_E.CAPE.LEN_MAX, ahead: TRAIL_STYLE_E.CAPE.AHEAD_MAX }
+  : { W: TRAIL_RULES.ENDLESS_ENV, L: null, ahead: null });
+/**
+ * [CAPE] Протяжність намальованого (усе, крім ореолу — як outerHalfFu; + ½ штриха, r крапки, r + ½ товщини кільця), юн. поля:
+ *   bandFu — найдальший піксель від ОСТАННІХ lenFu шляху (ламана F.pts від дуги len − lenFu до голови): ≤ W — плащ лежить у смузі ±W довкола
+ *     останніх lenFu доріжки, далі назад нічого не накриває (і на коліні стрибка, де проєкція на найближчу точку вводить в оману);
+ *   aheadFu — найдальше попереду центру м'яча (проєкція на дотичну голови, ≥ 0; разом з ореолом).
+ * Плащ: bandFu·z ≤ W·min(1, z) для lenFu = L / max(1, z), aheadFu ≤ ahead·BALL_R (trailEnvOf).
+ */
+export function trailExtent(F, prims, lenFu) {
+  if (!F.ok || F.M < 2) return { bandFu: 0, aheadFu: 0 };
+  const P = F.pts, H = P[F.M - 1], n = F.nrm[F.M - 1], tx = n[1], ty = -n[0], sMin = F.len - lenFu;
+  let band = 0, ahead = 0;
+  const near = (x, y) => {
+    let best = Infinity;
+    for (let i = 1; i < F.M; i++) {
+      if (F.s[i] < sMin) continue;
+      const k = F.s[i] > F.s[i - 1] ? clamp01((sMin - F.s[i - 1]) / (F.s[i] - F.s[i - 1])) : 0;
+      const ax = P[i - 1][0] + (P[i][0] - P[i - 1][0]) * k, ay = P[i - 1][1] + (P[i][1] - P[i - 1][1]) * k;
+      const dx = P[i][0] - ax, dy = P[i][1] - ay, l2 = dx * dx + dy * dy, u = l2 > 0 ? clamp01(((x - ax) * dx + (y - ay) * dy) / l2) : 0;
+      best = Math.min(best, Math.hypot(x - ax - dx * u, y - ay - dy * u));
+    }
+    return best === Infinity ? Math.hypot(x - H[0], y - H[1]) : best;
+  };
+  const at = (x, y, ext, inBand) => {
+    if (inBand) band = Math.max(band, near(x, y) + ext);
+    ahead = Math.max(ahead, (x - H[0]) * tx + (y - H[1]) * ty + ext);
+  };
+  if (prims.glow) for (const poly of prims.glow.paths) for (const v of poly) at(v[0], v[1], 0, false);
+  for (const poly of prims.fills.flatMap((f) => f.paths)) for (const v of poly) at(v[0], v[1], 0, true);
+  for (const st of prims.strokes) for (const v of st.pts) at(v[0], v[1], st.w / 2, true);
+  for (const d of prims.dots) at(d.x, d.y, d.r, true);
+  for (const g of prims.rings) at(g.x, g.y, g.r + g.w / 2, true);
+  return { bandFu: band, aheadFu: ahead };
+}
+
 /** [v47] Чи стиль щось малює цього кадру. */
 export const trailDrawn = (prims) => !!(prims.glow || prims.fills.length || prims.strokes.length || prims.rings.length || prims.dots.length);
 
@@ -1259,8 +1648,12 @@ export const trailDrawn = (prims) => !!(prims.glow || prims.fills.length || prim
  */
 export function trailInfoOf(F, prims) {
   const m = prims.metrics, shown = F.ok && trailDrawn(prims);
+  // [CAPE] стиль з винятком конверта (trailEnvOf.L) — ще й смуга довкола останніх L од. шляху й винос попереду м'яча (trailwalk: bandFu·z ≤ W·min(1, z),
+  // aheadFu ≤ ½ м'яча)
+  const env = trailEnvOf(prims.style), ext = env.L ? trailExtent(F, prims, env.L / Math.max(1, F.z)) : null;
   return { shown, n: F.n, spanS: F.span, lenFu: F.len, z: F.z, headHalfFu: shown ? F.hw(1) : 0, veilU2: m.veilU2, beat: F.beat,
-    pts: F.M, style: prims.style, mode: F.mode, outerHalfFu: m.outerHalfFu, parts: m.parts, fills: m.fills, draws: m.draws };
+    pts: F.M, style: prims.style, mode: F.mode, outerHalfFu: m.outerHalfFu, parts: m.parts, fills: m.fills, draws: m.draws,
+    ...(ext ? { bandFu: ext.bandFu, aheadFu: ext.aheadFu } : {}) };
 }
 
 // ================================================================ маляр (тонкий: лише фарбує примітиви)
