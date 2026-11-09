@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-script="latin">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-t="vs.metaTitle">Race me in Orbit Dash! · VERSUS</title>
+<!-- [S2, патч 308] Сторінка запрошення VERSUS (PORT-PLAN §8). Не для пошуковиків (noindex, поза sitemap.xml); код кімнати — лише в адресі,
+     у сторінку його вставляє скрипт нижче (білий список знаків), прев'ю (OG) — загальне, без імен і коду. Жодного стороннього запиту, без аналітики. -->
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="description" data-ta="content:vs.metaDesc" content="A friend invited you to a live race in Orbit Dash. Join in your browser or in the app, for free.">
+<meta name="theme-color" content="#0e1024">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Orbit Dash">
+<meta property="og:url" content="https://orbitdash.lewydo.com/vs/">
+<meta property="og:title" content="Race me in Orbit Dash! · VERSUS">
+<meta property="og:description" content="A friend invited you to a live race in Orbit Dash. Join in your browser or in the app, for free.">
+<meta property="og:image" content="https://orbitdash.lewydo.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<style>
+:root{--sky:#0e1024;--deep:#070818;--acc:#00e5ff;--gold:#ffd54a;--ring:#2b3060;
+  --accHi:color-mix(in srgb,var(--acc),#fff 32%);--accLo:color-mix(in srgb,var(--acc),#000 10%);--accInk:color-mix(in srgb,var(--acc),#000 84%);
+  --t1:#fff;--t2:rgba(255,255,255,.74);--t3:rgba(255,255,255,.56);--rim2:rgba(255,255,255,.16);
+  --f:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;--trk:1}
+:root[data-script=cjk],:root[data-script=system]{--trk:0}
+:lang(ja){--f:"Inter","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo","Noto Sans JP",sans-serif}
+:lang(ko){--f:"Inter","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif}
+:lang(zh-TW){--f:"Inter","PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif}
+:lang(zh-CN){--f:"Inter","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif}
+:lang(ar),:lang(fa),:lang(ur),:lang(ps){--f:"Inter","Segoe UI","Noto Sans Arabic","Geeza Pro",Tahoma,sans-serif}
+:lang(he){--f:"Inter","Segoe UI","Noto Sans Hebrew","Arial Hebrew",Arial,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+/* безпечна зона: виріз і смуга Home не накривають ні тексту, ні кнопок */
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:max(24px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));
+  background:radial-gradient(80% 55% at 50% 22%,#1c2044 0%,var(--sky) 55%,var(--deep) 100%) fixed;
+  color:var(--t1);font-family:var(--f);font-weight:500;font-size:16px;line-height:1.5;text-align:center;-webkit-font-smoothing:antialiased}
+.i18n-wait main,.i18n-wait footer{visibility:hidden}
+main{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
+/* знак: дві орбіти, м'яч гравця й м'яч друга — один трек */
+.mk{width:96px;height:96px;position:relative;margin:0 auto 18px;filter:drop-shadow(0 0 22px rgba(0,229,255,.4))}
+.mk i{position:absolute;border:3px solid var(--ring);border-radius:50%}
+.mk i:first-child{inset:0}.mk i:nth-child(2){inset:20px}
+.mk s{position:absolute;inset:0;animation:sp 6s linear infinite}
+.mk s::after{content:"";position:absolute;width:15px;height:15px;border-radius:50%;background:var(--acc);top:-7.5px;left:50%;margin-left:-7.5px;box-shadow:0 0 14px var(--acc)}
+.mk s.b2{animation-duration:6.6s;animation-delay:-2.4s}
+.mk s.b2::after{background:var(--gold);box-shadow:0 0 14px var(--gold)}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.mk s{animation:none}.mk s.b2{transform:rotate(150deg)}}
+.kick{font-size:12px;font-weight:800;letter-spacing:calc(var(--trk) * .22em);text-transform:uppercase;color:var(--acc)}
+h1{margin-top:8px;font-size:clamp(26px,7.4vw,34px);font-weight:800;line-height:1.12;letter-spacing:calc(var(--trk) * .01em);text-wrap:balance}
+.lead{margin-top:10px;color:var(--t2);max-width:34ch;text-wrap:pretty}
+.room{margin-top:22px;width:100%;padding:14px 12px 16px;border-radius:20px;background:linear-gradient(180deg,rgba(46,50,95,.58),rgba(30,34,69,.40));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.08)}
+.cap{font-size:12px;font-weight:700;letter-spacing:calc(var(--trk) * .16em);text-transform:uppercase;color:var(--t3)}
+.code{margin-top:6px;font-size:clamp(40px,13vw,52px);font-weight:800;line-height:1.05;letter-spacing:.12em;color:var(--gold);
+  text-shadow:0 0 26px rgba(255,213,74,.45);font-variant-numeric:tabular-nums;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+.none{margin-top:22px;width:100%;padding:16px 14px;border-radius:20px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--rim2)}
+.none .nt{font-weight:800;font-size:18px;line-height:1.25;margin-bottom:6px}
+.none p+p{color:var(--t2)}
+.acts{margin-top:18px;width:100%;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:6px 22px;border-radius:16px;
+  font-weight:800;font-size:16px;line-height:1.15;text-transform:uppercase;letter-spacing:calc(var(--trk) * .1em);text-decoration:none;color:var(--t1);
+  transition:transform .06s ease,filter .2s;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(.97);filter:brightness(.92)}
+.btn>span{min-width:0;white-space:normal;text-align:center}
+.btn svg{width:18px;height:18px;flex:none}
+.btn[hidden],[hidden]{display:none!important}
+.btn-acc{background:linear-gradient(180deg,var(--accHi) 0%,var(--acc) 56%,var(--accLo) 100%);color:var(--accInk);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1px color-mix(in srgb,var(--acc) 25%,transparent),0 8px 24px -8px color-mix(in srgb,var(--acc) 65%,transparent)}
+.btn-glass{background:rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px var(--rim2)}
+.stores{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.stores:not(:has(> a:not([hidden]))){display:none}
+.btn-gp{min-height:52px;background:#000;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);padding:0 20px 0 15px;gap:12px;text-transform:none;letter-spacing:0;text-align:start}
+.btn-gp svg{width:26px;height:26px}
+.btn-gp span{text-align:start}
+.btn-gp small{display:block;font-size:10px;font-weight:700;letter-spacing:calc(var(--trk) * .06em);text-transform:uppercase;opacity:.78;line-height:1.25}
+.btn-gp b{display:block;font-size:19px;font-weight:700;line-height:1.1}
+.have{margin-top:18px;color:var(--t2);font-size:15px;max-width:34ch;text-wrap:pretty}
+.fine{margin-top:8px;color:var(--t3);font-size:13px;max-width:36ch;text-wrap:pretty}
+footer{font-size:13px;color:var(--t3)}
+footer a{color:var(--t2);text-decoration:none;padding:6px 4px}
+footer a:hover{color:var(--t1)}
+a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+</style>
+<script>
+/* Мова — як на сторінці сайту: ?lang → lewydo:lang → мова пристрою (правила гри langOf) → English; не англійська — i18n/<мова>.json сайту. */
+(function () {
+  var IDS = ["om","af","az","id","ms","bs","ca","cs","da","de","et","en","es","eu","fil","fr","gl","ha","hr","ig","zu","is","it","sw","lv","lt","hu","nl","nb","uz","pl","pt","ro","sq","sk","sl","so","fi","sv","vi","tr","tk","yo","be","bg","ky","mk","mn","sr","tg","uk","kk","el","ko","ja","zh-CN","zh-TW","hy","he","ur","ar","fa","ps","ne","mr","hi","as","bn","pa","gu","or","ta","te","kn","ml","si","th","lo","my","ka","am","km"], RTL = ["he","ur","ar","fa","ps"], SCRIPT = {"om":"latin","af":"latin","az":"latin","id":"latin","ms":"latin","bs":"latin","ca":"latin","cs":"latin","da":"latin","de":"latin","et":"latin","en":"latin","es":"latin","eu":"latin","fil":"latin","fr":"latin","gl":"latin","ha":"latin","hr":"latin","ig":"latin","zu":"latin","is":"latin","it":"latin","sw":"latin","lv":"latin","lt":"latin","hu":"latin","nl":"latin","nb":"latin","uz":"latin","pl":"latin","pt":"latin","ro":"latin","sq":"latin","sk":"latin","sl":"latin","so":"latin","fi":"latin","sv":"latin","vi":"latin","tr":"latin","tk":"latin","yo":"latin","be":"cyrillic","bg":"cyrillic","ky":"cyrillic","mk":"cyrillic","mn":"cyrillic","sr":"cyrillic","tg":"cyrillic","uk":"cyrillic","kk":"cyrillic","el":"greek","ko":"cjk","ja":"cjk","zh-CN":"cjk","zh-TW":"cjk","hy":"system","he":"system","ur":"system","ar":"system","fa":"system","ps":"system","ne":"system","mr":"system","hi":"system","as":"system","bn":"system","pa":"system","gu":"system","or":"system","ta":"system","te":"system","kn":"system","ml":"system","si":"system","th":"system","lo":"system","my":"system","ka":"system","am":"system","km":"system"}, A = { iw: "he", "in": "id", tl: "fil", no: "nb", nn: "nb", prs: "fa" };
+  function of(tag) {
+    if (!tag) return null;
+    var t = String(tag).replace(/_/g, "-").toLowerCase(), p = t.split("-"), b = p[0];
+    if (b === "zh") { var tr = p.indexOf("hant") >= 0 || p.some(function (x) { return x === "tw" || x === "hk" || x === "mo"; }); b = tr ? "zh-TW" : "zh-CN"; }
+    else b = A[b] || b;
+    return IDS.indexOf(b) >= 0 ? b : null;
+  }
+  var lang = null, s = null;
+  try { lang = of(new URLSearchParams(location.search).get("lang")); } catch (e) {}
+  try { s = localStorage.getItem("lewydo:lang"); } catch (e) {}
+  if (!lang) lang = of(s);
+  if (!lang) { var l = navigator.languages || [navigator.language || "en"]; for (var i = 0; i < l.length && !lang; i++) lang = of(l[i]); }
+  lang = lang || "en";
+  var d = document.documentElement;
+  d.lang = lang; d.dir = RTL.indexOf(lang) >= 0 ? "rtl" : "ltr"; d.setAttribute("data-script", SCRIPT[lang] || "latin");
+  window.__odLang = lang;
+  if (lang !== "en") {
+    d.classList.add("i18n-wait");
+    window.__odPack = fetch("../i18n/" + lang + ".json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    setTimeout(function () { d.classList.remove("i18n-wait"); }, 2500);
+  }
+})();
+</script>
+</head>
+<body>
+<main>
+  <div class="mk" aria-hidden="true"><i></i><i></i><s></s><s class="b2"></s></div>
+  <p class="kick" data-t="vs.kicker">VERSUS · live race</p>
+  <h1 data-t="vs.title">Race me in Orbit Dash!</h1>
+  <p class="lead" id="vsLead" data-t="vs.lead">A friend invited you to a live race on the same track. Join right here in your browser, no install needed.</p>
+  <section class="room" id="vsRoom" aria-labelledby="vsCap">
+    <p class="cap" id="vsCap" data-t="vs.code">Room code</p>
+    <p class="code" id="vsCode" translate="no">··· ···</p>
+  </section>
+  <section class="none" id="vsNone" hidden>
+    <p class="nt" data-t="vs.none">This link has no room code</p>
+    <p data-t="vs.noneLead">Ask your friend for the link again. You can still play in your browser and open VERSUS › ENTER CODE there.</p>
+  </section>
+  <div class="acts">
+    <a class="btn btn-acc" id="vsPlay" href="../play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.6v14.8c0 .8.9 1.3 1.6.9l11.5-7.4c.6-.4.6-1.4 0-1.8L8.6 3.7C7.9 3.3 7 3.8 7 4.6z"/></svg><span data-t="vs.play">Play in browser</span></a>
+    <a class="btn btn-glass" id="vsApp" href="../play/" hidden><span data-t="vs.app">Open the app</span></a>
+    <div class="stores">
+      <a class="btn btn-gp" id="vsGp" href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash&amp;referrer=utm_source%3Dversus%26utm_medium%3Dplayer" target="_blank" rel="noopener"><svg viewBox="0 0 28 30" aria-hidden="true"><path fill="#00d7fe" d="M1.2.6C.9.9.7 1.4.7 2v26c0 .6.2 1.1.5 1.4l.1.1L15.9 15v-.3L1.3.5z"/><path fill="#ffce00" d="M20.8 19.9 15.9 15v-.3l4.9-4.9.1.1 5.8 3.3c1.7.9 1.7 2.5 0 3.4l-5.8 3.3z"/><path fill="#ff3a44" d="M20.9 19.8 15.9 14.8 1.2 29.5c.5.6 1.4.6 2.4.1l17.3-9.8"/><path fill="#00f076" d="M20.9 9.9 3.6.1C2.6-.5 1.7-.4 1.2.2l14.7 14.6z"/></svg><span><small data-t="cta.gpGet">Get it on</small><b>Google Play</b></span></a>
+      <a class="btn btn-gp" id="vsAs" href="../play/" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 18.6h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span><small data-t="vs.asGet">Download on the</small><b>App Store</b></span></a>
+    </div>
+  </div>
+  <p class="have" id="vsHave" data-t="vs.have">Have the game? Open VERSUS › ENTER CODE and type the code.</p>
+  <p class="fine" id="vsClosed" data-t="vs.closed">Rooms close when everyone has left. If this one is gone, ask your friend for a new link.</p>
+</main>
+<footer><a href="../">Orbit Dash</a> · <a href="../privacy.html#versus" data-t="foot.privacy">Privacy</a></footer>
+<script>window.__odVs = {"abc":"23456789BCDFGHJKMNPQRSTWXZ","len":6,"pkg":"com.lewydo.orbitdash","mark":"utm_source=versus&utm_medium=player","ios":false,"as":""};</script>
+<script>
+/* ─────────────────────────────────────────────────────────────────────────────
+   Запрошення VERSUS (патч 308, PORT-PLAN §8). Адреса — чужий ввід: код кімнати — лише 6 знаків абетки кодів гри (versus.mjs CODE_ABC), інакше — стан
+   «немає коду»; мітки utm_* — білий список prototype/marks.mjs (вшито збіркою). Значення йдуть лише у властивості href / textContent, у HTML — нічого.
+   Нічого не зберігаємо й нікуди не шлемо: аналітики на цій сторінці немає.
+     PLAY IN BROWSER → ../play/?lang&utm_…#vs-код (гра одразу відкриває JOIN ROOM);
+     OPEN THE APP    → Android: intent://vs?c=код#Intent;scheme=orbitdash;package=…;S.browser_fallback_url=<Google Play з реферером>;end
+                       (гри немає чи вона старіша за 2.5.0 — Chrome сам іде в Google Play); iPhone — orbitdash://vs?c=код лише за прапорцем vs.iosScheme;
+     Google Play     → referrer = мітки + &vs=код (відкладене посилання: гра після установки відкриє кімнату, S9a); App Store — лише коли гра там (vs.appStore).
+   ───────────────────────────────────────────────────────────────────────────── */
+(function () {
+  "use strict";
+  var C = window.__odVs || {};
+  const PLAY_URL = "https://play.google.com/store/apps/details?id=com.lewydo.orbitdash";
+const SITE_URL = "https://orbitdash.lewydo.com/";
+const SITE_MARK = "utm_source=site&utm_medium=game_site";
+const MARK_KEYS = ["utm_source", "utm_medium", "utm_campaign"];
+const MARK_MAX = 64;
+const MARK_VALUE = /^[a-z0-9_.-]+$/;
+
+const playUrl = (mark) => `${PLAY_URL}&referrer=${encodeURIComponent(mark)}`;
+const siteUrl = (mark) => `${SITE_URL}?${mark}`;
+
+function visitorMark(search) {
+  let q;
+  try { q = new URLSearchParams(search || ""); } catch (e) { return ""; }
+  const kept = [];
+  for (const k of MARK_KEYS) {
+    const v = q.get(k);
+    if (v && v.length <= MARK_MAX && MARK_VALUE.test(v)) kept.push(`${k}=${v}`);
+  }
+  return kept.length && kept[0].startsWith("utm_source=") ? kept.join("&") : "";
+}
+
+const sitePlayUrl = (search) => playUrl(visitorMark(search) || SITE_MARK);
+  var $ = function (id) { return document.getElementById(id); };
+  var root = document.documentElement;
+  var RE = new RegExp("^[" + String(C.abc || "") + "]{" + (C.len | 0) + "}$");
+  var raw = "", code = "";
+  try { raw = new URLSearchParams(location.search).get("vs") || ""; } catch (e) { raw = ""; }
+  if (!raw) { var h = /^#vs-([^&#]{1,32})$/i.exec(location.hash || ""); raw = h ? h[1] : ""; }
+  if (raw && raw.length <= 32) { var c = raw.replace(/[\s\-]/g, "").toUpperCase(); if (RE.test(c)) code = c; }
+  var lc = code.toLowerCase();
+  var ua = navigator.userAgent || "";
+  var ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var android = !ios && /Android/i.test(ua);
+  root.setAttribute("data-os", ios ? "ios" : android ? "android" : "desktop");
+  root.setAttribute("data-vs", code ? "code" : raw ? "bad" : "none");
+
+  var own = visitorMark(location.search);              // мітки самого запрошення (utm_source=versus&utm_medium=player&utm_campaign=vs_…)
+  var mark = own || C.mark;                             // без них — однаково запрошення VERSUS (кампанія невідома)
+  var gp = playUrl(code ? mark + "&vs=" + lc : mark);
+  function playHref() {
+    var lang = window.__odLang && window.__odLang !== "en" ? "lang=" + encodeURIComponent(window.__odLang) : "";
+    var q = lang + (lang && own ? "&" : "") + own;
+    return "../play/" + (q ? "?" + q : "") + (code ? "#vs-" + lc : "");
+  }
+  $("vsPlay").href = playHref();
+  $("vsGp").href = gp;
+  $("vsGp").hidden = ios;                               // iPhone: Google Play ні до чого
+  if (C.as && !android) { $("vsAs").href = C.as; $("vsAs").hidden = false; }
+  var app = "";
+  if (code && android) app = "intent://vs?c=" + lc + "#Intent;scheme=orbitdash;package=" + C.pkg + ";S.browser_fallback_url=" + encodeURIComponent(gp) + ";end";
+  else if (code && ios && C.ios) app = "orbitdash://vs?c=" + lc;
+  if (app) { $("vsApp").href = app; $("vsApp").hidden = false; }
+  if (code) $("vsCode").textContent = code.slice(0, 3) + " " + code.slice(3);
+  else { $("vsRoom").hidden = true; $("vsNone").hidden = false; $("vsLead").hidden = true; $("vsHave").hidden = true; $("vsClosed").hidden = true; }
+
+  /* тексти мовою сторінки (i18n/<мова>.json сайту; неперекладене — англійською, як на головній) */
+  var P = null;
+  function T(k) { var v = P && P.S ? P.S[k] : null; return typeof v === "string" && v ? v : null; }
+  function apply() {
+    [].forEach.call(document.querySelectorAll("[data-t]"), function (el) { var s = T(el.getAttribute("data-t")); if (s) el.textContent = s; });
+    [].forEach.call(document.querySelectorAll("[data-ta]"), function (el) {
+      el.getAttribute("data-ta").split(";").forEach(function (pair) { var i = pair.indexOf(":"); if (i < 0) return; var s = T(pair.slice(i + 1).trim()); if (s) el.setAttribute(pair.slice(0, i).trim(), s); });
+    });
+    $("vsPlay").href = playHref();
+    root.classList.remove("i18n-wait");
+  }
+  if (window.__odPack) window.__odPack.then(function (p) { P = p; apply(); }); else apply();
+})();
+</script>
+</body>
+</html>

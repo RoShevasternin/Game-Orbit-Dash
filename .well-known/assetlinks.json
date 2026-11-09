@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.lewydo.orbitdash",
+      "sha256_cert_fingerprints": [
+        "57:1D:46:76:E8:B2:A5:3C:06:8A:4F:90:3F:3A:20:0F:3E:05:FE:4E:FA:DB:4F:14:65:45:B3:91:B4:4B:4F:AB"
+      ]
+    }
+  }
+]

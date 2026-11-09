@@ -1,4 +1,5 @@
 .nojekyll
+.well-known
 404.html
 CLAUDE.md
 CNAME
@@ -11,6 +12,8 @@ favicon-16.png
 favicon-32.png
 i18n
 icon-192.png
+icon-512.png
+icon-maskable-512.png
 index.html
 og.png
 play
@@ -18,4 +21,5 @@ press
 privacy.html
 robots.txt
 sitemap.xml
+vs
 .site-files

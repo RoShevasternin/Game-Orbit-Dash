@@ -1,0 +1,49 @@
+{
+ "id": "/play/",
+ "name": "Orbit Dash",
+ "short_name": "Orbit Dash",
+ "lang": "en",
+ "dir": "ltr",
+ "related_applications": [
+  {
+   "platform": "webapp",
+   "url": "https://orbitdash.lewydo.com/play/manifest.webmanifest"
+  }
+ ],
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "display_override": [
+  "fullscreen",
+  "standalone"
+ ],
+ "orientation": "portrait",
+ "background_color": "#0b0d1a",
+ "theme_color": "#0b0d1a",
+ "icons": [
+  {
+   "src": "../icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "../icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "../apple-touch-icon.png",
+   "sizes": "180x180",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "../icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

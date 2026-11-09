@@ -190,7 +190,23 @@
       else if (name === "ranks_open") send("ranks_open", { source: String(p.source || ""), state: String(p.state || "") });
       else if (name === "ranks_join" && p.step === 2) send("ranks_join", { outcome: String(p.outcome || "") });
       else if (name === "share_game") send("share_game", { source: String(p.source || ""), method: String(p.method || "") });
+      // [v162] встановлення вебверсії (prototype/install.mjs): action — shown · prompt · accepted · dismissed · steps · sheet · store · installed,
+      // source — corner · settings · browser; обидва — уже зареєстровані виміри GA4 (нових немає: квота 50/50)
+      else if (name === "web_install") send("web_install", { action: String(p.action || ""), source: String(p.source || "") });
+      // [S2, патч 308] VERSUS (PORT-PLAN §12): лише вже зареєстровані виміри source / mode / method / state і лише значення з переліків —
+      // без імен, кодів кімнат і id гравця (policy-facts розділ 14 звіряє ці параметри з VS_PARAM_OK)
+      else if (name === "vs_open" && vsOk("source", p.source)) send("vs_open", { source: p.source });
+      else if (name === "vs_room" && vsOk("mode", p.mode) && vsOk("method", p.method)) send("vs_room", { mode: p.mode, method: p.method });
+      else if (name === "vs_race_end" && vsOk("mode", p.mode) && vsOk("method", p.method) && vsOk("state", p.state))
+        send("vs_race_end", { mode: p.mode, method: p.method, state: p.state });
     };
+    var VS_VAL = {
+      source: ["menu", "tutorial", "link", "referrer", "code"],
+      mode: ["endless", "levels"],
+      method: ["friends", "random", "code", "link", "bots", "offline", "online"],
+      state: ["win", "podium", "lost", "draw", "left"],
+    };
+    var vsOk = function (k, v) { return typeof v === "string" && VS_VAL[k].indexOf(v) >= 0; };
     // SETTINGS гри → PRIVACY OPTIONS: той самий банер; done — «✓ PRIVACY SAVED» на рядку гри
     window.__orbitPrivacy = function (done) { show(true, done); };
   }

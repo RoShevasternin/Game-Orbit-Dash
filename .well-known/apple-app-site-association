@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["3V79G27KZK.com.lewydo.orbitdash"],
+        "components": [
+          { "/": "/vs", "comment": "VERSUS invite page without a trailing slash" },
+          { "/": "/vs/*", "comment": "VERSUS invite page: /vs/?vs=<room code>" }
+        ]
+      }
+    ]
+  }
+}

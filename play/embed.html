@@ -13,9 +13,13 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 html,body{margin:0;height:100%;background:#0b0d1a;overscroll-behavior:none}
 #root{height:100%}
+/* [v162] гра, встановлена на телефон (play/ → «На початковий екран»): :root має відступи смуги стану й смуги Home, а рамка гри — 100dvh;
+   --od-safe знімає їх з висоти гри (без цього низ гри — за краєм екрана). Клас od-app ставить скрипт нижче ЛИШЕ при старті встановленої гри:
+   ⛶ у браузері теж дає display-mode fullscreen, але це не встановлення. У браузері правило не діє: як було */
+.od-app{--od-safe:calc(env(safe-area-inset-top,0px) + env(safe-area-inset-bottom,0px))}
 
 /* ═══ БРЕНД LEWYDO — стандарт студії, кіт як є ═══════════════════════════════
-   Джерело: https://roshevasternin.github.io/brand/ (brand.json — усі числа),
+   Джерело: https://lewydo.com/brand/ (brand.json — усі числа),
    код — kit/code/web/lewydo-brand.css. Марку НЕ чіпаємо: часи, масштаби й криві
    keyframes нижче скопійовані з кіта без жодної зміни.
    Єдина відмінність — розкладка: кіт міряє в px через --lw-s, а прототип живе в
@@ -97,6 +101,14 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
 .font-medium{font-weight:500}.font-extrabold{font-weight:800}
 .tracking-widest{letter-spacing:.083333em}.tracking-wider{letter-spacing:.041667em}
 </style>
+<script>/* [v162] встановлена гра: display-mode standalone, iOS standalone, або display-mode fullscreen (Fullscreen API при старті сторінки не буває) — лише
+   на телефоні / планшеті: на комп'ютері fullscreen дає й вікно браузера на весь екран (F11, зелена кнопка macOS), а встановлена гра там — standalone */
+try{var odm=function(q){return!!(window.matchMedia&&matchMedia(q).matches)},oua=navigator.userAgent||"",oph=/Android|iPhone|iPad|iPod/.test(oua)||(/Macintosh/.test(oua)&&navigator.maxTouchPoints>1);
+if(odm("(display-mode: standalone)")||(oph&&odm("(display-mode: fullscreen)"))||navigator.standalone)document.documentElement.classList.add("od-app")}catch(e){}</script>
+<script>/* [v162] встановлення вебверсії (install.mjs): Chrome / Edge дають beforeinstallprompt рано — ще до гри; бережемо подію для нашої кнопки INSTALL
+   (preventDefault: без автоматичної плашки браузера — гра ніколи не просить сама, вхід лише кнопкою). appinstalled — гру поставили (і з кнопки браузера) */
+(function(){try{var I=window.__odInstall={bip:null,installed:false},f=function(){try{dispatchEvent(new Event("od-install"))}catch(x){}};
+addEventListener("beforeinstallprompt",function(e){e.preventDefault();I.bip=e;f()});addEventListener("appinstalled",function(){I.bip=null;I.installed=true;f()})}catch(e){}})();</script>
 </head>
 <body>
 <script>window.__odSite = {"levels":[{"id":"first-light","name":"FIRST LIGHT","at":55.685,"dur":72.331,"tr":true},{"id":"slow-orbit","name":"SLOW ORBIT","at":60.3,"dur":96.986,"tr":true},{"id":"neon-drift","name":"NEON DRIFT","at":7.157,"dur":92.043,"tr":true},{"id":"hyperlane","name":"HYPERLANE","at":30.3,"dur":86.9,"tr":true},{"id":"starborn","name":"STARBORN","at":27.992,"dur":84.531,"tr":true},{"id":"blood-moon","name":"BLOOD MOON","at":62.564,"dur":79.881,"tr":false},{"id":"midnight-parade","name":"MIDNIGHT PARADE","at":52.3,"dur":79.1,"tr":false},{"id":"witchs-brew","name":"WITCH'S BREW","at":52.558,"dur":76.848,"tr":false}],"langs":["om","af","az","id","ms","bs","ca","cs","da","de","et","en","es","eu","fil","fr","gl","ha","hr","ig","zu","is","it","sw","lv","lt","hu","nl","nb","uz","pl","pt","ro","sq","sk","sl","so","fi","sv","vi","tr","tk","yo","be","bg","ky","mk","mn","sr","tg","uk","kk","el","ko","ja","zh-CN","zh-TW","hy","he","ur","ar","fa","ps","ne","mr","hi","as","bn","pa","gu","or","ta","te","kn","ml","si","th","lo","my","ka","am","km"]};</script>
@@ -155,7 +167,7 @@ html{font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:500;font-s
   // [HALLOWEEN] сезон — як у сторінки: ?today=yyyy-mm-dd → дата прототипу; ?halloween=1|0 → вікно «Remote Config» прототипу (вкл. / вимк.)
   if (/^\d{4}-\d{2}-\d{2}$/.test(Q.get("today") || "")) window.__orbitToday = Q.get("today");
   if (Q.get("halloween") === "1" || Q.get("halloween") === "0")
-    window.__orbitRemote = { live: { halloween: { on: Q.get("halloween") === "1", from: "2000-01-01", to: "2999-12-31" } } };
+    window.__orbitRemote = Object.assign(window.__orbitRemote || {}, { live: { halloween: { on: Q.get("halloween") === "1", from: "2000-01-01", to: "2999-12-31" } } });
   window.__orbitPacks = "all";
   window.__orbitPublic = 1;      // без FPS, DEV і заглушки банера
   window.__orbitNoBrand = 1;     // без заставки Lewydo (її бачать у самій грі)
