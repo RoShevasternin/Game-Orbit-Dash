@@ -121,7 +121,7 @@ addEventListener("beforeinstallprompt",function(e){e.preventDefault();I.bip=e;f(
 <body>
 <script>/* публічна гра: без FPS, DEV і заглушки банера; мова — як на сайті */ window.__orbitPublic = 1;(function(){try{var q=new URLSearchParams(location.search).get("lang"),s=null;try{s=localStorage.getItem("lewydo:lang")}catch(e){}var l=q||s,d=[].slice.call(navigator.languages||[navigator.language||"en"]);if(l)d.unshift(l);window.__orbitPhoneLangs=d;window.__orbitPacks="all"}catch(e){}})();</script>
 <script>(function(){try{var Q=new URLSearchParams(location.search),h=Q.get("halloween");if(/^\d{4}-\d{2}-\d{2}$/.test(Q.get("today")||""))window.__orbitToday=Q.get("today");if(h==="1"||h==="0")window.__orbitRemote=Object.assign(window.__orbitRemote||{},{live:{halloween:{on:h==="1",from:"2000-01-01",to:"2999-12-31"}}})}catch(e){}})();</script>
-<script>(function(){var R=window.__orbitRemote=window.__orbitRemote||{};if(!R.ios)R.ios={"latest":"","app_id":"6824944395"}})();</script>
+<script>(function(){var R=window.__orbitRemote=window.__orbitRemote||{};if(!R.ios)R.ios={"latest":"2.2.0","app_id":"6824944395"}})();</script>
 <script>window.__orbitVsLive = {"ws":"wss://orbit-dash-versus.versus-cf.workers.dev/vs","link":"https://orbitdash.lewydo.com/vs/"};</script>
 
 

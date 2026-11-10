@@ -77,13 +77,18 @@ h1{margin-top:8px;font-size:clamp(26px,7.4vw,34px);font-weight:800;line-height:1
 .btn-acc{background:linear-gradient(180deg,var(--accHi) 0%,var(--acc) 56%,var(--accLo) 100%);color:var(--accInk);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 1px color-mix(in srgb,var(--acc) 25%,transparent),0 8px 24px -8px color-mix(in srgb,var(--acc) 65%,transparent)}
 .btn-glass{background:rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px var(--rim2)}
-.stores{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+/* бейджі магазинів — як на головній (правило студії docs/ux/store-badges.md): однакова ширина пари, стовпчиком на вузькому */
+.stores{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
 .stores:not(:has(> a:not([hidden]))){display:none}
-.btn-gp{min-height:52px;background:#000;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);padding:0 20px 0 15px;gap:12px;text-transform:none;letter-spacing:0;text-align:start}
-.btn-gp svg{width:26px;height:26px}
+.btn-gp{--rim:color-mix(in srgb,var(--acc),#fff 45%);min-height:52px;background:linear-gradient(180deg,#1d2150 0%,#10122c 100%);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1.5px color-mix(in srgb,var(--rim) 55%,rgba(255,255,255,.3)),0 8px 22px -10px color-mix(in srgb,var(--acc) 70%,transparent);
+  padding:0 20px 0 15px;gap:12px;text-transform:none;letter-spacing:0;text-align:start}
+.btn-gp svg{width:27px;height:27px}
 .btn-gp span{text-align:start}
 .btn-gp small{display:block;font-size:10px;font-weight:700;letter-spacing:calc(var(--trk) * .06em);text-transform:uppercase;opacity:.78;line-height:1.25}
 .btn-gp b{display:block;font-size:19px;font-weight:700;line-height:1.1}
+.btn-as svg{width:25px;height:28px;margin-top:-3px}
+.btn-as small{font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;line-height:1.15}
 .have{margin-top:18px;color:var(--t2);font-size:15px;max-width:34ch;text-wrap:pretty}
 .fine{margin-top:8px;color:var(--t3);font-size:13px;max-width:36ch;text-wrap:pretty}
 footer{font-size:13px;color:var(--t3)}
@@ -138,14 +143,14 @@ a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
     <a class="btn btn-glass" id="vsApp" href="../play/" hidden><span data-t="vs.app">Open the app</span></a>
     <div class="stores">
       <a class="btn btn-gp" id="vsGp" href="https://play.google.com/store/apps/details?id=com.lewydo.orbitdash&amp;referrer=utm_source%3Dversus%26utm_medium%3Dplayer" target="_blank" rel="noopener"><svg viewBox="0 0 28 30" aria-hidden="true"><path fill="#00d7fe" d="M1.2.6C.9.9.7 1.4.7 2v26c0 .6.2 1.1.5 1.4l.1.1L15.9 15v-.3L1.3.5z"/><path fill="#ffce00" d="M20.8 19.9 15.9 15v-.3l4.9-4.9.1.1 5.8 3.3c1.7.9 1.7 2.5 0 3.4l-5.8 3.3z"/><path fill="#ff3a44" d="M20.9 19.8 15.9 14.8 1.2 29.5c.5.6 1.4.6 2.4.1l17.3-9.8"/><path fill="#00f076" d="M20.9 9.9 3.6.1C2.6-.5 1.7-.4 1.2.2l14.7 14.6z"/></svg><span><small data-t="cta.gpGet">Get it on</small><b>Google Play</b></span></a>
-      <a class="btn btn-gp" id="vsAs" href="../play/" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 18.6h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span><small data-t="vs.asGet">Download on the</small><b>App Store</b></span></a>
+      <a class="btn btn-gp btn-as" id="vsAs" href="../play/" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg><span><small data-t="cta.asGet">Download on the</small><b>App Store</b></span></a>
     </div>
   </div>
   <p class="have" id="vsHave" data-t="vs.have">Have the game? Open VERSUS › ENTER CODE and type the code.</p>
   <p class="fine" id="vsClosed" data-t="vs.closed">Rooms close when everyone has left. If this one is gone, ask your friend for a new link.</p>
 </main>
 <footer><a href="../">Orbit Dash</a> · <a href="../privacy.html#versus" data-t="foot.privacy">Privacy</a></footer>
-<script>window.__odVs = {"abc":"23456789BCDFGHJKMNPQRSTWXZ","len":6,"pkg":"com.lewydo.orbitdash","mark":"utm_source=versus&utm_medium=player","ios":false,"as":""};</script>
+<script>window.__odVs = {"abc":"23456789BCDFGHJKMNPQRSTWXZ","len":6,"pkg":"com.lewydo.orbitdash","mark":"utm_source=versus&utm_medium=player","ios":false,"as":"https://apps.apple.com/app/id6824944395"};</script>
 <script>
 /* ─────────────────────────────────────────────────────────────────────────────
    Запрошення VERSUS (патч 308, PORT-PLAN §8). Адреса — чужий ввід: код кімнати — лише 6 знаків абетки кодів гри (versus.mjs CODE_ABC), інакше — стан
