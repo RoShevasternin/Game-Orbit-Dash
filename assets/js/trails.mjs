@@ -156,10 +156,6 @@ export const TRAILS = [
   //   docs/levels/freefall/LEVEL.md §6): інверсійний слід, на снейр за м'ячем — конус пари «звукового бар'єра»; числа — TRAIL_STYLE_E.MACH, форма —
   //   makeMachE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
   { id: "mach", name: "MACH", level: "freefall", desc: "A vapor trail · breaks the sound barrier on the snare" },
-  // [09.11.2026] хвіст рівня SOUL ACOUSTIC (MAIN, NORMAL, запис власника — акустична гітара; на потім, не 3.0.0; звіт — docs/levels/soul-acoustic/LEVEL.md):
-  //   шість гітарних струн за м'ячем, що дзвенять на кожну долю (вібрація гасне до наступної); барва — м'яча; числа — TRAIL_STYLE_E.STRUM, форма —
-  //   makeStrumE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
-  { id: "strum", name: "STRUM", level: "soul-acoustic", desc: "Six guitar strings · they ring on every beat" },
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -412,12 +408,6 @@ export const TRAIL_STYLE_E = {
     CONE_BEATS: 1, CONE_T: 0.7, CONE_LIFE: 0.3, CONE_BACK: 2, CONE_L: 22, CONE_W: 7.5, CONE_GROW: 0.35, CONE_N: 10, CONE_MAX: 1,
     CONE_A: 0.3, CONE_FADE: 1.2, CONE_MIX: 0.55, RIM_W: 1.1, RIM_A: 0.85, RIM_MIX: 0.6, DROP_LEVEL: 3,
     GLOW_MUL: 1.6, GLOW_HEAD_K: 1.3, BEAT_GLOW: 0.4, CONE_GLOW: 0.6 },
-  // [09.11.2026] STRUM — шість гітарних струн (SOUL ACOUSTIC). N струн півшириною STRAND_K·hwE, розкладених рівно в смузі SPREAD_K конверта
-  //   (від хвоста сходяться до нуля за TAIL_LEN юн. дуги — не за f, щоб вигляд на екрані не ріс із зумом; біля голови — під м'яч за pk); 3 «басові» (парні) — барва гравця, 3 «верхні» — MIX_HI з білим. На кожну долю
-  //   (∞ — VIB_T с) усі струни смикаються: зсув VIB_K конверта × exp(−вік/VIB_TAU) × sin(2π·VIB_HZ·вік + фаза струни), сусідні — у протифазі;
-  //   «менше руху» — струни рівні. Усе в конверті (|зсув| + півширина ≤ env − dev). Порт: 6 смуг квадами, один ореол.
-  STRUM: { N: 6, STRAND_K: 0.17, SPREAD_K: 0.82, TAIL_LEN: 18, HEAD_K: 0.3, VIB_K: 0.26, VIB_HZ: 10.5, VIB_TAU_BEATS: 0.45, VIB_TAU_T: 0.3, VIB_T: 0.5,
-    MIX_HI: 0.38, GLOW_MUL: 1.35, GLOW_HEAD_K: 1.0 },
 };
 /** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. [v118] той самий рецепт — headBallOf(WISP). */
 export const headBallOf = (C, f) => {
@@ -1627,42 +1617,13 @@ const flameHex = (a, b, w) => {
   return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * w).toString(16).padStart(2, "0")).join("");
 };
 
-// ================================================================ STRUM — гітарні струни (SOUL ACOUSTIC, 09.11.2026; числа — TRAIL_STYLE_E.STRUM)
-/** [STRUM] Мить останньої долі перед t (рівень — від t0 по долях; ∞ — клітинка VIB_T с) і вік, с. */
-export const strumAge = (F, t) => {
-  const C = TRAIL_STYLE_E.STRUM, step = F.step(1, C.VIB_T), g = F.grid(t, F.pick(1, C.VIB_T));
-  return Math.max(0, t - (F.t0 + g * step));
-};
-/** [STRUM] Амплітуда вібрації на мить t (частка конверта): VIB_K·exp(−вік/τ); «менше руху» — 0. */
-export const strumAmp = (F, t) => (F.reduced ? 0 : TRAIL_STYLE_E.STRUM.VIB_K * Math.exp(-strumAge(F, t) / F.step(TRAIL_STYLE_E.STRUM.VIB_TAU_BEATS, TRAIL_STYLE_E.STRUM.VIB_TAU_T)));
-function makeStrumE(F, S) {
-  const C = TRAIL_STYLE_E.STRUM, X = LOOK_E, out = empty(), env = F.env;
-  const w = (p) => C.STRAND_K * X.hw(p.f);
-  // розклад струн у смузі: від хвоста (0) за TAIL_LEN юн. дуги — SPREAD_K·env, біля голови — під м'яч (pk → HEAD_K)
-  const spread = (p) => Math.max(0, Math.min(C.SPREAD_K * env * smooth01(p.s / C.TAIL_LEN) * X.pk(1, C.HEAD_K, F, p), env - p.dev - w(p)));
-  const vib = (p, k) => {
-    const a = strumAmp(F, p.t) * env * (0.35 + 0.65 * p.f);
-    return a === 0 ? 0 : a * Math.sin(TAU * C.VIB_HZ * strumAge(F, p.t) + k * 1.1) * (k % 2 ? 1 : -1);
-  };
-  const off = (k) => (p) => {
-    const lim = Math.max(0, env - p.dev - w(p)), base = spread(p) * ((2 * k) / (C.N - 1) - 1) + vib(p, k);
-    return base > lim ? lim : base < -lim ? -lim : base;
-  };
-  const lo = [], hi = [];
-  for (let k = 0; k < C.N; k++) (k % 2 ? hi : lo).push(ribbon(S, F.smp, w, off(k)));
-  out.glow = glowOf([ribbon(S, F.smp, (p) => (spread(p) + w(p)) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p))]);
-  out.fills.push({ paths: lo, grad: gradE(F, S, 0, X.a) });
-  out.fills.push({ paths: hi, grad: gradE(F, S, C.MIX_HI, X.a) });
-  return out;
-}
-
 /**
  * [v47] Форми стилів: COMET — makeComet (рівень v46 · безкінечний COMET_E), решта 9 — TRAIL_STYLE_E.
  * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
  */
 const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
   pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE,   // [HALLOWEEN]
-  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE, strum: makeStrumE };
+  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE };
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
