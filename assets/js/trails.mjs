@@ -159,7 +159,6 @@ export const TRAILS = [
   // [09.11.2026] хвіст рівня SOUL ACOUSTIC (MAIN, NORMAL, запис власника — акустична гітара; на потім, не 3.0.0; звіт — docs/levels/soul-acoustic/LEVEL.md):
   //   шість гітарних струн за м'ячем, що дзвенять на кожну долю (вібрація гасне до наступної); барва — м'яча; числа — TRAIL_STYLE_E.STRUM, форма —
   //   makeStrumE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
-  { id: "strum", name: "STRUM", level: "soul-acoustic", desc: "Six guitar strings · they ring on every beat" },
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";

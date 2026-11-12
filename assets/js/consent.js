@@ -19,7 +19,7 @@
    ЄДИНИЙ виняток з «нічого назовні до Allow» (власник 12.11.2026): НАШ анонімний лічильник відвідувань stats.lewydo.com (Cloudflare Worker
    lewydo-site-stats → Workers Analytics Engine). Працює для всіх, і до вибору, і після «Decline», бо нічого особистого не зберігає: без кук,
    без id, без IP, без адреси й реферера — лише ці 5 полів (контракт — server/site-stats, privacy.html#visit-counter):
-     s   "od" — сайт гри            p   "home" | "play" | "privacy" | "press" | "other"
+     s   "od" — сайт гри            p   "home" | "play" | "privacy" | "press" | "other" (зокрема «Музика» /music/)
      e   "view" | "allow" | "decline"   c   вибір ДО події: "granted" | "denied" | "none"
      src мітка джерела, рахується тут, на пристрої (власник 12.11.2026), — за пріоритетом:
          1) utm_source (^[a-z0-9_.-]{1,32}$);
@@ -93,7 +93,8 @@
   function page() {
     if (MODE === "play") return "play";
     if (MODE === "privacy") return "privacy";
-    if (MODE === "page") return /\/press(\/|$)/.test(location.pathname) ? "press" : "home";
+    // [12.11.2026] сторінка «Музика» /music/ — «other» (білий список воркера: home / play / privacy / press / other)
+    if (MODE === "page") return /\/press(\/|$)/.test(location.pathname) ? "press" : /\/music(\/|$)/.test(location.pathname) ? "other" : "home";
     return "other";
   }
   // одна точка на подію; c — вибір ДО неї. Лічильник ніколи не ламає сторінку: усе в try/catch
