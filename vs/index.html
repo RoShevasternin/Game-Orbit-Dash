@@ -150,7 +150,7 @@ a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
   <p class="fine" id="vsClosed" data-t="vs.closed">Rooms close when everyone has left. If this one is gone, ask your friend for a new link.</p>
 </main>
 <footer><a href="../">Orbit Dash</a> · <a href="../privacy.html#versus" data-t="foot.privacy">Privacy</a></footer>
-<script>window.__odVs = {"abc":"23456789BCDFGHJKMNPQRSTWXZ","len":6,"pkg":"com.lewydo.orbitdash","mark":"utm_source=versus&utm_medium=player","ios":false,"as":"https://apps.apple.com/app/id6824944395"};</script>
+<script>window.__odVs = {"abc":"23456789BCDFGHJKMNPQRSTWXZ","len":6,"pkg":"com.lewydo.orbitdash","mark":"utm_source=versus&utm_medium=player","ios":false,"as":"https://apps.apple.com/app/apple-store/id6824944395?pt=129589688&ct=versus&mt=8","asId":"6824944395"};</script>
 <script>
 /* ─────────────────────────────────────────────────────────────────────────────
    Запрошення VERSUS (патч 308, PORT-PLAN §8). Адреса — чужий ввід: код кімнати — лише 6 знаків абетки кодів гри (versus.mjs CODE_ABC), інакше — стан
@@ -186,6 +186,24 @@ function visitorMark(search) {
 }
 
 const sitePlayUrl = (search) => playUrl(visitorMark(search) || SITE_MARK);
+
+const APPSTORE_PT = "129589688";
+const APP_STORE_URL = "https://apps.apple.com/app/id";
+const APP_STORE_CAMPAIGN_URL = "https://apps.apple.com/app/apple-store/id";
+const CT_MAX = 40;
+const SITE_CT = "game_site";
+
+const asCampaignUrl = (id, ct, pt = APPSTORE_PT) =>
+  pt && ct ? `${APP_STORE_CAMPAIGN_URL}${id}?pt=${pt}&ct=${encodeURIComponent(ct.slice(0, CT_MAX))}&mt=8` : APP_STORE_URL + id;
+
+function visitorCt(search) {
+  const m = visitorMark(search);
+  if (!m) return "";
+  const q = new URLSearchParams(m);
+  return (q.get("utm_campaign") || q.get("utm_source") || "").slice(0, CT_MAX);
+}
+
+const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorCt(search) || ct);
   var $ = function (id) { return document.getElementById(id); };
   var root = document.documentElement;
   var RE = new RegExp("^[" + String(C.abc || "") + "]{" + (C.len | 0) + "}$");
@@ -211,7 +229,10 @@ const sitePlayUrl = (search) => playUrl(visitorMark(search) || SITE_MARK);
   $("vsPlay").href = playHref();
   $("vsGp").href = gp;
   $("vsGp").hidden = ios;                               // iPhone: Google Play ні до чого
-  if (C.as && !android) { $("vsAs").href = C.as; $("vsAs").hidden = false; }
+  if (C.as && !android) {                               // App Store: кампанія самого запрошення (vs_ios…), без міток — «versus» (вшито збіркою)
+    var ct = visitorCt(location.search);
+    $("vsAs").href = ct ? asCampaignUrl(C.asId, ct) : C.as; $("vsAs").hidden = false;
+  }
   var app = "";
   if (code && android) app = "intent://vs?c=" + lc + "#Intent;scheme=orbitdash;package=" + C.pkg + ";S.browser_fallback_url=" + encodeURIComponent(gp) + ";end";
   else if (code && ios && C.ios) app = "orbitdash://vs?c=" + lc;
