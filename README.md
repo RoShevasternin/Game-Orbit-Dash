@@ -12,6 +12,8 @@ and republished on every change — see `CLAUDE.md`.
 
 The site shows no ads and makes no third-party requests unless the visitor taps **Allow** in the consent
 banner: only then is Google Analytics 4 loaded (on the main page and in `play/`; never in `play/embed.html`).
+The one exception is our own anonymous visit counter (`stats.lewydo.com`, a Cloudflare Worker): one small beacon per page
+view and per Allow / Decline tap, with no cookies, identifiers or stored IP addresses (never in `play/embed.html` or `vs/`).
 Fonts and every other file are served from the site itself.
 
 © 2026 Lewydo™ · Love What You Do. All rights reserved.

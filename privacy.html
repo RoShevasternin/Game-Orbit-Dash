@@ -57,7 +57,7 @@ footer a{color:var(--dim);text-decoration:none}footer a:hover{color:var(--player
 
 <main class="wrap">
 <h1>Privacy Policy</h1>
-<p class="upd">Orbit Dash · com.lewydo.orbitdash · Last updated 2026-11-11</p>
+<p class="upd">Orbit Dash · com.lewydo.orbitdash · Last updated 2026-11-12</p>
 
 <h2>Who we are</h2>
 <p>Orbit Dash is made by <b>Lewydo</b>, a two-person independent game studio from Ukraine (Vlad and Lilya).
@@ -67,10 +67,12 @@ In this policy “we” means Lewydo, “the app” means the Orbit Dash applica
 
 <div class="box good">
 <p><b>The short version.</b> This website never shows you ads. It counts visits with Google Analytics <b>only if you
-tap Allow</b> in the small banner — until then, and if you tap Decline, Google Analytics sends nothing and sets no cookies;
-the fonts and the game itself come from this site (only RANKS, the optional leaderboards, and VERSUS, the live races, use other servers — see below). The app is free and pays for itself with ads, so it does share
+tap Allow</b> in the small banner — until then, and if you tap Decline, Google Analytics sends nothing and sets no cookies.
+Separately, our own visit counter counts page views for everyone, without cookies or identifiers and without storing your IP address (see
+<a href="#visit-counter">Visit counter</a>).
+The fonts and the game itself come from this site (only RANKS, the optional leaderboards, VERSUS, the live races, and our anonymous visit counter use other servers — see below). The app is free and pays for itself with ads, so it does share
 some data with Google (and, on Android, TikTok); everything it shares is listed below. Your game progress lives on your own device (joining RANKS sends your records to our server).
-Our own servers are there only for RANKS, the game's leaderboards, and for VERSUS, the live races. In the app from version 2.3.0, the RANKS server stores a RANKS profile once you
+Our own servers are there only for RANKS, the game's leaderboards, for VERSUS, the live races, and for this website's anonymous visit counter. In the app from version 2.3.0, the RANKS server stores a RANKS profile once you
 have finished your first counted run and the game has told you so (“YOU'RE ON THE BOARDS” after GAME OVER or in the menu, or the
 RANKS screen itself if you open it first; in older versions, only after you tap JOIN RANKS); in the browser version (on a phone or a computer) the same way since 1 November 2026 (before that, only if you opened RANKS after playing or tapped JOIN RANKS). You can leave RANKS at any time
 (see <a href="#ranks-auto">How you get on the boards</a>).
@@ -88,11 +90,11 @@ VERSUS (races, rooms, players per country and platform) without names or player 
 
 <h2>This website and the browser version</h2>
 <p>This site is plain static files on GitHub Pages. We do not run advertising, social widgets or other third-party
-code here. Fonts, images, sound and the game itself are served from this site, so your browser does not contact anyone
-else while you read or play — unless you allow Google Analytics (see “Website analytics” below), or open RANKS or VERSUS in the
-game (see below).</p>
+code here. Fonts, images, sound and the game itself are served from this site, so apart from our own visit counter (see
+<a href="#visit-counter">Visit counter</a> below) your browser does not contact anyone else while you read or play — unless you allow
+Google Analytics (see “Website analytics” below), or open RANKS or VERSUS in the game (see below).</p>
 <ul>
-<li><b>No cookies unless you allow analytics or join RANKS.</b> We set none of our own; Google Analytics sets its cookies only after
+<li><b>No cookies unless you allow analytics or join RANKS.</b> We set none of our own (the visit counter uses none either); Google Analytics sets its cookies only after
 you tap Allow, and Google reCAPTCHA, which RANKS uses when you join (also when RANKS adds you by itself after you play), send results, change your profile, send a report, get a new recovery code or
 restore a profile, may set Google's own cookie
 (see below).</li>
@@ -130,7 +132,7 @@ link. Then the game connects to our race server (<code>orbit-dash-versus.versus-
 <a href="#versus">VERSUS live races</a> lists. The random player ID it creates for VERSUS is kept in your browser's <code>localStorage</code>
 (<code>od:own:vs-pid</code>); clearing your browser data erases it, and the next race gets a new one. Invite links open a page of this site
 (<code>/vs/</code>) that shows the room code and is not indexed by search engines; it has no analytics and loads nothing from other sites.</li>
-<li><b>Cloudflare</b> runs the VERSUS race server for us (Cloudflare Workers and Durable Objects). See
+<li><b>Cloudflare</b> runs the VERSUS race server (Cloudflare Workers and Durable Objects) and our visit counter (Cloudflare Workers) for us. See
 <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare's privacy policy</a>.</li>
 <li><b>GitHub Pages</b> hosts the files. Like any web host, GitHub processes the technical request data (such as your
 IP address) needed to deliver a page. See
@@ -138,12 +140,37 @@ IP address) needed to deliver a page. See
 We receive no reports or statistics from it.</li>
 </ul>
 
+<h2 id="visit-counter">Visit counter</h2>
+<p>To know roughly how many people visit this site and where they come from, the main page, the browser version of the game
+(<code>/play/</code>) and this policy page send one small anonymous message to our own counter at <code>stats.lewydo.com</code>, which
+Cloudflare runs for us (Cloudflare Workers). It works for everyone, whether or not you allow Google Analytics, because it collects nothing
+that identifies you.</p>
+<ul>
+<li><b>What is counted:</b> that a page was opened (which of these three pages) and which Allow / Decline choice, if any, was stored at that
+moment; that you tapped Allow or Decline in the analytics banner, and which choice was already stored before that; the country, as the two-letter code that Cloudflare derives from your connection; and a
+coarse source label: the campaign tag in the link (<code>utm_source</code>) if the address has one; otherwise only the kind of site you came
+from, such as “google”, “tiktok”, one of our own sites or “other”; or — when the page is opened inside the TikTok, Instagram or Facebook app —
+that app's name, worked out on your device. The browser's name itself is never part of the message. Never the page address, the full referring address,
+your name or anything you type.</li>
+<li><b>What is not used:</b> no cookies and no storage of its own on your device, no random or device ID, no fingerprinting. It only reads
+the Allow / Decline choice that the banner has already saved, to record which choice was in place. Cloudflare sees your IP
+address to deliver the message, as any server does; the counter does not store it, and its server keeps no logs. On our counter's server,
+your browser's user agent is checked only to skip search-engine robots and is not stored.</li>
+<li><b>Retention:</b> each count is stored as one anonymous row (the fields above and the time), which we only ever read as totals,
+such as visits per day and per country; Cloudflare deletes these rows after about 3 months.</li>
+<li><b>Where not:</b> not in the live game preview that other sites embed (<code>/play/embed.html</code>) and not on VERSUS invite pages
+(<code>/vs/</code>).</li>
+<li><b>Legal basis:</b> our legitimate interest in knowing how many people visit our site (GDPR Art. 6(1)(f)). The counter keeps nothing
+on your device (it only reads the Allow / Decline choice the banner already saved), and the data cannot be linked to you.</li>
+</ul>
+
 <h2 id="analytics">Website analytics (Google Analytics)</h2>
 <p>To see how many people play Orbit Dash in the browser and which parts of the game they enjoy, this site can use
 <b>Google Analytics 4</b> (run by Google). It is <b>off until you choose</b>: a small banner asks “Can we count visits
 with Google Analytics?”. Before you answer, and if you tap <b>Decline</b>, Google Analytics is not loaded at all — no
 request goes to Google and no cookie is set. Only if you tap <b>Allow</b> does your browser load Google's script
-(<code>googletagmanager.com</code>) and send visit data to <code>google-analytics.com</code>.</p>
+(<code>googletagmanager.com</code>) and send visit data to <code>google-analytics.com</code>. (Our own anonymous
+<a href="#visit-counter">visit counter</a> is separate and works either way.)</p>
 <ul>
 <li><b>Where:</b> on this page and in the browser version of the game (<code>/play/</code>). Not in the live game
 preview that other sites embed, and not on this policy page.</li>
@@ -442,6 +469,8 @@ scores stay off their leaderboards. RANKS adds you by itself — the app from ve
 <b>RANKS → ⓘ → DELETE MY RANKS PROFILE</b> (see <a href="#ranks-auto">How you get on the boards</a>; browser:
 <a href="#ranks-web">RANKS in the browser version</a>), and the game on that device (or in that browser) won't add you again by
 itself — only <b>JOIN RANKS</b> brings you back. In RANKS you can also hide your flag or pick a generated name.</li>
+<li><b>Visit counter:</b> it keeps nothing on your device and nothing that identifies you, so there is nothing to switch off; if you
+block <code>stats.lewydo.com</code> in your browser (for example with a content blocker), the site works exactly the same.</li>
 <li><b>VERSUS:</b> nothing is sent unless you open VERSUS or an invite link. To leave a room, close it or tap LEAVE; clearing your browser
 data (or the app's data) erases your random player ID.</li>
 <li><b>Everything else:</b> uninstalling the app stops all collection (a RANKS profile stays until you delete it or
@@ -455,10 +484,16 @@ collect personal data from children. If you believe a child has provided persona
 <a href="mailto:support@lewydo.com">support@lewydo.com</a> and we will delete what we can and ask our providers to do the same.</p>
 
 <h2>How long data is kept</h2>
-<p>The only database of our own is the RANKS server; how long it keeps data is described in
-<a href="#ranks-retention">How long RANKS data is kept</a> (the browser version's RANKS work the same way). The VERSUS race server keeps race
-data only while a room lasts, at most 4 hours, and its daily statistics — numbers only, without names or player IDs — for 30 days
-(see <a href="#versus-stats">Daily statistics</a>). Analytics and crash data are kept by Google for the retention period set in our
+<p>Each of our own servers keeps data for its own time:</p>
+<ul>
+<li><b>RANKS</b> — how long it keeps your profile, records and request data is described in
+<a href="#ranks-retention">How long RANKS data is kept</a> (the browser version's RANKS work the same way).</li>
+<li><b>VERSUS</b> — race data only while a room lasts, at most 4 hours, and daily statistics — numbers only, without names or player IDs —
+for 30 days (see <a href="#versus">VERSUS live races</a> and <a href="#versus-stats">Daily statistics</a>).</li>
+<li><b>Visit counter</b> — anonymous rows, without cookies, identifiers or IP addresses, for about 3 months (see
+<a href="#visit-counter">Visit counter</a>).</li>
+</ul>
+<p>Analytics and crash data are kept by Google for the retention period set in our
 Firebase / Google Analytics project: analytics events (from the app and, if you allowed it, from this website) for
 2 months, the random analytics ID up to 14 months after the last activity, crash reports for a shorter time; TikTok keeps
 attribution data under its own policy. Your game progress stays on your device for as long as the app or the
@@ -477,12 +512,15 @@ request on to the provider. You also have the right to complain to your local da
 <h2>International transfers and security</h2>
 <p>Our providers are global companies and may process data outside your country, including outside the EEA, using
 the transfer safeguards described in their policies (such as the European Commission's Standard Contractual
-Clauses). Cloudflare, Inc. (USA), which runs our VERSUS race server, is certified under the EU–US Data Privacy Framework and also
+Clauses). Cloudflare, Inc. (USA), which runs our VERSUS race server and our visit counter, is certified under the EU–US Data Privacy Framework and also
 uses the European Commission's Standard Contractual Clauses. All traffic from the app and this site uses encrypted connections.</p>
 
 <h2>Changes to this policy</h2>
 <p>If we add or remove a service, we update this page and the date at the top before the change ships. Material
 changes are described here; the previous wording is available on request.</p>
+<p><b>12 November 2026:</b> this site now has its own anonymous visit counter (<code>stats.lewydo.com</code>, run for us by Cloudflare)
+that counts page views and Allow / Decline taps for everyone, without cookies or identifiers (see
+<a href="#visit-counter">Visit counter</a>). Google Analytics still works only after you tap Allow.</p>
 <p><b>6 November 2026:</b> this site moved to its own address, <a href="https://orbitdash.lewydo.com/">https://orbitdash.lewydo.com/</a> (the old address,
 roshevasternin.github.io/Game-Orbit-Dash, now forwards here), and our contact address is now
 <a href="mailto:support@lewydo.com">support@lewydo.com</a>. Browsers keep each site's data separately, so the browser version starts afresh at the new
@@ -549,7 +587,7 @@ Before this change (and in older versions of the app), a RANKS profile was creat
   .odc-i{width:48px;height:48px;border-radius:12px}
   .odc .odc-t{align-self:end}.odc .odc-p{align-self:start}.odc-b{margin:0}}</style>
 <div id="odc" class="odc" role="region" aria-label="Cookie settings" data-ta="aria-label:consent.settings" hidden><div class="odc-in"><img class="odc-i" src="apple-touch-icon.png" alt="" width="48" height="48"><p class="odc-t" data-t="consent.title">Help us make the game better</p><p class="odc-p"><span data-t="consent.text">We&#x27;re a two-person indie studio. May we count visits with Google Analytics? It shows us which levels you love, so we know what to make next. No ad tracking, nothing sold.</span> <a href="privacy.html#analytics" data-t="foot.privacy">Privacy</a></p><div class="odc-b"><button type="button" data-odc="denied" data-t="consent.decline">Decline</button><button type="button" data-odc="granted" data-t="consent.allow">Allow</button></div></div></div>
-<script>window.__odConsent = {"id":"G-KDLF8656QS","mode":"privacy"};</script>
+<script>window.__odConsent = {"id":"G-KDLF8656QS","mode":"privacy","stats":"https://stats.lewydo.com/h"};</script>
 <script src="assets/js/consent.js"></script>
 
 </body>

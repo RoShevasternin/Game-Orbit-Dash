@@ -15,12 +15,104 @@
 
    Вибір — localStorage "lewydo:od-analytics" = {"v":"granted"|"denied","t":мс}; через 395 днів (13 місяців) питаємо знову.
    Змінити — [data-odc-open] (підвал сторінки, кнопка в політиці) і PRIVACY OPTIONS у SETTINGS гри (window.__orbitPrivacy).
+
+   ЄДИНИЙ виняток з «нічого назовні до Allow» (власник 12.11.2026): НАШ анонімний лічильник відвідувань stats.lewydo.com (Cloudflare Worker
+   lewydo-site-stats → Workers Analytics Engine). Працює для всіх, і до вибору, і після «Decline», бо нічого особистого не зберігає: без кук,
+   без id, без IP, без адреси й реферера — лише ці 5 полів (контракт — server/site-stats, privacy.html#visit-counter):
+     s   "od" — сайт гри            p   "home" | "play" | "privacy" | "press" | "other"
+     e   "view" | "allow" | "decline"   c   вибір ДО події: "granted" | "denied" | "none"
+     src мітка джерела, рахується тут, на пристрої (власник 12.11.2026), — за пріоритетом:
+         1) utm_source (^[a-z0-9_.-]{1,32}$);
+         2) категорія ХОСТА реферера: свій сайт → "self"; lewydo.com / www.lewydo.com → "studio"; orbitdash.lewydo.com → "orbitdash";
+            cubepix.lewydo.com → "cubepix" (інший *.lewydo.com → "studio"); google, bing, duckduckgo, tiktok, youtube, instagram, facebook,
+            x, reddit, discord, telegram; інший хост → "other";
+         3) реферера немає — вбудований браузер застосунку з navigator.userAgent: TikTok → "tiktok", Instagram → "instagram",
+            Facebook → "facebook" (біо TikTok власника — гола https://lewydo.com/, а браузер TikTok часто не шле реферер).
+            Сам user agent нікуди не йде й ніде не лежить — лише одна з трьох міток;
+         4) інакше "none".
+   Лише navigator.sendBeacon (рядок → text/plain, без preflight); немає sendBeacon — нічого. Нічого не пишемо в сховище; читаємо лише вибір
+   Allow / Decline, який смуга вже зберегла (load(), ключ KEY), — щоб c показав, який вибір був.
+   Адреса — window.__odConsent.stats (site.json → stats; тести підміняють). Google Analytics — як і було, лише після «Allow».
    ───────────────────────────────────────────────────────────────────────────── */
 (function () {
   "use strict";
   var C = window.__odConsent || {};
   var ID = C.id, MODE = C.mode || "page";
   var KEY = "lewydo:od-analytics", TTL = 395 * 864e5;
+
+  /* ── наш лічильник відвідувань (stats.lewydo.com) ─────────────────────────── */
+  var STATS = typeof C.stats === "string" ? C.stats : "https://stats.lewydo.com/h";
+  // категорія реферера — лише за хостом (повну адресу не шлемо ніколи); ланцюжок [мітка, регулярка хоста]
+  var REF = [
+    // youtube раніше за google: com.google.android.youtube — застосунок YouTube, а не пошук
+    ["youtube", /(^|\.)youtube\.com$|(^|\.)youtu\.be$|^com\.google\.android\.youtube$/],
+    ["google", /(^|\.)google\.[a-z.]+$|^com\.google\.android\./],
+    ["bing", /(^|\.)bing\.com$/],
+    ["duckduckgo", /(^|\.)duckduckgo\.com$/],
+    ["tiktok", /(^|\.)tiktok\.com$|(^|\.)tiktokv\.com$|^com\.zhiliaoapp\.musically/],
+    ["instagram", /(^|\.)instagram\.com$|^com\.instagram\./],
+    ["facebook", /(^|\.)facebook\.com$|(^|\.)fb\.com$|(^|\.)messenger\.com$|^com\.facebook\./],
+    ["x", /(^|\.)x\.com$|(^|\.)twitter\.com$|^t\.co$/],
+    ["reddit", /(^|\.)reddit\.com$|(^|\.)redd\.it$/],
+    ["discord", /(^|\.)discord\.com$|(^|\.)discord\.gg$|(^|\.)discordapp\.com$/],
+    ["telegram", /^t\.me$|(^|\.)telegram\.org$|(^|\.)telegram\.me$|^org\.telegram\./],
+  ];
+  // вбудований браузер застосунку (коли реферера немає): user agent читаємо ЛИШЕ тут і лише щоб вибрати одну з трьох міток — сам він нікуди не йде
+  var APP = [
+    ["tiktok", /musical_ly|TikTok|Bytedance|trill_/i],
+    ["instagram", /Instagram/],
+    ["facebook", /FBAN|FBAV|FB_IAB|FBIOS/],
+  ];
+  function inApp() {
+    var ua = String(navigator.userAgent || "");
+    for (var i = 0; i < APP.length; i++) if (APP[i][1].test(ua)) return APP[i][0];
+    return "none";
+  }
+  // категорія хоста реферера: свій сайт, сайти Lewydo, відомі сайти, інакше «other»
+  function refKind(h) {
+    if (h === location.hostname) return "self";                       // перехід усередині сайту
+    if (h === "lewydo.com" || h === "www.lewydo.com") return "studio";
+    if (h === "orbitdash.lewydo.com") return "orbitdash";
+    if (h === "cubepix.lewydo.com") return "cubepix";
+    if (/(^|\.)lewydo\.com$/.test(h)) return "studio";                // інший *.lewydo.com — теж студія
+    for (var i = 0; i < REF.length; i++) if (REF[i][1].test(h)) return REF[i][0];
+    return "other";
+  }
+  function source() {
+    try {
+      // мітка кампанії — малими літерами; схоже на ідентифікатор (довгий hex / цифри) — не беремо: мітка не має вказувати на людину
+      var u = (new URLSearchParams(location.search).get("utm_source") || "").toLowerCase();
+      if (u && /^[a-z0-9_.-]{1,32}$/.test(u) && !/^[0-9a-f]{12,}$|\d{6,}/.test(u)) return u;
+      if (document.referrer) {
+        var h = new URL(document.referrer).hostname.toLowerCase();
+        if (h) return refKind(h);
+      }
+      return inApp();
+    } catch (e) { return "none"; }
+  }
+  function page() {
+    if (MODE === "play") return "play";
+    if (MODE === "privacy") return "privacy";
+    if (MODE === "page") return /\/press(\/|$)/.test(location.pathname) ? "press" : "home";
+    return "other";
+  }
+  // одна точка на подію; c — вибір ДО неї. Лічильник ніколи не ламає сторінку: усе в try/catch
+  function hit(e, before) {
+    try {
+      if (!STATS || !navigator.sendBeacon) return;
+      navigator.sendBeacon(STATS, JSON.stringify({ s: "od", p: page(), e: e, c: before === "granted" || before === "denied" ? before : "none", src: source() }));
+    } catch (err) { /* лічильник — не важливіше за сторінку */ }
+  }
+  // «view» — раз за завантаження сторінки (не з bfcache); сторінку, яку браузер лише передвантажив (prerender), — коли її справді відкрили
+  (function () {
+    var sentView = false;
+    function view() { if (!sentView) { sentView = true; hit("view", load()); } }
+    try {
+      if (document.prerendering) document.addEventListener("prerenderingchange", view, { once: true });
+      else view();
+    } catch (e) { /* */ }
+  })();
+
   var box = document.getElementById("odc");
   if (!box || !/^G-[A-Z0-9]+$/.test(ID || "")) return;
   var root = document.documentElement;
@@ -130,6 +222,7 @@
     back = null;
   }
   function choose(v) {
+    hit(v === "granted" ? "allow" : "decline", state);   // наш лічильник: c — вибір ДО цього тапу
     state = v; save(v); hide();
     if (v === "granted") start(); else stop();
     var f = after; after = null;
