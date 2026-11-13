@@ -288,13 +288,25 @@ header.on{background:rgba(14,16,36,.8);-webkit-backdrop-filter:blur(14px) satura
 .mark{display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px;letter-spacing:.18em;white-space:nowrap}
 .mark img{width:34px;height:34px;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 6px 18px -6px color-mix(in srgb,var(--acc) 70%,transparent)}
 .mark .o{color:#00e5ff} .mark .d{color:var(--gold)}
-.navs{display:none;margin-inline-start:auto;gap:clamp(14px,1.8vw,28px)}
-.navs a{font-size:12px;font-weight:700;color:var(--t2);position:relative;padding:8px 0;transition:color .2s}
+.navs{display:none;margin-inline-start:auto;gap:clamp(12px,1.3vw,20px);align-items:center;flex-wrap:nowrap;min-width:0;overflow:hidden}
+.navs a{font-size:12px;font-weight:700;color:var(--t2);position:relative;padding:8px 0;transition:color .2s;white-space:nowrap;flex:none}
+/* [13.11.2026] меню «•••» (priority+): пункти, що не влазять у рядок, — сюди, у порядку data-p (1 — найважливіший, лишається в рядку найдовше) */
+.nav-more{position:relative;display:none;flex:none;margin-inline-start:6px}
+.nav-more.on{display:block}
+.nav-more>button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:var(--t2);cursor:pointer;transition:background .2s,color .2s}
+.nav-more>button:hover,.nav-more>button[aria-expanded=true]{background:rgba(255,255,255,.07);color:var(--t1)}
+.nav-more>button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.nav-more>button svg{width:20px;height:20px}
+.nav-menu{position:absolute;inset-inline-end:0;top:calc(100% + 8px);min-width:210px;padding:8px;border-radius:16px;background:rgba(14,16,36,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--rim),0 18px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:2px}
+.nav-menu[hidden]{display:none}
+.nav-menu a{display:block;padding:11px 14px;border-radius:10px;font-size:12px;font-weight:700;color:var(--t2);white-space:nowrap}
+.nav-menu a:hover,.nav-menu a:focus-visible,.nav-menu a[aria-current=page]{background:rgba(255,255,255,.06);color:var(--t1);outline:none}
+.nav-menu a::after{display:none}
 .navs a::after{content:"";position:absolute;inset-inline:0 100%;bottom:0;height:2px;border-radius:2px;background:var(--acc);box-shadow:0 0 8px var(--acc);transition:inset-inline-end .25s var(--ease)}
 .navs a:hover,.navs a[aria-current=true]{color:var(--t1)}
 .navs a:hover::after,.navs a[aria-current=true]::after{inset-inline-end:0}
 .right{margin-inline-start:auto;display:flex;align-items:center;gap:8px}
-.navs+.right{margin-inline-start:22px}
+.navs+.right,.nav-more+.right{margin-inline-start:22px}
 .lang-btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 12px 0 8px;border-radius:13px;font-size:12px;font-weight:800;letter-spacing:.06em;
   background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--rim2)}
 .lang-btn .ball{width:22px;height:22px}
@@ -710,6 +722,7 @@ footer .fine{text-align:center;margin-top:20px;font-size:12px;color:var(--t3);li
 }
 @media (min-width:1000px){
   .navs{display:flex}
+  .nav-more.on{display:block}
   .hero{min-height:min(calc(100vh - 64px),940px);display:flex;align-items:center;padding-bottom:clamp(60px,6vw,90px)}
   .hero>.wrap{width:100%}
   .hero-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);grid-template-areas:"badge stage" "title stage" "tag stage" "more stage" "cta stage";column-gap:clamp(30px,5vw,80px);align-content:center}
@@ -735,9 +748,6 @@ footer .fine{text-align:center;margin-top:20px;font-size:12px;color:var(--t3);li
 }
 /* [3.0.0] у шапці на один розділ більше (VERSUS): на вузьких ПК без «Скриншотів», щоб довгі мови (fr, de) не виштовхували кнопку мови за край.
    [12.11.2026] ще й «Музика» (/music/): «Скриншоти» ховаємо до 1365 px, а до 1179 — і «Студію» (fr, fi, el, tr). href$= — бо на /music/ це ../#shots */
-@media (min-width:1000px) and (max-width:1365px){ .navs a[href$="#shots"]{display:none} }
-@media (min-width:1180px) and (max-width:1439px){ .navs{gap:16px} }
-@media (min-width:1000px) and (max-width:1179px){ .navs{gap:10px} .navs a[href$="#studio"]{display:none} .navs+.right{margin-inline-start:14px} }
 @media (max-width:640px){ .beatline{height:44px;gap:4px;opacity:.55} }
 @media (max-width:520px){ .hero .cta .btn{flex:1 1 auto} .tcs{gap:5px} .tc{padding:5px 3px 7px} .tc-name{font-size:9px;letter-spacing:.04em}
   .tc-band{white-space:normal;text-align:center;line-height:1.15;font-size:8.5px;justify-content:center;flex-wrap:wrap} }
@@ -1013,16 +1023,17 @@ h1 .o .hw-hat{position:absolute;left:-.06em;top:-.32em;width:.56em;transform:rot
       <span dir="ltr"><span class="o">ORBIT</span> <span class="d">DASH</span></span>
     </a>
     <nav class="navs cap" data-ta="aria-label:nav.label" aria-label="Site sections">
-      <a href="../#versus" data-l data-t="g:VERSUS">VERSUS</a>
-      <a href="../#levels" data-l data-t="nav.levels">Levels</a>
-      <a href="./" aria-current="page" data-l data-t="nav.music">Music</a>
-      <a href="../#ranks" data-l data-t="g:RANKS">RANKS</a>
-      <a href="../#how" data-l data-t="nav.how">How to play</a>
-      <a href="../#blip" data-l data-t="nav.blip">Blip</a>
-      <a href="../#shop" data-l data-t="nav.shop">Shop</a>
-      <a href="../#shots" data-l data-t="nav.shots">Screenshots</a>
-      <a href="../#studio" data-l data-t="nav.studio">Studio</a>
+      <a data-p="3" href="../#versus" data-l data-t="g:VERSUS">VERSUS</a>
+      <a data-p="1" href="../#levels" data-l data-t="nav.levels">Levels</a>
+      <a data-p="2" href="./" aria-current="page" data-l data-t="nav.music">Music</a>
+      <a data-p="4" href="../#ranks" data-l data-t="g:RANKS">RANKS</a>
+      <a data-p="6" href="../#how" data-l data-t="nav.how">How to play</a>
+      <a data-p="7" href="../#blip" data-l data-t="nav.blip">Blip</a>
+      <a data-p="5" href="../#shop" data-l data-t="nav.shop">Shop</a>
+      <a data-p="8" href="../#shots" data-l data-t="nav.shots">Screenshots</a>
+      <a data-p="9" href="../#studio" data-l data-t="nav.studio">Studio</a>
     </nav>
+    <div class="nav-more" id="navMore"><button type="button" aria-haspopup="true" aria-expanded="false" aria-controls="navMenu" data-ta="aria-label:nav.label" aria-label="Site sections"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg></button><div class="nav-menu cap" id="navMenu" hidden></div></div>
     <div class="right">
       <a class="btn btn-acc btn-sm" href="../play/" data-play><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.6v14.8c0 .8.9 1.3 1.6.8l11.3-7.4c.6-.4.6-1.3 0-1.7L8.6 3.8C7.9 3.3 7 3.8 7 4.6z"/></svg><span data-t="cta.playShort">Play</span></a>
       <button class="lang-btn" id="langBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="langSheet" data-ta="aria-label:g:LANGUAGE" aria-label="LANGUAGE">
@@ -1868,6 +1879,40 @@ const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorC
       logo.classList.add("lw-beating");
       obs.disconnect();
     }, { threshold: 0.5 }).observe(logo);
+  })();
+
+
+  /* [13.11.2026] шапка: пункти в один рядок; що не влазить — у меню «•••» за пріоритетом (data-p: більше число — ховається раніше).
+     Перерахунок — на зміну ширини, мови й після шрифтів. Ті самі вузли посилань переносяться, тож підсвітка розділу (aria-current) працює й у меню. */
+  (function navFit() {
+    var nav = document.querySelector(".navs"), more = document.getElementById("navMore");
+    if (!nav || !more) return;
+    var btn = more.querySelector("button"), menu = document.getElementById("navMenu");
+    var all = $$(".navs a[data-p]").slice();
+    function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+    function fit() {
+      close();
+      all.forEach(function (a) { nav.appendChild(a); });
+      more.classList.remove("on");
+      if (getComputedStyle(nav).display === "none") return;          // телефон: навігація схована зовсім
+      if (nav.scrollWidth <= nav.clientWidth + 1) return;
+      more.classList.add("on");
+      var byP = all.slice().sort(function (a, b) { return +b.getAttribute("data-p") - +a.getAttribute("data-p"); }), moved = [];
+      for (var i = 0; i < byP.length - 1 && nav.scrollWidth > nav.clientWidth + 1; i++) { moved.push(byP[i]); byP[i].remove(); }
+      all.forEach(function (a) { if (moved.indexOf(a) >= 0) menu.appendChild(a); });   // у меню — у звичному порядку сторінки
+    }
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = menu.hidden; menu.hidden = !open; btn.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) { var f = menu.querySelector("a"); if (f) f.focus(); }
+    });
+    menu.addEventListener("click", function (e) { if (e.target.closest("a")) close(); });
+    document.addEventListener("click", function (e) { if (!more.contains(e.target)) close(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { close(); btn.focus(); } });
+    var t = 0; addEventListener("resize", function () { clearTimeout(t); t = setTimeout(fit, 80); });
+    onLang.push(fit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    fit();
   })();
 
   /* «Дякуємо, що граєте!» — в один рядок будь-якою мовою (стандарт бренду): довша мова — дрібніше, без перенесення */
