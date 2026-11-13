@@ -293,11 +293,11 @@ header.on{background:rgba(14,16,36,.8);-webkit-backdrop-filter:blur(14px) satura
 /* [13.11.2026] меню «•••» (priority+): пункти, що не влазять у рядок, — сюди, у порядку data-p (1 — найважливіший, лишається в рядку найдовше) */
 .nav-more{position:relative;display:none;flex:none;margin-inline-start:6px}
 .nav-more.on{display:block}
-.nav-more>button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:var(--t2);cursor:pointer;transition:background .2s,color .2s}
-.nav-more>button:hover,.nav-more>button[aria-expanded=true]{background:rgba(255,255,255,.07);color:var(--t1)}
+.nav-more>button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:0;border-radius:13px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--rim2);color:var(--t1);cursor:pointer;transition:background .2s}
+.nav-more>button:hover,.nav-more>button[aria-expanded=true]{background:rgba(255,255,255,.1)}
 .nav-more>button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .nav-more>button svg{width:20px;height:20px}
-.nav-menu{position:absolute;inset-inline-end:0;top:calc(100% + 8px);min-width:210px;padding:8px;border-radius:16px;background:rgba(14,16,36,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--rim),0 18px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:2px}
+.nav-menu{position:absolute;inset-inline-end:0;top:calc(100% + 8px);min-width:210px;max-height:calc(100vh - 90px);max-height:calc(100dvh - 90px);overflow-y:auto;overscroll-behavior:contain;padding:8px;border-radius:16px;background:rgba(14,16,36,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--rim),0 18px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:2px}
 .nav-menu[hidden]{display:none}
 .nav-menu a{display:block;padding:11px 14px;border-radius:10px;font-size:12px;font-weight:700;color:var(--t2);white-space:nowrap}
 .nav-menu a:hover,.nav-menu a:focus-visible,.nav-menu a[aria-current=page]{background:rgba(255,255,255,.06);color:var(--t1);outline:none}
@@ -306,7 +306,8 @@ header.on{background:rgba(14,16,36,.8);-webkit-backdrop-filter:blur(14px) satura
 .navs a:hover,.navs a[aria-current=true]{color:var(--t1)}
 .navs a:hover::after,.navs a[aria-current=true]::after{inset-inline-end:0}
 .right{margin-inline-start:auto;display:flex;align-items:center;gap:8px}
-.navs+.right,.nav-more+.right{margin-inline-start:22px}
+/* до 1000 px рядка розділів немає: «Грати» й мова — до правого краю (margin auto), «•••» з усіма розділами — крайня справа; пункти меню — під палець (≥ 44 px) */
+@media (max-width:999px){.nav-more{order:3;margin-inline-start:0}.nav-menu a{padding:15px 16px}}
 .lang-btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 12px 0 8px;border-radius:13px;font-size:12px;font-weight:800;letter-spacing:.06em;
   background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--rim2)}
 .lang-btn .ball{width:22px;height:22px}
@@ -723,6 +724,7 @@ footer .fine{text-align:center;margin-top:20px;font-size:12px;color:var(--t3);li
 @media (min-width:1000px){
   .navs{display:flex}
   .nav-more.on{display:block}
+  .nav-more+.right{margin-inline-start:22px}
   .hero{min-height:min(calc(100vh - 64px),940px);display:flex;align-items:center;padding-bottom:clamp(60px,6vw,90px)}
   .hero>.wrap{width:100%}
   .hero-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);grid-template-areas:"badge stage" "title stage" "tag stage" "more stage" "cta stage";column-gap:clamp(30px,5vw,80px);align-content:center}
@@ -1894,7 +1896,11 @@ const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorC
       close();
       all.forEach(function (a) { nav.appendChild(a); });
       more.classList.remove("on");
-      if (getComputedStyle(nav).display === "none") return;          // телефон: навігація схована зовсім
+      if (getComputedStyle(nav).display === "none") {                // телефон і планшет: рядка немає — усі розділи в «•••»
+        all.forEach(function (a) { menu.appendChild(a); });
+        more.classList.add("on");
+        return;
+      }
       if (nav.scrollWidth <= nav.clientWidth + 1) return;
       more.classList.add("on");
       var byP = all.slice().sort(function (a, b) { return +b.getAttribute("data-p") - +a.getAttribute("data-p"); }), moved = [];
