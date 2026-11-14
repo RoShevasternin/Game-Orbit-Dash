@@ -93,17 +93,24 @@
   function page() {
     if (MODE === "play") return "play";
     if (MODE === "privacy") return "privacy";
-    // [12.11.2026] сторінка «Музика» /music/ — «other» (білий список воркера: home / play / privacy / press / other)
-    if (MODE === "page") return /\/press(\/|$)/.test(location.pathname) ? "press" : /\/music(\/|$)/.test(location.pathname) ? "other" : "home";
+    // [12.11.2026] сторінка «Музика» /music/; [14.11.2026] — своє «music» (до того «other»: воркер тоді іншого не брав)
+    if (MODE === "page") return /\/press(\/|$)/.test(location.pathname) ? "press" : /\/music(\/|$)/.test(location.pathname) ? "music" : "home";
     return "other";
   }
   // одна точка на подію; c — вибір ДО неї. Лічильник ніколи не ламає сторінку: усе в try/catch
-  function hit(e, before) {
+  // [14.11.2026] t — лише для play / dl сторінки «Музика»: id треку зі списку сторінки (data-id рядка), більше нічого
+  function hit(e, before, t) {
     try {
       if (!STATS || !navigator.sendBeacon) return;
-      navigator.sendBeacon(STATS, JSON.stringify({ s: "od", p: page(), e: e, c: before === "granted" || before === "denied" ? before : "none", src: source() }));
+      var o = { s: "od", p: page(), e: e, c: before === "granted" || before === "denied" ? before : "none", src: source() };
+      if (t) o.t = t;
+      navigator.sendBeacon(STATS, JSON.stringify(o));
     } catch (err) { /* лічильник — не важливіше за сторінку */ }
   }
+  // [14.11.2026] «Музика»: ▶ треку (play) і тап «Завантажити» (dl) — page.js кличе з id рядка; лише на /music/ і лише id зі списку (a-z, 0-9, -)
+  window.__odMusicHit = function (e, id) {
+    if ((e === "play" || e === "dl") && page() === "music" && /^[a-z0-9-]{1,32}$/.test(String(id))) hit(e, load(), String(id));
+  };
   // «view» — раз за завантаження сторінки (не з bfcache); сторінку, яку браузер лише передвантажив (prerender), — коли її справді відкрили
   (function () {
     var sentView = false;

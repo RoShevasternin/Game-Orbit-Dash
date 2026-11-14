@@ -1838,6 +1838,8 @@ const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorC
     if (!au || !rows.length) return null;
     var on = null, E = Env(), lastSec = -1, MS = "mediaSession" in navigator ? navigator.mediaSession : null;
     var nameOf = function (r) { return r.getAttribute("data-name"); };
+    // [14.11.2026] наш анонімний лічильник (consent.js → __odMusicHit): ▶ треку з початку й тап «Завантажити» — id рядка, більше нічого
+    var count = function (e, r) { try { if (window.__odMusicHit) window.__odMusicHit(e, r.getAttribute("data-id")); } catch (x) {} };
     function label(r) {
       var playing = r === on && !au.paused, b = $(".mu-play", r), d = $(".mu-dl", r);
       r.classList.toggle("playing", playing);
@@ -1879,6 +1881,7 @@ const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorC
       au.src = r.getAttribute("data-src");
       meta(r);
       go();
+      count("play", r);                         // новий трек (пауза / далі того ж — не рахуємо)
     }
     function sync() {
       if (on) label(on);
@@ -1890,6 +1893,8 @@ const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorC
     rows.forEach(function (r) {
       label(r);
       $(".mu-play", r).addEventListener("click", function () { pick(r); });
+      var dl = $(".mu-dl", r);
+      if (dl) dl.addEventListener("click", function () { count("dl", r); });
     });
     if (MS) {
       var step1 = function (d) { return function () { var i = rows.indexOf(on); if (i >= 0 && rows[i + d]) pick(rows[i + d]); }; };
