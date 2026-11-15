@@ -5,6 +5,9 @@
       "namespace": "android_app",
       "package_name": "com.lewydo.orbitdash",
       "sha256_cert_fingerprints": [
+        "96:5D:42:AC:37:D0:EC:5B:D4:31:0C:1D:54:DF:8F:D3:DC:84:5B:F0:F3:70:30:79:70:CE:5E:63:D3:CE:44:24",
+        "7F:52:90:D0:44:6B:7F:3E:C2:B5:6E:8B:C2:9C:45:2C:C1:6C:6A:B4:20:FA:3D:61:77:36:18:7C:47:27:42:BA",
+        "2B:23:C8:39:A7:61:5F:0C:98:30:FD:A9:AD:69:F4:16:92:3A:13:00:9C:4D:94:F7:21:C5:66:5C:F9:F3:C1:B9",
         "57:1D:46:76:E8:B2:A5:3C:06:8A:4F:90:3F:3A:20:0F:3E:05:FE:4E:FA:DB:4F:14:65:45:B3:91:B4:4B:4F:AB"
       ]
     }
