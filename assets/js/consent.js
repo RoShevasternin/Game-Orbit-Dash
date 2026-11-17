@@ -117,9 +117,16 @@
   window.__odSupportHit = function (t) {
     if (SUP.test(String(t))) hit("support", load(), String(t));
   };
+  // [17.11.2026] «Контакти» (власник: «скільки і на якому з сайтів натискали на літачки і з яких країн»): тап по [data-ct] — подія contact,
+  // t — ціль зі списку: plane (літачок → #contact), mail («Написати нам»), copy («Copy» адреси пошти), telegram, discord; країну ставить сервер
+  var CT = /^(plane|mail|copy|telegram|discord)$/;
+  window.__odContactHit = function (t) {
+    if (CT.test(String(t))) hit("contact", load(), String(t));
+  };
   try {
     document.addEventListener("click", function (ev) {
       try { var a = ev.target && ev.target.closest ? ev.target.closest("[data-sup]") : null; if (a) window.__odSupportHit(a.getAttribute("data-sup")); } catch (err) { /* */ }
+      try { var k = ev.target && ev.target.closest ? ev.target.closest("[data-ct]") : null; if (k) window.__odContactHit(k.getAttribute("data-ct")); } catch (err) { /* */ }
     }, true);
   } catch (e) { /* */ }
   // «view» — раз за завантаження сторінки (не з bfcache); сторінку, яку браузер лише передвантажив (prerender), — коли її справді відкрили
