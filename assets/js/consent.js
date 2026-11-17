@@ -98,7 +98,7 @@
     return "other";
   }
   // одна точка на подію; c — вибір ДО неї. Лічильник ніколи не ламає сторінку: усе в try/catch
-  // [14.11.2026] t — лише для play / dl сторінки «Музика»: id треку зі списку сторінки (data-id рядка), більше нічого
+  // [14.11.2026] t — лише для play / dl сторінки «Музика»: id треку зі списку сторінки (data-id рядка); [17.11.2026] і для support — ціль зі списку SUP
   function hit(e, before, t) {
     try {
       if (!STATS || !navigator.sendBeacon) return;
@@ -111,6 +111,17 @@
   window.__odMusicHit = function (e, id) {
     if ((e === "play" || e === "dl") && page() === "music" && /^[a-z0-9-]{1,32}$/.test(String(id))) hit(e, load(), String(id));
   };
+  // [17.11.2026] блок «Підтримати» (власник: «скільки юзерів натиснуло на підтримати по нашим сайтам»): тап по [data-sup] — подія support,
+  // t — ціль зі списку: open (кнопка «♥ Support» → #support), jar (банка monobank), crypto («Copy» адреси USDT), itch (itch.io), patreon; будь-яка сторінка
+  var SUP = /^(open|jar|crypto|itch|patreon)$/;
+  window.__odSupportHit = function (t) {
+    if (SUP.test(String(t))) hit("support", load(), String(t));
+  };
+  try {
+    document.addEventListener("click", function (ev) {
+      try { var a = ev.target && ev.target.closest ? ev.target.closest("[data-sup]") : null; if (a) window.__odSupportHit(a.getAttribute("data-sup")); } catch (err) { /* */ }
+    }, true);
+  } catch (e) { /* */ }
   // «view» — раз за завантаження сторінки (не з bfcache); сторінку, яку браузер лише передвантажив (prerender), — коли її справді відкрили
   (function () {
     var sentView = false;
