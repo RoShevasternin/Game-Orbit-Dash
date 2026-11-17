@@ -325,7 +325,7 @@ header.on{background:rgba(14,16,36,.8);-webkit-backdrop-filter:blur(14px) satura
 .lang-btn .ball{width:22px;height:22px}
 .lang-btn:hover{background:rgba(255,255,255,.1)}
 /* вузький телефон: «Грати» — лише значок (текст лишається для читачів екрана), на 360 і вужче ховаємо й слова біля значка гри */
-@media (max-width:440px){.right .btn-sm{padding-inline:12px}.right .btn-sm>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
+@media (max-width:559px){.right .btn-sm{padding-inline:12px}.right .btn-sm>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}   /* [17.11.2026] було 440: на 441–559 px «•••» і мова виходили за край (56 мов, 480 px) */
 @media (max-width:360px){.mark>span{display:none}.lang-btn{padding-inline-end:10px;gap:6px}}
 
 /* лист мов (як лист LANGUAGE гри): на телефоні — знизу, на ПК — вікно посередині */
@@ -734,9 +734,9 @@ h1 .d::after{text-shadow:0 0 56px rgba(255,213,74,.9),0 0 22px rgba(255,213,74,.
 .btn-sup:hover{background:color-mix(in srgb,var(--lewydo) 20%,transparent)}
 .btn-sup svg{color:var(--lewydo);width:14px;height:14px}
 .btn-sup>span{white-space:nowrap}
-/* телефон: «Грати» — значком (як було), а «Support» лишається словом (без розрядки й капсу — вужче); місце дає назва біля значка гри.
+/* телефон (< 560 px; [17.11.2026] було < 441 — на 441–559 шапка не вміщалась): «Грати» — значком (як було), а «Support» лишається словом (без розрядки й капсу — вужче); місце дає назва біля значка гри.
    Найвужчі (< 380 px) — серце без слова, слово лишається для читачів екрана */
-@media (max-width:440px){
+@media (max-width:559px){
   header .mark>span{display:none}
   .right .btn-sup{padding-inline:12px;text-transform:none;letter-spacing:0;font-size:13.5px}
   .right .btn-sup>span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}
