@@ -50,8 +50,10 @@
 //           (TRAIL_STYLE_E.FLARE.HEAD_*). Решта 9 стилів — і так барви м'ячика по всій довжині (база = player; у рівнях — барва рівня, як і м'яч).
 //   inner — намальовано всередині попереднього шару (ядро в тілі, серцевина намистини): лише підіймає α, у «пелену» не
 //   йде (як v46: пелена — лише тіло). spark — частинка (EMBERS): ліміт PARTS_MAX і PART_R_MAX. Маляр ці поля ігнорує.
-//   s = { posMul, wMul, ballMul? } — прев'ю (SHOP, картка, LEVEL COMPLETE): позиції × posMul, розміри × posMul·wMul; метрики —
+//   s = { posMul, wMul, ballMul?, still? } — прев'ю (SHOP, картка, LEVEL COMPLETE): позиції × posMul, розміри × posMul·wMul; метрики —
 //   завжди кадру без масштабу. [CAPE] ballMul — м'яч прев'ю / BALL_R у позиціях (ballK paintTrailPreview; типово wMul): лише фібула CAPE.
+//   [KEYS 2.1] still — статичний знімок (орбіта RANKS без живого годинника, картки SHOP / YOUR ORBIT): KEYS малює спокій (без удару й відблиску —
+//   застиглий кадр не ловить випадкову фазу); решта стилів поле ігнорує.
 //
 // МАЛЯР (paintTrail — увесь «тонкий маляр» JSX; у грі — квади msdf.circle з field_page; [v102] ореол — і в рівнях, як у безкінечному):
 //   X = cx + x·k, Y = cy + y·k; барва stop/solid → rgba(mix(colour, #fff, mixK), α); порядок — glow (lighter) →
@@ -159,6 +161,12 @@ export const TRAILS = [
   // [09.11.2026] хвіст рівня SOUL ACOUSTIC (MAIN, NORMAL, запис власника — акустична гітара; на потім, не 3.0.0; звіт — docs/levels/soul-acoustic/LEVEL.md):
   //   шість гітарних струн за м'ячем, що дзвенять на кожну долю (вібрація гасне до наступної); барва — м'яча; числа — TRAIL_STYLE_E.STRUM, форма —
   //   makeStrumE. У КІНЦІ каталогу (код орбіти RANKS лише дописується)
+  { id: "strum", name: "STRUM", level: "soul-acoustic", desc: "Six guitar strings · they ring on every beat" },
+  // [13.11.2026] хвіст концерту LUDOVIVO (MAIN, DEMON — легендарний, як CAPE; Orbit Dash/docs/levels/maestro/LEVEL.md «Хвіст і гімн»): клавіатура рояля
+  //   LEWYDO & SONS тягнеться за м'ячем — білі клавіші слоновою кісткою, чорні — групами 2 + 3, як на справжньому роялі; [KEYS 3.0] клавіатура ГРАЄ (LUDOVIVO —
+  //   партія рояля концерту, решта — «музикант»), м'яч сидить в оправі з медальйоном. Числа — TRAIL_STYLE_E.KEYS, форма — makeKeysE. У КІНЦІ каталогу
+  //   (код орбіти RANKS лише дописується); опис — [KEYS 3.0, фініш] «it plays along with the music» (рецензія: «a key goes down on every beat» застаріло)
+  { id: "keys", name: "KEYS", level: "ludovivo", desc: "A grand piano keyboard · it plays along with the music" },
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -417,6 +425,68 @@ export const TRAIL_STYLE_E = {
   //   «менше руху» — струни рівні. Усе в конверті (|зсув| + півширина ≤ env − dev). Порт: 6 смуг квадами, один ореол.
   STRUM: { N: 6, STRAND_K: 0.17, SPREAD_K: 0.82, TAIL_LEN: 18, HEAD_K: 0.3, VIB_K: 0.26, VIB_HZ: 10.5, VIB_TAU_BEATS: 0.45, VIB_TAU_T: 0.3, VIB_T: 0.5,
     MIX_HI: 0.38, GLOW_MUL: 1.35, GLOW_HEAD_K: 1.0 },
+  // [13.11.2026] KEYS — клавіатура рояля LEWYDO & SONS, легендарний хвіст концерту LUDOVIVO (DEMON); 2.0 / 2.1 — предмет і знак у рейтингах,
+  //   [KEYS 3.0] — ПЕРСОНАЖ, як CAPE (власник 13.11: «хвіст сподіваюсь буде якісним, як і плащ Дракули — особливий»; рецензія 2.1 — 5 і 6.5 / 10 проти
+  //   CAPE). Спека й заміри — Orbit Dash/docs/levels/maestro/TRAIL.md §B. Коротко (кадр вигляду; м'яч — r BALL_R·zs, у прев'ю ×bm):
+  //   ПРЕДМЕТ ФІКСОВАНОЇ ДОВЖИНИ — NK білих по KEY_L (1½ октави E5 … C4: біля м'яча — дискант, до хвоста — бас) + ТОРЕЦЬ CHEEK (закруглений кінець деки
+  //     із золотою волютою), решту шляху не малює — пропорції однакові за будь-якої швидкості, а за торцем лишається дорога для нот ♪.
+  //   ОПРАВА (КРИШКА) — ебенова дуга довкола спини м'яча: кільцевий сектор ±LID_ANG від LID_IN·м'яча до м'яча + LID_W (прев'ю; у грі — LID_GW), золотий
+  //     кант LID_GOLD_W і медальйон MED_R позаду (фібула рояля); клавіші починаються одразу за нею (голова першої — по її колу): м'яч сидить у клавіатурі,
+  //     як камінь в оправі. На ноту дотику (голос тапу hit / сильна доля) кант спалахує (LID_FLASH_*: «м'яч — молоточок»). ВИНЯТОК З КОНВЕРТА лише тут
+  //     (trailEnvOf / trailEnvAt): ≤ ENV від осі, лише в колі LID_REACH довкола м'яча, попереду центру — не далі AHEAD_MAX·BALL_R; решта клавіатури — у ±9.
+  //   [KEYS 3.0, фініш — фінальна рецензія 7 / 10] ЗУМ: оправа — на будь-якому зумі (росте з м'ячем: rB = BALL_R·zs), клавіатура ширшає з м'ячем до
+  //     ×KZ_MAX (kz = keysZoomK) — на крупних планах не «смужка за величезним м'ячем»; виняток росте так само (trailEnvAt: W = BALL_R·zs + (ENV − BALL_R)·kz,
+  //     клавіатура — ±9·kz). КРИШКА ЖИВЕ: на ноту дотику підстрибує пружиною (LID_KICK: м'яч — молоточок), у дропі ВІДКРИТА (LID_OPEN ширша й LID_OPEN_ANG
+  //     довша, перехід OPEN_BEATS), на фінальному акорді концерту — закривається (CLOSE_T) і світиться педаллю (FIN_GLOW); хвиля від нот не лише світить, а й
+  //     ПРОГИНАЄ клавіші (RIP_DIP — «мексиканська хвиля» клавіатурою); у дропі ♪ — щодолі й більші (NOTE_H_DROP). КИВОК: на кожну долю рівня й ноту дотику
+  //     рояль «кланяється» тією самою пружиною (keysKick): клавіатура вужча на NOD_W, кришки видно більше (NOD_FB) — силует міняється щодолі.
+  //     Фінальний акорд концерту — на білих 0 · 1 · 2 біля оправи (keys-score.mjs FIN_KEYS), глісандо старту частини — на перших дверях (keysScore.gl).
+  //   ПЕРЕРІЗ: дека ебеном ±(kw + RIM) — темний обідок на будь-якому тлі (золото на золоті апофеозу B не губиться); білі — слонова кістка до kw з вирізами
+  //     під чорні 2 + 3; кришка позаду (FB_K перерізу); ЗОЛОТО: перетяжка PIN_W на межі кришки й клавіш (і волюта торця — тим самим штрихом), кант-нитка
+  //     TRIM_W посеред обідка спереду (золото торкається лише ебену, 11.7 : 1). Півширина kw — перспектива від торця (TAIL_K) до голови (W_HEAD).
+  //   KEYS ГРАЄ МУЗИКУ: LUDOVIVO — справжня партія рояля (L.keysScore, keys-score.mjs: нота → своя біла / чорна клавіша, сила → глибина, тривалість →
+  //     утримання); інші рівні, ∞ і прев'ю — свій «музикант» keysVirtual: арпеджіо акордів C · Am · F · G угору / вниз на долю (у дропі — на вісімку,
+  //     ∞ — раз на PRESS_T), бас-педаль на такт, на бочку треку (F.kick) — нижні клавіші; раз на фразу — глісандо.
+  //   НАТИСК (пружина): клавіша миттєво вниз (глибина VEL_MIN … 1 за силою — вужча на DIP, старе золото PRESS з жаром HEAT_MIX, що холоне за HEAT_TAU),
+  //     тримається тривалість ноти, вертається пружиною з перельотом (REL_P / REL_TAU: ≈ −13 %, клавіша підскакує вище спокою й осідає).
+  //   МОЛОТОЧОК — золота крапка над натиснутою клавішею на кришці підскакує на HAM_UP і осідає за HAM_T (≤ HAM_N найсвіжіших).
+  //   СИГНАТУРНІ МИТІ: вхід у дроп (рівень такту ≥ DROP_LEVEL) і старт частини концерту — велике глісандо від м'яча до торця (GL_BEATS долі на клавішу,
+  //     ∞ — GL_T) зі спалахом золота й ореолу (FLASH_*); коліно стрибка (поворот ≥ KNEE_DEG на клавішу) — глісандо від коліна в обидва боки; фінал
+  //     концерту — останній акорд партії тримається до кінця сітки (педаль, keys-score.mjs).
+  //   СВІТЛО ЗАЛИ (від орієнтації, не таймер): люстри зверху (LIGHT — напрям у полі) — де кришка дивиться на світло, ебен і золото ловлять блік
+  //     (GLINT_*); блік повзе клавіатурою, коли м'яч кружляє; на носиках NOSE_N найближчих чорних — крапка лаку.
+  //   КРЕН: на стрибку клавіатура кренить (BANK_*): радіальна швидкість голови → ширша / вужча кришка.
+  //   ХВИЛЯ СВІТЛА (RIP_*): кожна нота пускає від своєї клавіші в обидва боки хвилю світла (RIP_V клавіш за долю, ∞ — за с; гаусіан RIP_W клавіші,
+  //     гасне за RIP_TAU) — слонова кістка до білого RIP_MIX, лак — RIP_DECK: клавіатура мерехтить у такт партії (≤ RIP_N свіжих нот).
+  //   НОТИ ♪ — раз на NOTE_BEATS долі (∞ NOTE_T) золота ♪ злітає з торця назад і назовні й тане за NOTE_LIFE (≤ NOTE_N; лише в грі, не в знімку й
+  //     «менше руху»); фігура ♪ — підшляхи заливки удару (без нових груп).
+  //   ОРЕОЛ — дві вузькі смуги обабіч (×GLOW_MUL, α GLOW_A, на долю й спалах — більше).
+  //   «Менше руху» / знімок still — клавіатура, оправа, золото й блік ті самі; без натиску, молоточків, глісандо й нот.
+  //   Заливань 4 (ореол, дека + оправа, білі, удар + ♪) ≤ 4; штрихи — перетяжка з волютою, кант, кант оправи, LIP (4) → груп ≤ 8 ≤ 12 (CAP_GROUP);
+  //   крапок ≤ HAM_N + 1 + 2 (молоточки, око волюти, медальйон — диск і осердя); частинок 0. Порт — TRAIL.md §B.10.
+  //   ПРЕВ'Ю (2.1 + 3.0): довжини вздовж ×keysUs (≥ OCT_MIN клавіш); у будь-якому прев'ю (us > 1) — λ_lid: кришка ЗОЛОТА (SM_FB, шов SEAM_U u ебеном до
+  //     клавіш), смуга ширша ×(1 + SM_W) і рівніша (PREV_FLAT) — знак не тоншає з ростом D; малий вигляд λ = keysSmall (RANKS D ≤ 56 — 1): ≈ SM_KEYS
+  //     клавіш, щілини ×SM_GAP, слонова кістка світліша, без LIP і лаку; прапорець OPAQUE — другий прохід gain прев'ю кладе лише ореол і золото.
+  KEYS: { KEY_L: 9, GAP: 1.0, NK: 10, W_HEAD: 7.9, TAIL_K: 0.75, W_EXP: 0.9, A: 0.95, FB_K: 0.13, BLACK_W: 0.6, BLACK_K: 0.64, MAX_KEYS: 40, RIM: 1.0,
+    IVORY: "#efe2c2", HEAD_BALL: 0.05, HEAD_LEN: 0.2, EBONY: "#120d0a", GOLD: "#f2c35a", PRESS: "#b98222", GLOW: "#ffd36e",
+    BALL_R: 10, ENV: 16, LID_REACH: 16.5, AHEAD_MAX: 0.1, LEN_MAX: 130, KZ_MAX: 1.4,
+    LID_ANG: 1.25, LID_IN: 0.78, LID_W: 3.0, LID_N: 16, LID_GOLD_W: 2.0, BEZEL_W: 0.8, BEZEL_IN: 0.3, LID_FLASH_W: 0.6, LID_FLASH_MIX: 0.7, LID_TAU: 0.12, LID_MIX: 0.12,
+    LID_GW: 4.0, LID_OPEN: 0.8, LID_OPEN_ANG: 0.15, OPEN_BEATS: 1, CLOSE_T: 0.6, LID_KICK: 1.2, LID_KICK_TAU: 0.09, LID_KICK_P: 0.24, FIN_GLOW: 0.45, FIN_T: 0.3,
+    MED_R: 1.7, MED_IN: 0.45, MED_MIX: 0.25, RIP_DIP: 0.75, NOTE_H_DROP: 4.2, NOD_W: 0.2, NOD_FB: 0.8, NOD_BEAT: 0.7,
+    CHEEK: 4.5, CHEEK_N: 5, VOLUTE: 0.62, VOLUTE_N: 9, VOLUTE_R: 0.8,
+    PIN_W: 1.3, PIN_A: 0.95, TRIM_W: 0.55, TRIM_A: 0.9, LIP_K: 0.45, LIP_MIX: 0.7, LIP_A: 0.6,
+    PRESS_BEATS: 1, DROP_BEATS: 1 / 2, DROP_LEVEL: 3, PRESS_T: 0.25, BAR_STEPS: 4, PHRASE_BARS: 4, PHRASE_PREV: 1, LEGATO: 0.9,
+    CHORDS: [[9, 7, 5, 2], [7, 4, 2, 0], [9, 6, 4, 2], [8, 5, 3, 1]], ARP: [0, 1, 2, 3, 2, 1], DOWN_V: 1, UP_V: 0.72, PEDAL_V: 0.8, KICK_KEYS: 2, KICK_MIN: 0.3,
+    VEL_MIN: 0.6, DIP: 0.32, DEP_MIN: -0.15, REL_P: 0.3, REL_TAU: 0.075, LOOK: 2.2, PRESS_A: 0.95, HEAT_MIX: 0.35, HEAT_TAU: 0.12,
+    GL_BEATS: 1 / 32, GL_T: 0.02, GL_DUR_BEATS: 1 / 8, GL_DUR_T: 0.06, FLASH_TAU: 0.25, FLASH_MIX: 0.45, KNEE_DEG: 30,
+    HAM_N: 6, HAM_R: 0.95, HAM_UP: 1.3, HAM_T: 0.14, HAM_MIX: 0.55, HAM_A: 0.95,
+    LIGHT: [-0.34, -0.94], GLINT_EXP: 5, GLINT_DECK: 0.2, GLINT_GOLD: 0.4, NOSE_N: 3, NOSE_W: 0.3, NOSE_K: 0.32, NOSE_AT: 0.6, NOSE_MIX: 0.75, NOSE_A: 0.9, NOSE_BASE: 0.3,
+    BANK_S: 12, BANK_D: 7, BANK_FB: 0.6, BANK_LIP: 0.5,
+    RIP_V_BEATS: 7, RIP_V_T: 18, RIP_TAU_BEATS: 0.9, RIP_TAU_T: 0.55, RIP_W: 1.8, RIP_MIX: 0.6, RIP_DECK: 0.12, RIP_SMP: 4, RIP_N: 12,
+    NOTE_N: 3, NOTE_BEATS: 2, NOTE_T: 0.8, NOTE_LIFE_BEATS: 2, NOTE_LIFE_T: 0.8, NOTE_BACK: 14, NOTE_V0: 2.5, NOTE_RISE: 3.5, NOTE_H: 3.2, NOTE_A: 0.9, NOTE_MIX: 0.25,
+    GLOW_MUL: 1.14, GLOW_A: 0.15, GLOW_BALL: 0.25, GLOW_PULSE: 0.6, GLOW_FLASH: 1.2,
+    OCT_MIN: 7, MIN_U: 0.5, SM_LO: 0.45, SM_HI: 1.0, SM_KEYS: 6, SM_KEY_MAX: 1.5, SM_W: 0.3, SM_FB: 0.24, SM_GAP: 0.35, PREV_FLAT: 0.4, SEAM_U: 0.4,
+    SM_IVORY_MIX: 0.6, SM_GLOW_A: 0.6, SM_GLOW_MUL: 1.35, SM_LID_W: 1.6 },
 };
 /** [v103] Частка барви м'яча в базі FLARE за f (0 хвіст … 1 голова) — TRAIL_STYLE_E.FLARE.HEAD_*. [v118] той самий рецепт — headBallOf(WISP). */
 export const headBallOf = (C, f) => {
@@ -463,9 +533,12 @@ export function trailFrame(nodes, mode, o = {}) {
   if (LV && !(L && L.beat > 0 && typeof L.pulseAt === "function")) throw new Error("trailFrame(LEVEL): o.L — годинник рівня { t0, beat, pulseAt }");
   const z = LV && o.z > 0 ? o.z : 1;
   const beat = LV ? clamp01(o.beat || 0) : 0;
-  const span = LV ? T.SPAN_BEATS * L.beat : R.ENDLESS_SPAN;
   const N = nodes.length;
   const tH = N ? (typeof o.tH === "number" ? o.tH : nodes[N - 1].t) : 0;
+  // [LUDOVIVO] концерт — сітка долей частини, що звучить у мить голови (рецензія 13.11, знахідка 19: KEYS і всі хвости «на долю» — у такт
+  // частин A 160 і C 168 BPM, не за долею B); не концерт — сам рівень (біт у біт)
+  const G = LV && L.movements && typeof L.gridAt === "function" ? L.gridAt(tH) : L;
+  const span = LV ? T.SPAN_BEATS * G.beat : R.ENDLESS_SPAN;
   const env = LV ? Math.min((T.HW_MAX * (1 + T.BEAT_W)) / z, R.ENDLESS_ENV) : R.ENDLESS_ENV;
   // півширина й α: LEVEL — v46 drawLevelTrail (стеля HW_MAX / z, потім доля), ENDLESS — v46 trailPath і стопи ядра
   const capW = T.HW_MAX / z, swell = T.BEAT_W * beat, aHead = T.A_HEAD + T.BEAT_A * beat;
@@ -475,7 +548,7 @@ export function trailFrame(nodes, mode, o = {}) {
   const alpha = LV
     ? (q) => Math.min(T.A_MAX, aHead * Math.pow(q, T.A_EXP))
     : (q) => (q <= E.CORE_MID ? (E.CORE_A_MID * q) / E.CORE_MID : E.CORE_A_MID + ((E.CORE_A_HEAD - E.CORE_A_MID) * (q - E.CORE_MID)) / (1 - E.CORE_MID));
-  const t0 = LV ? L.t0 : 0, unit = LV ? L.beat : 1;
+  const t0 = LV ? G.t0 : 0, unit = LV ? G.beat : 1;
   /** Позиція м'яча на мить t з вузлів — по дузі орбіти (як крок 1); поза вузлами — найближчий край. */
   const nodeAt = (t) => {
     let j = 0;
@@ -491,7 +564,7 @@ export function trailFrame(nodes, mode, o = {}) {
     /** Індекс сітки: LEVEL — floor((t − t0)/(beat·div)), div у долях; ENDLESS — floor(t/div), div у с. */
     grid: (t, div) => Math.floor((t - t0) / (unit * div) + EPS_T),
     /** Крок сітки, с: LEVEL — divBeats долі, ENDLESS — divE с. */
-    step: (divBeats, divE) => (LV ? divBeats * L.beat : divE),
+    step: (divBeats, divE) => (LV ? divBeats * unit : divE),
     pick: (levelVal, endlessVal) => (LV ? levelVal : endlessVal),
     /** Справжня бочка треку на мить t (LEVEL, відбиток: pulseAt.kp) — ENDLESS 0. */
     kick: (t) => (LV ? L.pulseAt(t).kp : 0),
@@ -857,7 +930,7 @@ function makeDriftE(F, S) {
 
 /** [v47] Період перебиття ZAP, с: LEVEL — REROLL_BEATS долі, але не частіше FLICKER_HZ_MAX; ENDLESS — REROLL. */
 export const zapPeriod = (F) => (F.mode === TRAIL_MODE.LEVEL
-  ? Math.max(TRAIL_STYLE_E.ZAP.REROLL_BEATS * F.L.beat, 1 / TRAIL_RULES.FLICKER_HZ_MAX) : TRAIL_STYLE_E.ZAP.REROLL);
+  ? Math.max(TRAIL_STYLE_E.ZAP.REROLL_BEATS * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX) : TRAIL_STYLE_E.ZAP.REROLL);
 
 /**
  * ZAP ∞ — блискавка: тіло + біле ядро, перебиття раз на REROLL с (рівень — zapPeriod); ореол — тією самою ламаною.
@@ -1655,13 +1728,468 @@ function makeStrumE(F, S) {
   return out;
 }
 
+// ================================================================ KEYS — клавіатура рояля (LUDOVIVO, 13.11.2026; 2.0 / 2.1 / 3.0 — того ж дня; числа — TRAIL_STYLE_E.KEYS)
+/** [KEYS] Чорні клавіші — на межі після k-ї білої від голови (k mod 7): візерунок октави від верхньої E — D# C# · A# G# F# (2 + 3). */
+export const keysBlackAfter = (k) => [0, 1, 3, 4, 5].includes(((k % 7) + 7) % 7);
+/** [KEYS] Крок нот «музиканта» (keysVirtual), с: рівень — доля (у дропі — вісімка, не частіше FLICKER_HZ_MAX), ∞ — PRESS_T. */
+export const keysPressStep = (F, t) => {
+  const C = TRAIL_STYLE_E.KEYS;
+  if (F.mode !== TRAIL_MODE.LEVEL) return C.PRESS_T;
+  const b = F.level(t) >= C.DROP_LEVEL ? C.DROP_BEATS : C.PRESS_BEATS;
+  return Math.max(b * F.unit, 1 / TRAIL_RULES.FLICKER_HZ_MAX);
+};
+/** [KEYS 2.1] Частка малого вигляду прев'ю λ (0…1, smoothstep): S.sm ≤ SM_LO — 1, ≥ SM_HI — 0; у грі й кадрі вигляду рівня (us = S.sm / S.pm = 1) — 0. */
+export const keysSmall = (S) => {
+  const C = TRAIL_STYLE_E.KEYS;
+  return S.sm / S.pm > 1 + 1e-9 ? smooth01((C.SM_HI - S.sm) / (C.SM_HI - C.SM_LO)) : 0;
+};
+/**
+ * [KEYS 2.1] Множник довжин уздовж шляху (клавіша KEY_L·keysUs): у грі — us (1); у прев'ю (us > 1) — us, але клавіш на дузі не менше OCT_MIN (коротка дуга
+ * LEVEL COMPLETE — ціла октава, а не 3 клавіші), а в малому вигляді — ≈ SM_KEYS (більші, до ×SM_KEY_MAX; плавно за λ); не менше 1 (не дрібніші, ніж у грі).
+ */
+export const keysUs = (F, us, lam = 0, bm = 1) => {
+  if (!(us > 1 + 1e-9)) return us;
+  // [KEYS 3.0] клавіші — між оправою (м'яч + LID_W) і торцем (≈ ½ клавіші): рахуємо лише цю частину дуги
+  const C = TRAIL_STYLE_E.KEYS, n = Math.max(0, F.len - C.BALL_R * (F.zs || 1) * bm - C.LID_W * us * (1 + C.SM_W)) / (C.KEY_L * us) - C.CHEEK / C.KEY_L;
+  const k = n < C.OCT_MIN ? n / C.OCT_MIN : 1 + lam * (Math.max(1, Math.min(C.SM_KEY_MAX, n / C.SM_KEYS)) - 1);
+  return Math.max(1, us * k);
+};
+/** [KEYS 3.0] Півширина клавіш (без обідка) у f клавіатури (0 — кінчик торця … 1 — голова), од. кадру вигляду: перспектива TAIL_K → 1; flat 1 — рівна. */
+export const keysHalfW = (f, flat = 0) => {
+  const C = TRAIL_STYLE_E.KEYS, tk = C.TAIL_K + (1 - C.TAIL_K) * flat;
+  return C.W_HEAD * (tk + (1 - tk) * Math.pow(clamp01(f), C.W_EXP));
+};
+/** [KEYS 2.0] Частка барви м'яча в слоновій кістці у f — лише біля голови (headBallOf: HEAD_BALL за HEAD_LEN). */
+export const keysBallOf = (f) => headBallOf(TRAIL_STYLE_E.KEYS, f);
+/**
+ * [KEYS 3.0] Геометрія клавіатури кадру (дуги від хвоста шляху, од. кадру): оправа — коло Ro довкола м'яча rB (= BALL_R·zs·bm); [фініш] у грі
+ * Ro = rB + LID_GW·kz на будь-якому зумі (оправа обіймає м'яч, kz = keysZoomK), прев'ю — rB + LID_W·us0·(1 + SM_W); голова клавіш sHead — на колі оправи
+ * (коло спокою: підскок і відкрита кришка клавіш не зсувають); NK клавіш по KL = KEY_L·us (span; коротший шлях — менше), торець [sLo, sEnd].
+ * us — keysUs; us0 — S.sm / S.pm (ширини прев'ю в позиціях).
+ */
+export const keysGeom = (F, us = 1, bm = 1, us0 = us) => {
+  const C = TRAIL_STYLE_E.KEYS, zs = F.zs || 1, rB = C.BALL_R * zs * bm, KL = C.KEY_L * us, ch = C.CHEEK * us, pv = us0 > 1 + 1e-9;
+  // [KEYS 3.0, фініш] у грі оправа — на будь-якому зумі: м'яч + LID_GW·kz (виняток trailEnvAt росте з м'ячем); прев'ю — як було (LID_W·us0·(1 + SM_W))
+  const kz = pv ? 1 : keysZoomK(F), Ro = pv ? rB + C.LID_W * us0 * (1 + C.SM_W) : rB + C.LID_GW * us0 * kz, lid = Ro - rB >= 0.3 * C.LID_W;
+  const sHead = Math.max(0, F.len - (lid ? Ro : rB));
+  const span = Math.max(0, Math.min(C.NK * KL, sHead - ch)), sEnd = sHead - span, sLo = Math.max(0, sEnd - ch);
+  return { zs, kz, rB, Ro: lid ? Ro : rB, lid, KL, ch, sHead, sEnd, sLo, span, n: span > 1e-9 ? Math.min(C.NK, Math.ceil(span / KL - 1e-6)) : 0 };
+};
+/** [KEYS 3.0, фініш] Множник поперечних розмірів у грі на зумі: клавіатура й оправа ростуть з м'ячем (zs = max(1, z)) до ×KZ_MAX; прев'ю й ∞ — 1. */
+export const keysZoomK = (F) => Math.min(Math.max(1, F.zs || 1), TRAIL_STYLE_E.KEYS.KZ_MAX);
+/**
+ * [KEYS 3.0, фініш] Кришка оправи на мить голови (рівень): відкрита (1) у дропі — рівень такту ≥ DROP_LEVEL (перехід — OPEN_BEATS від першої долі такту,
+ * як вхід у дроп capeBeat), закрита (0) поза ним і в ∞ / прев'ю; концерт — після фінального акорду партії (sc.fin) закривається за CLOSE_T.
+ */
+export const keysOpen = (F, sc = null) => {
+  if (F.mode !== TRAIL_MODE.LEVEL) return 0;
+  const C = TRAIL_STYLE_E.KEYS, tH = F.tH, bar = 4 * F.unit, tb = F.t0 + Math.floor((tH - F.t0) / bar + EPS_T) * bar;
+  const cur = F.level(tb + 0.5 * bar) >= C.DROP_LEVEL ? 1 : 0, prv = F.level(tb - 0.5 * bar) >= C.DROP_LEVEL ? 1 : 0;
+  let o = prv + (cur - prv) * smooth01((tH - tb) / (C.OPEN_BEATS * F.unit));
+  if (sc && sc.fin < sc.n) o *= 1 - smooth01((tH - sc.t[sc.fin]) / C.CLOSE_T);
+  return o;
+};
+/** [KEYS 3.0, фініш] Підскок кришки через age с від ноти дотику сили v: пружина v·exp(−a / LID_KICK_TAU)·cos(2π·a / LID_KICK_P) (−: кришка осідає нижче спокою). */
+export const keysKick = (age, v = 1) => {
+  if (!(age >= 0)) return 0;
+  const C = TRAIL_STYLE_E.KEYS;
+  return age > 6 * C.LID_KICK_TAU ? 0 : clamp01(v) * Math.exp(-age / C.LID_KICK_TAU) * Math.cos((TAU * age) / C.LID_KICK_P);
+};
+/**
+ * [KEYS 3.0] Глибина клавіші (−0.15…1) через age с від ноти тривалістю dur с і силою v: миттєво вниз (VEL_MIN … 1), тримається dur, далі — пружина з
+ * перельотом: amp·exp(−r / REL_TAU)·cos(2π·r / REL_P) (від'ємна — клавіша вище спокою), не нижче DEP_MIN; до ноти — 0.
+ */
+export const keysDepth = (age, dur, v) => {
+  if (!(age >= 0)) return 0;
+  const C = TRAIL_STYLE_E.KEYS, amp = C.VEL_MIN + (1 - C.VEL_MIN) * clamp01(v);
+  if (age <= dur) return amp;
+  const r = age - dur;
+  return r > 6 * C.REL_TAU ? 0 : Math.max(C.DEP_MIN, amp * Math.exp(-r / C.REL_TAU) * Math.cos((TAU * r) / C.REL_P));
+};
+/** [KEYS 3.0] Перший індекс смуги партії з t ≥ x (двійковий пошук; порт — курсор). */
+const keysFrom = (sc, x) => { let lo = 0, hi = sc.n; while (lo < hi) { const m = (lo + hi) >> 1; if (sc.t[m] < x) lo = m + 1; else hi = m; } return lo; };
+const KEYS_NOTE = 0, KEYS_TAP = 1, KEYS_GLISS = 2, KEYS_KICK = 3;
+const mod = (a, n) => ((a % n) + n) % n;
+/** [KEYS 3.0] Глісандо від м'яча до торця (GL_BEATS долі на клавішу; ∞ GL_T) з миті tg — в hit; із клавіші from — в обидва боки (коліно стрибка). */
+const keysGliss = (F, hit, tg, from = 0) => {
+  const C = TRAIL_STYLE_E.KEYS, dt = F.step(C.GL_BEATS, C.GL_T), d = F.step(C.GL_DUR_BEATS, C.GL_DUR_T);
+  for (let i = 0; i < C.NK; i++) {
+    if (from + i < C.NK) hit(from + i, 0, tg + i * dt, d, 1, KEYS_GLISS);
+    if (i > 0 && from - i >= 0) hit(from - i, 0, tg + i * dt, d, 1, KEYS_GLISS);
+  }
+};
+/**
+ * [KEYS 3.0] «Музикант» для рівнів без партії, ∞ і прев'ю: акорди CHORDS по тактах (C · Am · F · G), арпеджіо на кожен крок keysPressStep — у парних
+ * тактах угору, у непарних униз (крок дрібніший за чверть такту — угору й униз у такті), перша нота такту — сильна (KEYS_TAP: кант оправи), корінь
+ * тримається такт (педаль); останній крок фрази PHRASE_BARS — глісандо. Прев'ю (SHOP, LEVEL COMPLETE, жива орбіта RANKS) — фраза PHRASE_PREV:
+ * щотакту «показ» — арпеджіо акорду й глісандо через усю клавіатуру (≈ 1.5 с на 152 BPM).
+ */
+export const keysVirtual = (F, hit, phrase = TRAIL_STYLE_E.KEYS.PHRASE_BARS) => {
+  const C = TRAIL_STYLE_E.KEYS, tH = F.tH, step = keysPressStep(F, tH), t0 = F.t0;
+  const spb = Math.max(1, Math.round(F.pick(4 * F.unit, C.BAR_STEPS * C.PRESS_T) / step)), g = Math.floor((tH - t0) / step + EPS_T);
+  for (let e = 0; e < 4; e++) {
+    const gg = g - e, tt = t0 + gg * step, bar = Math.floor(gg / spb), j = gg - bar * spb;
+    if (mod(bar, phrase) === phrase - 1 && j === spb - 1) { keysGliss(F, hit, tt); continue; }
+    const ch = C.CHORDS[mod(bar, C.CHORDS.length)], n = ch.length;
+    const idx = spb <= n ? (mod(bar, 2) ? n - 1 - mod(j, n) : mod(j, n)) : C.ARP[mod(j, C.ARP.length)];
+    hit(ch[idx], 0, tt, step * C.LEGATO, j === 0 ? C.DOWN_V : C.UP_V, j === 0 ? KEYS_TAP : KEYS_NOTE);
+  }
+  for (let e = 0; e < 2; e++) {
+    const bar = Math.floor(g / spb) - e, tb = t0 + bar * spb * step;
+    hit(C.CHORDS[mod(bar, C.CHORDS.length)][0], 0, tb, spb * step * 0.95, C.PEDAL_V, KEYS_NOTE);
+  }
+};
+/**
+ * [KEYS 3.0] Стан клавіш на мить голови: { wD, wH — глибина й жар білих (k від голови), bD, bH — чорних (межа після k), ham — свіжі удари (молоточки),
+ * lid — спалах канта оправи (нота дотику), flash — спалах золота (глісандо, бочка) }. Джерела: партія рівня (F.L.keysScore — LUDOVIVO) або keysVirtual;
+ * у рівні — глісандо на вхід у дроп і на старт частини концерту; knee — { k, t } коліна стрибка; бочка (рівень без партії) — нижні клавіші.
+ * calm («менше руху», знімок still) — усе 0. Порт: масиви на NK наперед, курсор партії — 0 алокацій.
+ */
+export const keysPress = (F, calm = false, knee = null, prev = false) => {
+  const C = TRAIL_STYLE_E.KEYS, NK = C.NK, st = { wD: new Float64Array(NK), wH: new Float64Array(NK), bD: new Float64Array(NK), bH: new Float64Array(NK), ham: [], rip: [], lid: 0, flash: 0,
+    kick: 0, open: 0, fin: 0 };
+  if (calm || F.reduced || !(F.len > 0)) return st;
+  let kA = Infinity, kV = 0;   // [KEYS 3.0, фініш] найсвіжіша нота дотику — підскок кришки (keysKick)
+  const tH = F.tH, LV = F.mode === TRAIL_MODE.LEVEL, hamLife = 1.5 * C.HAM_T, ripTau = F.step(C.RIP_TAU_BEATS, C.RIP_TAU_T);
+  const hit = (k, b, t, d, v, kind) => {
+    if (!(k >= 0 && k < (b ? NK - 1 : NK))) return;
+    const age = tH - t;
+    if (age < -EPS_T) return;
+    const a = Math.max(0, age), dep = kind === KEYS_KICK ? v : keysDepth(a, d, v), heat = Math.exp(-a / C.HEAT_TAU) * (kind === KEYS_GLISS ? 1 : kind === KEYS_KICK ? 0.3 : clamp01(v));
+    const D = b ? st.bD : st.wD, Hh = b ? st.bH : st.wH;
+    if (dep > 0) D[k] = Math.max(D[k], dep); else if (D[k] <= 0) D[k] = Math.min(D[k], dep);
+    Hh[k] = Math.max(Hh[k], heat);
+    if (a < hamLife && kind !== KEYS_KICK) st.ham.push({ k, b, age: a, v });
+    if (kind !== KEYS_KICK && kind !== KEYS_GLISS && a < 4 * ripTau) st.rip.push({ x: k + (b ? 1 : 0.5), age: a, v: clamp01(v) });
+    if (kind === KEYS_TAP) { st.lid = Math.max(st.lid, Math.exp(-a / C.LID_TAU) * clamp01(0.4 + v)); if (a < kA - 1e-12 || (a < kA + 1e-12 && v > kV)) { kA = a; kV = v; } }
+    if (kind === KEYS_GLISS && k === 0) st.flash = Math.max(st.flash, Math.exp(-a / F.step(C.FLASH_TAU, C.FLASH_TAU)));
+  };
+  const sc = LV && F.L ? F.L.keysScore : null;
+  if (sc) {
+    for (let i = keysFrom(sc, tH - C.LOOK); i < sc.n && sc.t[i] <= tH + EPS_T; i++) hit(sc.k[i], sc.b[i], sc.t[i], sc.d[i], sc.v[i], sc.p[i] === 2 ? KEYS_TAP : KEYS_NOTE);
+    if (sc.fin < sc.n && tH >= sc.t[sc.fin] + C.LOOK) for (let i = sc.fin; i < sc.n; i++) hit(sc.k[i], sc.b[i], sc.t[i], sc.d[i], sc.v[i], KEYS_NOTE);   // фінальний акорд — педаль
+    // [KEYS 3.0, фініш] фінальний акорд: кант оправи світиться педаллю (FIN_GLOW), поки тримається (до кінця сітки B — поклін)
+    if (sc.fin < sc.n && tH >= sc.t[sc.fin] - EPS_T && tH <= sc.t[sc.fin] + sc.d[sc.fin] + EPS_T) st.fin = smooth01((tH - sc.t[sc.fin]) / C.FIN_T);
+  } else keysVirtual(F, hit, prev ? C.PHRASE_PREV : C.PHRASE_BARS);
+  if (LV) {
+    // вхід у дроп: рівень такту посередині такту n ≥ DROP_LEVEL, у такті n − 1 — ні (як capeBeat) — глісандо від першої долі
+    const bar = 4 * F.unit, nb = Math.floor((tH - F.t0) / bar + EPS_T);
+    for (let n = nb; n >= nb - 1; n--) {
+      if (F.level(F.t0 + (n + 0.5) * bar) >= C.DROP_LEVEL && F.level(F.t0 + (n - 0.5) * bar) < C.DROP_LEVEL) keysGliss(F, hit, F.t0 + n * bar);
+    }
+    // концерт: старт кожної частини — глісандо; [KEYS 3.0, фініш] з партією — на ПЕРШИХ ДВЕРЯХ частини (sc.gl: м'яч уже біжить, клавіатура повна —
+    // рецензія: на t0 шлях щойно почався, глісандо йшло по 2–3 клавішах); без партії — такт 0
+    const M = F.L && F.L.movements;
+    if (sc && sc.gl) { for (let i = 0; i < sc.gl.length; i++) if (tH >= sc.gl[i] - EPS_T && tH - sc.gl[i] < 1.5) keysGliss(F, hit, sc.gl[i]); }
+    else if (M) for (let i = 1; i < M.length; i++) if (tH >= M[i].t0 - EPS_T && tH - M[i].t0 < 1.5) keysGliss(F, hit, M[i].t0);
+    // бочка (рівень без партії): нижні клавіші глухо вниз, золото спалахує
+    if (!sc) {
+      const kp = F.kick(tH);
+      if (kp > C.KICK_MIN) { for (let i = 0; i < C.KICK_KEYS; i++) hit(NK - 1 - i, 0, tH, 0, kp * (1 - 0.3 * i), KEYS_KICK); st.flash = Math.max(st.flash, 0.5 * kp); }
+    }
+  }
+  if (knee) keysGliss(F, hit, knee.t, knee.k);
+  // [KEYS 3.0, фініш] кришка: підскок на найсвіжішу ноту дотику; відкрита в дропі, закривається на фінальному акорді
+  st.kick = kA < Infinity ? keysKick(kA, kV) : 0;
+  st.open = keysOpen(F, sc);
+  st.ham.sort((a, b) => a.age - b.age);
+  if (st.ham.length > C.HAM_N) st.ham.length = C.HAM_N;
+  st.rip.sort((a, b) => a.age - b.age);
+  if (st.rip.length > C.RIP_N) st.rip.length = C.RIP_N;
+  return st;
+};
+/**
+ * [KEYS 3.0] Клавіші кадру (геометрія G = keysGeom, од. кадру): k-та від голови — [s0, s1] дуги, біла [a, b] без щілин (вужча на DIP·глибину — «вниз»;
+ * від'ємна глибина — переліт, ширша), ззаду [aB, bB] (вирізи під чорні: blackTail — між k і k + 1, blackHead — між k − 1 і k), D — глибина, H — жар.
+ * Чорна — лише між двома клавішами. gapK — частка щілини (малий вигляд — SM_GAP), поріг — пів повної щілини; не більше MAX_KEYS; KL ≤ 0 / NaN — порожньо.
+ */
+export const keysLayout = (F, G, gapK = 1, st = null) => {
+  const C = TRAIL_STYLE_E.KEYS, KL = G.KL, GAP = C.GAP * (KL / C.KEY_L), g = GAP * gapK, BW = C.BLACK_W * KL, out = [];
+  if (!F.ok || !(F.len > 0) || !(KL > 0)) return out;
+  for (let k = 0; k < G.n && k < C.MAX_KEYS; k++) {
+    // [KEYS 3.0, фініш] хвиля від нот ще й прогинає клавішу (R = RIP_DIP·хвиля): вужча, як натиснута, але без золота удару (q.D — лише нота)
+    const R = st && st.rip.length ? C.RIP_DIP * keysRipple(F, st, k + 0.5) : 0;
+    const s1 = G.sHead - k * KL, s0 = Math.max(G.sEnd, s1 - KL), D = st ? st.wD[k] : 0, H = st ? st.wH[k] : 0, dip = (C.DIP * Math.max(D, R) * KL) / 2;
+    const a = s0 + g / 2 + dip, b = s1 - g / 2 - dip;
+    if (b - a < GAP / 2) continue;
+    const blackTail = k + 1 < G.n && keysBlackAfter(k) && s0 - (s1 - KL) < 1e-6, blackHead = k > 0 && keysBlackAfter(k - 1);
+    const aB = blackTail ? Math.min(b, Math.max(a, s0 + BW / 2)) : a, bB = blackHead ? Math.max(aB, Math.min(b, s1 - BW / 2)) : b;
+    out.push({ k, s0, s1, a, b, aB, bB, blackTail, blackHead, D, H, R });
+  }
+  return out;
+};
+/**
+ * [KEYS 3.0] Хвиля світла на x клавіш від голови (0…1): від кожної свіжої ноти (st.rip — x, вік, сила) — два гребені в обидва боки на RIP_V клавіш за
+ * долю (∞ — за с), гаусіан RIP_W, гасне exp(−вік / RIP_TAU).
+ */
+export const keysRipple = (F, st, x) => {
+  const C = TRAIL_STYLE_E.KEYS, vel = F.step(1 / C.RIP_V_BEATS, 1 / C.RIP_V_T), tau = F.step(C.RIP_TAU_BEATS, C.RIP_TAU_T);
+  let w = 0;
+  for (const r of st.rip) { const d = Math.abs(x - r.x) - r.age / vel; w += r.v * Math.exp(-r.age / tau) * Math.exp(-((d / C.RIP_W) ** 2)); }
+  return Math.min(1, w);
+};
+/** [KEYS 3.0] Блік світла зали на кришці в зразку p: max(0, sd·n·LIGHT)^GLINT_EXP (кришка — бік sd·n, keysLidSide; люстри — зверху поля). */
+export const keysGlint = (p, sd = 1) => { const C = TRAIL_STYLE_E.KEYS, d = sd * (p.nx * C.LIGHT[0] + p.ny * C.LIGHT[1]); return d > 0 ? Math.pow(d, C.GLINT_EXP) : 0; };
+/**
+ * [KEYS 3.0] Бік кришки: −1 — на −n (м'яч крутиться за годинниковою у полі — кут росте — +n дивиться до центру орбіти, кришка — назовні), +1 — на +n.
+ * За кутовим рухом хвіст → голова (векторний добуток T × H), не за нормаллю голови: на стрибку нормаль крутиться, а напрям обертання — ні; м'яч стоїть на
+ * куті (лише стрибок) — +1.
+ */
+export const keysLidSide = (F) => { const T = F.pts[0], H = F.pts[F.M - 1], c = T[0] * H[1] - T[1] * H[0]; return c > 1e-9 ? -1 : 1; };
+/** [KEYS 3.0] Коліно стрибка на клавіатурі: { k, t } — клавіша з найбільшим поворотом дотичної (≥ KNEE_DEG на клавішу) і мить, коли м'яч там був; або null. */
+export const keysKnee = (F, G) => {
+  const C = TRAIL_STYLE_E.KEYS;
+  let best = null, bestT = C.KNEE_DEG;
+  for (let k = 0; k < G.n; k++) {
+    const s1 = G.sHead - k * G.KL, s0 = Math.max(G.sEnd, s1 - G.KL), a = F.atS(s0), b = F.atS(s1);
+    const turn = (Math.abs(Math.atan2(a.nx * b.ny - a.ny * b.nx, a.nx * b.nx + a.ny * b.ny)) / D) * (G.KL / Math.max(1e-6, s1 - s0));
+    if (turn >= bestT) { bestT = turn; best = { k, t: F.atS((s0 + s1) / 2).t }; }
+  }
+  return best;
+};
+/** [KEYS 3.0] Стопи градієнта з інтервалів хорди [u0, u1, α, hue, mixK] — у кожному відрізку найсильніший (різкі краї; порожнє — α 0). */
+const keysBandStops = (iv, hue0) => {
+  if (!iv.length) return [[0, 0, 0, hue0, 0], [1, 0, 0, hue0, 0]];
+  const xs = [...new Set(iv.flatMap((x) => [x[0], x[1]]))].sort((a, b) => a - b), stops = [];
+  for (let i = 0; i + 1 < xs.length; i++) {
+    const m = (xs[i] + xs[i + 1]) / 2;
+    let best = null;
+    for (const x of iv) if (x[0] <= m && m <= x[1] && (!best || x[2] > best[2])) best = x;
+    const a = best ? best[2] : 0, hue = best ? best[3] : hue0, mk = best ? best[4] : 0;
+    stops.push([xs[i], mk, a, hue, 0], [xs[i + 1], mk, a, hue, 0]);
+  }
+  return stops;
+};
+/**
+ * [KEYS 3.0] KEYS — клавіатура рояля LEWYDO & SONS, що ГРАЄ (легендарний хвіст концерту LUDOVIVO): ебенова дека з обідком і оправою довкола спини м'яча,
+ * NK білих слоновою кісткою з вирізами під чорні 2 + 3, торець із золотою волютою, золота перетяжка й кант-нитка; ноти партії (LUDOVIVO) чи «музиканта»
+ * натискають свої клавіші (пружина, жар, молоточки), глісандо на сигнатурні миті, блік світла зали, крен на стрибку, ноти ♪ за торцем; знімок — спокій;
+ * прев'ю — keysUs, золота кришка λ_lid, малий вигляд λ (RANKS). Рецепт — шапка TRAIL_STYLE_E.KEYS, спека — TRAIL.md §B.
+ */
+function makeKeysE(F, S) {
+  const C = TRAIL_STYLE_E.KEYS, X = LOOK_E, out = empty(), env = F.env, us0 = S.sm / S.pm, prev = us0 > 1 + 1e-9, lam = keysSmall(S), calm = F.reduced || !!S.still;
+  const LV = F.mode === TRAIL_MODE.LEVEL, lw = prev ? 1 : 0, bm = S.bm || 1, us = keysUs(F, us0, lam, bm), G = keysGeom(F, us, bm, us0), KL = G.KL, BW = C.BLACK_W * KL;
+  const sm = S.sm * (1 + C.SM_W * lw), Sw = lw ? { pm: S.pm, sm, bm: S.bm } : S, sr = sm / S.pm, flat = Math.max(lam, C.PREV_FLAT * lw), minW = prev ? C.MIN_U : 0;
+  out.opaque = true;
+  if (!(F.len > 0)) return out;
+  const st = keysPress(F, calm, calm ? null : keysKnee(F, G), prev);
+  // [KEYS 3.0, фініш] КИВОК: удар молоточка (нота дотику — st.kick, пружина) хитає весь рояль — клавіатура на мить вужча (NOD_W) і показує більше кришки
+  // (NOD_FB), далі пружиною назад з перельотом: силует змінюється на кожен удар (рецензія: «силует ніколи не змінюється»); прев'ю й «менше руху» — ні
+  // + кожна доля рівня — та сама пружина від сітки долей (кивок і без ноти дотику; ∞ — лише удари «музиканта»)
+  const nod = calm || lw ? 0 : Math.max(-0.4, Math.min(1, st.kick + (LV ? C.NOD_BEAT * keysKick(mod(F.tH - F.t0, F.unit), 1) : 0)));
+  // крен: радіальна швидкість голови (на стрибку) — кришка ширшає на боці, куди летить м'яч
+  const H = F.pts[F.M - 1], nH = F.nrm[F.M - 1], rH = Math.hypot(H[0], H[1]), pBk = F.atS(F.len - C.BANK_S * G.zs);
+  // КРИШКА — НА ЗОВНІШНЬОМУ БОЦІ ОРБІТИ (sd = keysLidSide: −1 — кришка на −n): м'яч на 12-й (RANKS, LEVEL COMPLETE, YOUR ORBIT) — рояль з боку піаніста:
+  // бас ліворуч, дискант біля м'яча праворуч, чорні — вгорі
+  const sd = keysLidSide(F), outw = rH > 1e-6 && nH[0] * H[0] + nH[1] * H[1] < 0 ? -sd : sd;
+  const bank = calm || lw ? 0 : Math.max(-1, Math.min(1, (rH - Math.hypot(pBk.x, pBk.y)) / (C.BANK_D * G.zs))) * outw;
+  const fb = Math.max(0.05, Math.min(0.26, (C.FB_K + (C.SM_FB - C.FB_K) * lw) * (1 + C.BANK_FB * bank + C.NOD_FB * nod)));
+  // зразки клавіатури: торець — густіше біля кінчика, далі по 2 на клавішу до самої голови (під м'ячем — дека з'єднує оправу)
+  const ss = [];
+  const push = (s) => { if (!ss.length || s - ss[ss.length - 1] > 1e-6) ss.push(s); };
+  for (let j = 0; j <= C.CHEEK_N; j++) push(G.sLo + (G.sEnd - G.sLo) * Math.sin((Math.PI / 2) * (j / C.CHEEK_N)));
+  const nb = Math.max(2, Math.ceil((2 * (F.len - G.sEnd)) / KL));
+  for (let j = 1; j <= nb; j++) push(G.sEnd + ((F.len - G.sEnd) * j) / nb);
+  if (ss.length < 2) return out;
+  const smp = ss.map((s) => F.atS(s)), tip = Math.max(1e-6, G.sEnd - G.sLo), body = Math.max(1e-6, G.sHead - G.sLo);
+  /** півширина клавіш (у конверті, лишаючи обідок) і деки; торець закруглено (√) до кінчика. */
+  // [KEYS 3.0, фініш] на зумі клавіатура ширшає з м'ячем (×kz ≤ KZ_MAX; конверт — ±9·kz, trailEnvAt)
+  const kz = G.kz, kn = 1 - C.NOD_W * nod, kw = (p) => Math.max(0, Math.min(keysHalfW((p.s - G.sLo) / body, flat) * kz * kn, env * kz - p.dev - C.RIM));
+  const rnd = (p) => (p.s >= G.sEnd ? 1 : Math.sqrt(Math.max(0, 1 - ((G.sEnd - p.s) / tip) ** 2)));
+  const dw = (p) => (kw(p) + C.RIM) * rnd(p);
+  // зад білих — край кришки; у прев'ю (золота кришка) — ще й шов SEAM_U u ебеном між золотом і клавішами (золото торкається лише темного)
+  const vT = (p) => kw(p) * (1 - 2 * fb) - (lw * C.SEAM_U) / sm, vB = (p) => vT(p) - C.BLACK_K * (vT(p) + kw(p));
+  const P = (p, v) => [p.x * S.pm + p.nx * sd * v * sm, p.y * S.pm + p.ny * sd * v * sm];
+  const uAt = (p, v) => chordU(F, p.x + p.nx * sd * v * sr, p.y + p.ny * sd * v * sr);
+  const keys = keysLayout(F, G, 1 + (C.SM_GAP - 1) * lam, st), ripAt = (s) => (st.rip.length && s <= G.sHead + 1e-6 ? keysRipple(F, st, (G.sHead - s) / KL) : 0);
+  const glint = smp.map((p) => keysGlint(p, sd));
+  const u = [];
+  for (let i = 0, last = 0; i < smp.length; i++) { last = Math.max(last, chordU(F, smp[i].x, smp[i].y)); u.push(last); }
+  const fH = (s) => clamp01((s - G.sLo) / body);
+  // ── ореол: дві вузькі золоті смуги обабіч деки (до голови клавіш), на долю й спалах — сильніше; біля м'яча — трохи його барви
+  const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, (C.GLOW_A + (C.SM_GLOW_A - C.GLOW_A) * lam) * (1 + C.GLOW_PULSE * (LV ? F.beat : 0) + C.GLOW_FLASH * st.flash));
+  // (шлях коротший за оправу — старт, стрибок на місці: ореол уздовж усієї деки)
+  const gm = C.GLOW_MUL + (C.SM_GLOW_MUL - C.GLOW_MUL) * lam, gh0 = smp.filter((p) => p.s <= G.sHead + 1e-6), gs = gh0.length >= 2 ? gh0 : smp;
+  {
+    const gh = (p) => (dw(p) * (gm - 1)) / 2;
+    out.glow = { paths: [pos(ribbon(Sw, gs, gh, (p) => dw(p) + gh(p))), pos(ribbon(Sw, gs, gh, (p) => -dw(p) - gh(p)))],
+      grad: chordGrad(F, S, gs.map((p, i) => [u[i], 0, ga, C.GLOW, ((1 - lam) * C.GLOW_BALL * keysBallOf(fH(p.s))) / C.HEAD_BALL])) };
+  }
+  // ── дека: ебен ±(kw + RIM), торець закруглений; оправа — кільцевий сектор довкола спини м'яча (той самий ебен); блік світла зали — до сірого
+  const deck = ribbon(Sw, smp, dw), turn = Math.sign(area2(deck)) || 1, orient = (poly) => (area2(poly) * turn < 0 ? poly.slice().reverse() : poly);
+  const tx = nH[1], ty = -nH[0], hx = H[0] * S.pm, hy = H[1] * S.pm, dirAt = (th) => [-tx * Math.cos(th) + nH[0] * Math.sin(th), -ty * Math.cos(th) + nH[1] * Math.sin(th)];
+  const deckPaths = [deck];
+  // [KEYS 3.0, фініш] кришка живе (лише в грі): підскок на ноту дотику (st.kick), у дропі відкрита (st.open: ширша й довша дугою); клавіші — від кола спокою G.Ro.
+  // Не далі винятку на цьому зумі: BALL_R·zs + (ENV − BALL_R)·kz (trailEnvAt)
+  const lidX = lw ? 0 : (C.LID_OPEN * st.open + C.LID_KICK * st.kick) * kz, envZ = C.BALL_R * G.zs + (C.ENV - C.BALL_R) * kz;
+  const Rd = lw ? G.Ro : Math.min(G.Ro + lidX, envZ), lidA = C.LID_ANG + (lw ? 0 : C.LID_OPEN_ANG * st.open);
+  if (G.lid) {
+    const ro = [], ri = [];
+    for (let i = 0; i <= C.LID_N; i++) {
+      const d = dirAt(-lidA + (2 * lidA * i) / C.LID_N);
+      ro.push([hx + d[0] * Rd * S.pm, hy + d[1] * Rd * S.pm]); ri.push([hx + d[0] * C.LID_IN * G.rB * S.pm, hy + d[1] * C.LID_IN * G.rB * S.pm]);
+    }
+    deckPaths.push(orient([...ro, ...ri.reverse()]));
+  }
+  out.fills.push({ paths: deckPaths, grad: chordGrad(F, S, [...smp.map((p, i) => [u[i], Math.min(1, C.GLINT_DECK * glint[i] + C.RIP_DECK * ripAt(p.s)), C.A, C.EBONY, 0]), [1, 0, C.A, C.EBONY, 0]]) });
+  if (!keys.length) return out;
+  // ── білі: 8 вершин — перед від −kw до дна вирізу vB, крок вирізу, зад до vT; голова першої — по колу оправи (м'яч сидить у клавіатурі)
+  const ks0 = smp.filter((p) => p.s >= G.sEnd - 1e-6 && p.s <= G.sHead + 1e-6), ksp = ks0.length >= 2 ? ks0 : [F.atS(G.sEnd), F.atS(Math.max(G.sEnd + 1e-3, G.sHead))];
+  const headS = (v, b) => (G.lid ? Math.min(F.len, F.len - Math.sqrt(Math.max(0, G.Ro * G.Ro - (v * sr) ** 2)) - (G.sHead - b)) : b);
+  const keyPoly = (q) => {
+    const pa = F.atS(q.a), pa2 = q.aB === q.a ? pa : F.atS(q.aB);
+    if (q.k === 0) {
+      const at = (v) => F.atS(Math.max(q.a, headS(v, q.b))), p1 = at(vT(pa)), p2 = at(vB(pa)), p3 = at(-kw(pa));
+      return [P(pa, -kw(pa)), P(pa, vB(pa)), P(pa2, vB(pa2)), P(pa2, vT(pa2)), P(p1, vT(p1)), P(p2, vB(p2)), P(p2, vB(p2)), P(p3, -kw(p3))];
+    }
+    const pb = F.atS(q.b), pb2 = q.bB === q.b ? pb : F.atS(q.bB);
+    return [P(pa, -kw(pa)), P(pa, vB(pa)), P(pa2, vB(pa2)), P(pa2, vT(pa2)), P(pb2, vT(pb2)), P(pb2, vB(pb2)), P(pb, vB(pb)), P(pb, -kw(pb))];
+  };
+  const whites = keys.map(keyPoly);
+  // слонова кістка: стопи RIP_SMP на клавішу — хвиля світла від нот біжить клавіатурою
+  const rsp = [], nr = Math.max(2, Math.ceil(((G.sHead - G.sEnd) / KL) * C.RIP_SMP));
+  for (let j = 0; j <= nr; j++) rsp.push(F.atS(G.sEnd + ((G.sHead - G.sEnd) * j) / nr));
+  out.fills.push({ paths: whites, inner: true, grad: chordGrad(F, S, rsp.map((p) => [chordU(F, p.x, p.y), Math.min(1, C.SM_IVORY_MIX * lam + C.RIP_MIX * ripAt(p.s)), C.A, C.IVORY, (1 - lam) * keysBallOf(fH(p.s))])
+    .map((x, i, a) => (i ? [Math.max(x[0], a[i - 1][0]), ...x.slice(1)] : x))) });
+  // ── удар: натиснуті білі (ті самі 8 вершин) і чорні (квади у вирізі) — старе золото PRESS з жаром (до білого HEAT_MIX); ноти ♪ — золото
+  const lit = [], iv = [];
+  for (const q of keys) {
+    if (!(q.D > 0.02)) continue;
+    const pa = F.atS(q.a), pb = F.atS(q.b), al = Math.min(TRAIL_RULES.HEAD_A_MAX, C.PRESS_A * smooth01(q.D / C.VEL_MIN));
+    lit.push(whites[keys.indexOf(q)]);
+    iv.push([chordU(F, pa.x, pa.y), chordU(F, pb.x, pb.y), al, C.PRESS, C.HEAT_MIX * q.H]);
+  }
+  for (const q of keys) {
+    if (!q.blackTail) continue;
+    const D2 = st.bD[q.k];
+    if (!(D2 > 0.02)) continue;
+    const sB = q.s0, hw = (BW / 2) * (1 - C.DIP * D2), pa = F.atS(sB - hw), pb = F.atS(sB + hw), al = Math.min(TRAIL_RULES.HEAD_A_MAX, C.PRESS_A * smooth01(D2 / C.VEL_MIN));
+    lit.push(orient([P(pa, vT(pa)), P(pb, vT(pb)), P(pb, vB(pb) + 0.15), P(pa, vB(pa) + 0.15)]));
+    iv.push([chordU(F, pa.x, pa.y), chordU(F, pb.x, pb.y), al, C.PRESS, C.HEAT_MIX * st.bH[q.k]]);
+  }
+  // ноти ♪: раз на NOTE_BEATS долі (∞ NOTE_T) золота ♪ злітає з торця назад і назовні (боки — по черзі), тане за NOTE_LIFE; лише в грі (не знімок, не прев'ю)
+  if (!calm && !prev) {
+    // [KEYS 3.0, фініш] сітка — пів кроку NOTE_BEATS (∞ NOTE_T): парні — завжди, непарні — лише в дропі (рівень такту ≥ DROP_LEVEL; як попіл CAPE) — у дропі ♪
+    // щодолі й більші (NOTE_H_DROP); боки — по черзі парами (gb mod 4)
+    const nst = F.step(C.NOTE_BEATS / 2, C.NOTE_T / 2), life = F.step(C.NOTE_LIFE_BEATS, C.NOTE_LIFE_T), g0 = Math.floor((F.tH - F.t0) / nst + EPS_T);
+    for (let e = 0; e < 2 * (C.NOTE_N + 1); e++) {
+      const gb = g0 - e, tb = F.t0 + gb * nst, q = (F.tH - tb) / life, dropN = LV && F.level(tb) >= C.DROP_LEVEL;
+      if (!(q >= 0 && q < 1) || (mod(gb, 2) && !dropN)) continue;
+      const sN = G.sLo - C.NOTE_BACK * us * (0.25 + 0.75 * q);
+      if (sN < 0) continue;
+      const p = F.atS(sN), h = (dropN ? C.NOTE_H_DROP : C.NOTE_H) * (0.75 + 0.25 * q), room = env - p.dev - 1.25 * h;
+      if (room <= 0) continue;
+      const v = (mod(gb, 4) < 2 ? 1 : -1) * Math.min(room, C.NOTE_V0 + C.NOTE_RISE * q), c = P(p, v), hs = h * sm, al = C.NOTE_A * Math.pow(Math.sin(Math.PI * q), 0.6);
+      if (al < 0.02) continue;
+      const Q = (x, y) => [c[0] + (x - 0.2) * hs, c[1] + (y + 0.35) * hs];   // ♪ стоїть рівно на екрані (вгору — −y)
+      const head = [];
+      for (let i = 0; i < 10; i++) { const a = (TAU * i) / 10, ex = 0.34 * Math.cos(a), ey = 0.24 * Math.sin(a), r = -0.35; head.push(Q(ex * Math.cos(r) - ey * Math.sin(r), ex * Math.sin(r) + ey * Math.cos(r))); }
+      const shapes = [head, [Q(0.26, -0.02), Q(0.26, -1.0), Q(0.34, -1.0), Q(0.34, -0.02)], [Q(0.3, -1.0), Q(0.66, -0.66), Q(0.6, -0.56), Q(0.3, -0.8)]].map(orient);
+      const us_ = shapes.flat().map((x) => chordU(F, x[0] / S.pm, x[1] / S.pm));
+      for (const sh of shapes) lit.push(sh);
+      iv.push([Math.min(...us_), Math.max(...us_), Math.min(TRAIL_RULES.HEAD_A_MAX, al), C.GOLD, C.NOTE_MIX]);
+    }
+  }
+  if (lit.length) out.fills.push({ paths: lit, grad: chordGrad(F, S, keysBandStops(iv, C.PRESS)), inner: true });
+  // ── золото: перетяжка на межі кришки й клавіш (прев'ю — уся кришка золота, від шва SEAM_U до краю) + волюта торця тим самим штрихом; кант-нитка
+  // посеред обідка спереду (золото лише на ебені); блік світла зали й спалах (глісандо, бочка, жар удару під нею) — до білого
+  const pinW = Math.max(minW, (C.PIN_W + (2 * fb * keysHalfW(1, flat) - C.PIN_W) * lw) * sm), pinV = (p) => (lw ? kw(p) * (1 - fb) : vT(p));
+  // кант оправи — коло rc (його ширина wl); перетяжка й кант-нитка біля голови доходять до нього: одна золота рама клавіатури довкола спини м'яча
+  const wl = Math.max(minW, (prev ? C.SM_LID_W : C.LID_GOLD_W * kz * (1 + C.LID_FLASH_W * st.lid)) * sm), rcJ = G.Ro - wl / S.pm / 2, rc = Rd - wl / S.pm / 2;
+  const join = (v) => { const d = v * sr; return G.lid && Math.abs(d) < rcJ ? F.atS(Math.min(F.len, F.len - Math.sqrt(rcJ * rcJ - d * d))) : null; };
+  const keyAt = (s) => { const k = Math.floor((G.sHead - s) / KL); return k >= 0 && k < C.NK ? k : -1; };
+  const heatAt = (s) => { const k = keyAt(s); return k >= 0 ? Math.max(st.wH[k], st.bH[k], k > 0 ? st.bH[k - 1] : 0) : 0; };
+  const goldMix = (i) => Math.min(0.9, C.GLINT_GOLD * glint[i] + C.FLASH_MIX * st.flash + 0.5 * C.FLASH_MIX * heatAt(smp[i].s));
+  const pin = [], pinStops = [], pj = join(pinV(F.atS(G.sHead)));
+  if (pj && pj.s > G.sHead + 1e-6) pin.push(P(pj, pinV(pj)));
+  for (let i = smp.length - 1; i >= 0; i--) {
+    const p = smp[i];
+    if (p.s > G.sHead + 1e-6 || p.s < G.sEnd - 1e-6) continue;
+    pin.push(P(p, pinV(p)));
+  }
+  for (let i = 0; i < smp.length; i++) if (smp[i].s <= G.sHead + 1e-6) pinStops.push([u[i], goldMix(i), C.PIN_A, C.GOLD, 0]);
+  // волюта: від кінця перетяжки довкола кінчика торця до нитки спереду і завиток усередину (VOLUTE частка торця)
+  const pE = F.atS(G.sEnd), vc = (pinV(pE) - kw(pE) - C.RIM / 2) / 2, rv = (pinV(pE) + kw(pE) + C.RIM / 2) / 2, ra = Math.max(1e-6, G.sEnd - G.sLo) * C.VOLUTE;
+  let eye = null;
+  // (прев'ю — золота кришка завширшки з неї: волюта таким штрихом — золота брила; там торець — ебен, кант і око волюти)
+  for (let i = 1; i <= (lw ? 0 : C.VOLUTE_N); i++) {
+    const ph = (i / C.VOLUTE_N) * 1.5 * Math.PI, k = 1 - 0.55 * Math.max(0, (ph - Math.PI) / (0.5 * Math.PI)), s = G.sEnd - ra * Math.sin(ph) * k, v = vc + rv * Math.cos(ph) * k;
+    const p = F.atS(Math.max(G.sLo, s)), pt = P(p, v);
+    pin.push(pt); eye = pt;
+  }
+  if (pin.length >= 2) out.strokes.push({ pts: pin, w: pinW, grad: chordGrad(F, S, [[0, pinStops.length ? pinStops[0][1] : 0, C.PIN_A, C.GOLD, 0], ...pinStops, [1, pinStops.length ? pinStops[pinStops.length - 1][1] : 0, C.PIN_A, C.GOLD, 0]]), inner: true });
+  const trimW = Math.max(minW, C.TRIM_W * sm), trim = [], trimStops = [];
+  for (let i = 0; i < smp.length; i++) {
+    const p = smp[i];
+    if (p.s > G.sHead + 1e-6 || p.s < G.sEnd - 1e-6) continue;
+    trim.push(P(p, -(kw(p) + C.RIM / 2))); trimStops.push([u[i], goldMix(i), C.TRIM_A, C.GOLD, 0]);
+  }
+  const tj = join(-(kw(F.atS(G.sHead)) + C.RIM / 2));
+  if (tj && tj.s > G.sHead + 1e-6 && trim.length) { trim.push(P(tj, -(kw(tj) + C.RIM / 2))); trimStops.push([Math.max(trimStops[trimStops.length - 1][0], chordU(F, tj.x, tj.y)), goldMix(smp.length - 1), C.TRIM_A, C.GOLD, 0]); }
+  if (trim.length >= 2) out.strokes.push({ pts: trim, w: trimW, grad: chordGrad(F, S, [...trimStops, [1, trimStops[trimStops.length - 1][1], C.TRIM_A, C.GOLD, 0]]), inner: true });
+  // кант оправи: золото по зовнішньому колу (прев'ю — ширше: золота оправа знаку); на ноту дотику — ширше й до білого (м'яч — молоточок)
+  let lm = 0;
+  if (G.lid) {
+    const arc = [];
+    for (let i = 0; i <= C.LID_N; i++) { const d = dirAt(-lidA + (2 * lidA * i) / C.LID_N); arc.push([hx + d[0] * rc * S.pm, hy + d[1] * rc * S.pm]); }
+    // [KEYS 3.0, фініш] + педаль фінального акорду концерту (st.fin): кант світиться, поки акорд тримається
+    lm = Math.min(0.9, C.LID_MIX + C.LID_FLASH_MIX * st.lid + C.FLASH_MIX * st.flash + C.FIN_GLOW * st.fin);
+    out.strokes.push({ pts: arc, w: wl, grad: chordGrad(F, S, [[0, lm, C.PIN_A, C.GOLD, 0], [1, lm, C.PIN_A, C.GOLD, 0]]), inner: true });
+    // безель: тонке золото впритул до м'яча (камінь в оправі) — між ним і кантом лишається ебенова смуга оправи
+    const wb = Math.max(minW, C.BEZEL_W * kz * sm), rb = G.rB + (C.BEZEL_IN * sm + wb / 2) / S.pm, bz = [];
+    if (rb + wb / S.pm / 2 < rc - wl / S.pm / 2) {
+      for (let i = 0; i <= C.LID_N; i++) { const d = dirAt(-lidA + (2 * lidA * i) / C.LID_N); bz.push([hx + d[0] * rb * S.pm, hy + d[1] * rb * S.pm]); }
+      out.strokes.push({ pts: bz, w: wb, grad: chordGrad(F, S, [[0, lm, C.PIN_A, C.GOLD, 0], [1, lm, C.PIN_A, C.GOLD, 0]]), inner: true });
+    }
+  }
+  // ── перед клавіш світліший (LIP: від переднього краю LIP_K переду; у щілинах 0, на натиснутій — гасне; крен — ясніше); малий вигляд — без нього
+  const lipA = C.LIP_A * (1 - lam) * (1 + C.BANK_LIP * Math.max(0, -bank));
+  if (lipA > 0.01) {
+    const p1 = F.atS(G.sHead), lwid = C.LIP_K * (vB(p1) + kw(p1)), lv = (p) => -kw(p) + lwid / 2, ls = [];
+    for (let i = keys.length - 1; i >= 0; i--) {
+      const q = keys[i], pa = F.atS(q.a), pb = F.atS(q.b), al = Math.min(TRAIL_RULES.HEAD_A_MAX, lipA * (1 - Math.max(0, q.D)));
+      const last = ls.length ? ls[ls.length - 1][0] : 0, ua = Math.max(last, uAt(pa, lv(pa))), ub = Math.max(ua, uAt(pb, lv(pb)));
+      ls.push([ua, C.LIP_MIX, 0, C.IVORY, 0], [ua, C.LIP_MIX, al, C.IVORY, 0], [ub, C.LIP_MIX, al, C.IVORY, 0], [ub, C.LIP_MIX, 0, C.IVORY, 0]);
+    }
+    if (lwid > 0 && ksp.length >= 2) out.strokes.push({ pts: ksp.map((p) => P(p, lv(p))), w: lwid * sm, grad: chordGrad(F, S, ls), inner: true });
+  }
+  // ── крапки: око волюти; молоточки над свіжими ударами (на кришці підскакують і осідають); лак на носиках найближчих чорних — від світла зали
+  if (!eye && lw) { const pe = F.atS(G.sLo + 0.45 * (G.sEnd - G.sLo)); eye = P(pe, 0); }
+  if (eye) out.dots.push({ x: eye[0], y: eye[1], r: Math.max(minW / 2, C.VOLUTE_R * sm), mixK: 0.2, alpha: C.PIN_A, hue: C.GOLD, ball: 0, inner: true });
+  // [KEYS 3.0, фініш] медальйон рояля (фібула, як у CAPE): золотий диск з ебеновим осердям на канті оправи позаду м'яча — там, де оправа переходить у
+  // клавіатуру; світиться з кантом (lm). Лише в грі (у прев'ю кришка й так золота)
+  if (G.lid && !lw) {
+    const mr = C.MED_R * kz * sm, mx = hx - tx * rc * S.pm, my = hy - ty * rc * S.pm;
+    out.dots.push({ x: mx, y: my, r: mr, mixK: Math.min(TRAIL_RULES.MIX_MAX, C.MED_MIX + lm), alpha: C.PIN_A, hue: C.GOLD, ball: 0, inner: true });
+    out.dots.push({ x: mx, y: my, r: mr * C.MED_IN, mixK: 0, alpha: C.A, hue: C.EBONY, ball: 0, inner: true });
+  }
+  for (const h of st.ham) {
+    const q = keys.find((x) => x.k === h.k);
+    if (!q || (h.b && !q.blackTail)) continue;
+    const s = h.b ? q.s0 : (q.a + q.b) / 2, p = F.atS(s), r = C.HAM_R, up = C.HAM_UP * Math.sin(Math.PI * Math.min(1, h.age / C.HAM_T));
+    const v = Math.min((vT(p) + kw(p)) / 2 + up, env - p.dev - r), a = C.HAM_A * (1 - h.age / (1.5 * C.HAM_T)) * (0.6 + 0.4 * clamp01(h.v));
+    if (a > 0.02) { const c = P(p, v); out.dots.push({ x: c[0], y: c[1], r: r * sm, mixK: C.HAM_MIX, alpha: Math.min(TRAIL_RULES.HEAD_A_MAX, a), hue: C.GOLD, ball: 0, inner: true }); }
+  }
+  // лак: короткий блік ПОПЕРЕК носика найближчих NOSE_N чорних (на NOSE_AT від дна вирізу), яскравість — від світла зали; малий вигляд — без нього
+  let nn = 0;
+  for (const q of keys) {
+    if (nn >= C.NOSE_N || lam > 0.5) break;
+    if (!q.blackTail) continue;
+    const pa = F.atS(q.s0 - C.NOSE_K * BW), pb = F.atS(q.s0 + C.NOSE_K * BW), p = F.atS(q.s0), a = C.NOSE_A * (1 - lam) * (C.NOSE_BASE + (1 - C.NOSE_BASE) * keysGlint(p, sd));
+    const v = (x) => vB(x) + C.NOSE_AT;
+    if (a > 0.02 && vT(p) - vB(p) > 1.2) out.strokes.push({ pts: [P(pa, v(pa)), P(pb, v(pb))], w: C.NOSE_W * sm, grad: chordGrad(F, S, [[0, C.NOSE_MIX, a, C.EBONY, 0], [1, C.NOSE_MIX, a, C.EBONY, 0]]), inner: true });
+    nn++;
+  }
+  return out;
+}
+
 /**
  * [v47] Форми стилів: COMET — makeComet (рівень v46 · безкінечний COMET_E), решта 9 — TRAIL_STYLE_E.
  * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
  */
 const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
   pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE,   // [HALLOWEEN]
-  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE, strum: makeStrumE };
+  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE, strum: makeStrumE, keys: makeKeysE };
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
@@ -1679,7 +2207,7 @@ export function lookFrame(F) {
 const shapeOf = (F, id, S) => {
   if (F.mode === TRAIL_MODE.ENDLESS || id === TRAIL_DEFAULT) return MAKERS[id](F, S);
   const V = lookFrame(F);
-  return V.ok ? MAKERS[id](V, { pm: S.pm / V.zs, sm: S.sm / V.zs, bm: S.bm }) : empty();
+  return V.ok ? MAKERS[id](V, { pm: S.pm / V.zs, sm: S.sm / V.zs, bm: S.bm, ...(S.still ? { still: true } : {}) }) : empty();   // [KEYS 2.1] still — знімок
 };
 
 /**
@@ -1694,8 +2222,12 @@ export const TRAIL_STYLES = Object.fromEntries(TRAILS.map(({ id }) => [id, {
     const pm = typeof s.posMul === "number" ? s.posMul : 1, wm = typeof s.wMul === "number" ? s.wMul : 1;
     // [CAPE] ballMul — у скільки разів м'яч прев'ю більший за BALL_R у позиціях (paintTrailPreview: ballK, без нього — wMul): фібула CAPE — щойно за ним
     const bm = typeof s.ballMul === "number" ? s.ballMul : wm;
-    const out = pm === 1 && wm === 1 && bm === 1 ? base : F.ok ? shapeOf(F, id, { pm, sm: pm * wm, bm }) : empty();
-    const o = { ...head, ...(out.glow ? { glow: out.glow } : {}), fills: out.fills, strokes: out.strokes, rings: out.rings, dots: out.dots };
+    // [KEYS 2.1] still — знімок (орбіта RANKS без живого годинника, картка SHOP): стиль малює спокій (лише KEYS; решта поле ігнорує — байт у байт)
+    const still = !!s.still;
+    const out = pm === 1 && wm === 1 && bm === 1 && !still ? base : F.ok ? shapeOf(F, id, { pm, sm: pm * wm, bm, ...(still ? { still } : {}) }) : empty();
+    const o = { ...head, ...(out.glow ? { glow: out.glow } : {}), fills: out.fills, strokes: out.strokes, rings: out.rings, dots: out.dots,
+      // [KEYS 3.0] opaque — предмет суцільний: другий прохід gain прев'ю (RANKS, картка SHOP, емблема) кладе лише ореол і золото (paintTrailPreview)
+      ...(out.opaque ? { opaque: true } : {}) };
     // [v73] RANKS правка 1 (огляд a11y #9): метрики — ліниво, лише коли їх читають (тести, вектори); жива орбіта RANKS малює щокадру й не платить
     // O(вершини × точки шляху) і ≈ 12–15 МБ/с сміття. Порядок ключів і JSON — ті самі (властивість перелічувана, остання).
     let m = null;
@@ -1782,7 +2314,23 @@ export function trailMetrics(F, prims) {
  */
 export const trailEnvOf = (id) => (id === "cape"
   ? { W: TRAIL_STYLE_E.CAPE.ENV, L: TRAIL_STYLE_E.CAPE.LEN_MAX, ahead: TRAIL_STYLE_E.CAPE.AHEAD_MAX }
+  // [KEYS 3.0] виняток лише для ОПРАВИ довкола спини м'яча: ≤ ENV від осі, усе — в останніх LEN_MAX од. шляху, попереду центру ≤ AHEAD_MAX·BALL_R;
+  // далі LID_REACH від центру м'яча — у ±ENDLESS_ENV, як решта (trails.test §20: keysLidOnly)
+  // [KEYS 3.0, фініш] на зумі виняток росте з м'ячем: zBall — радіус м'яча, zKey — стеля множника клавіатури (trailEnvAt)
+  : id === "keys" ? { W: TRAIL_STYLE_E.KEYS.ENV, L: TRAIL_STYLE_E.KEYS.LEN_MAX, ahead: TRAIL_STYLE_E.KEYS.AHEAD_MAX, reach: TRAIL_STYLE_E.KEYS.LID_REACH,
+    zBall: TRAIL_STYLE_E.KEYS.BALL_R, zKey: TRAIL_STYLE_E.KEYS.KZ_MAX }
   : { W: TRAIL_RULES.ENDLESS_ENV, L: null, ahead: null });
+/**
+ * [KEYS 3.0, фініш] Конверт E = trailEnvOf(id) на зумі z (одиниці кадру вигляду — екран до зуму 1): { W, reach, kw }. Без zBall — W як є (CAPE 16, решта 9),
+ * kw = ENDLESS_ENV. KEYS: zs = max(1, z), kz = min(zs, zKey) — оправа обіймає м'яч (BALL_R·zs) і ширшає з клавіатурою: W = zBall·zs + (W − zBall)·kz,
+ * reach = zBall·zs + (reach − zBall)·kz, клавіатура — у ±ENDLESS_ENV·kz. На z ≤ 1 — те саме, що trailEnvOf. Габарит клавіатури на ×KZ_MAX — 2·(7.9·1.4·0.875 + 1)·95 ≈ 2030
+ * од.² — не більший за CAPE / колишню стрічку 2160 (REDESIGN §5.2); оправа — тонке кільце довкола м'яча (≤ 6·kz за його краєм), позаду центру.
+ */
+export const trailEnvAt = (E, z = 1) => {
+  if (!E.zBall) return { W: E.W, reach: E.reach == null ? null : E.reach, kw: TRAIL_RULES.ENDLESS_ENV };
+  const zs = Math.max(1, z), kz = Math.min(zs, E.zKey);
+  return { W: E.zBall * zs + (E.W - E.zBall) * kz, reach: E.zBall * zs + (E.reach - E.zBall) * kz, kw: TRAIL_RULES.ENDLESS_ENV * kz };
+};
 /**
  * [CAPE] Протяжність намальованого (усе, крім ореолу — як outerHalfFu; + ½ штриха, r крапки, r + ½ товщини кільця), юн. поля:
  *   bandFu — найдальший піксель від ОСТАННІХ lenFu шляху (ламана F.pts від дуги len − lenFu до голови): ≤ W — плащ лежить у смузі ±W довкола
