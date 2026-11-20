@@ -428,9 +428,10 @@ type a name in VERSUS; names are checked with the same rules as in RANKS.</li>
 <li><b>A random player ID</b> that the game creates for VERSUS only, so that two tabs or a reconnect count as the same player. It is not
 linked to your device, your RANKS profile or your Google Play Games / Game Center account. In the browser it is kept in
 <code>localStorage</code> (<code>od:own:vs-pid</code>); in the apps, in the game's data on your device.</li>
-<li><b>Your platform and game version</b> (browser, Android or iPhone), so that only matching versions race together.</li>
-<li><b>Which levels you can play</b>, as short level codes, when you search for a random race, so that the server only puts you
-into a race you can open. The server keeps this list only in its memory while you are connected.</li>
+<li><b>Your platform and game version</b> (browser, Android or iPhone) and how many orbit rings your version can race on (up to 4), so that only
+matching versions race together.</li>
+<li><b>Which levels you can play</b>, as short level codes, and how many orbit rings you'd like to race on (2, 3 or 4), when you search for a
+random race, so that the server only puts you into a race you can open. The server keeps this list only in its memory while you are connected.</li>
 <li><b>Your race:</b> your taps and their timing, your score, gems and sparks in the race, how far you got and whether you finished —
 to keep everyone's race in sync, check the results and show the places.</li>
 </ul>
