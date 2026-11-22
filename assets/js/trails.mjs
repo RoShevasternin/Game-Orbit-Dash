@@ -70,6 +70,8 @@
 //   (trailExtent bandFu), попереду центру м'яча ≤ ½ радіуса (aheadFu) — REDESIGN.md §5.2 THE LAST TOCCATA.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { BARB_DEF, barbMaker } from "./trail-fabulous.mjs";   // [THE FABULOUS]
+import { PRISM_DEF, prismMaker } from "./trail-chroma.mjs";   // [CHROMA, 21.11.2026] хвіст PRISM рівня CHROMA (nu-drop, debugOnly; порт — з рівнем)
 // ================================================================ ЕФЕКТИ ЯК У ГРІ — шлейф (перенесено з JSX у v47, числа ті самі)
 
 // ABallTrail — шлейф м'яча (GameScreen: безкінечний ран і туторіал; у рівнях — свій, LEVEL_TRAIL нижче).
@@ -167,6 +169,12 @@ export const TRAILS = [
   //   партія рояля концерту, решта — «музикант»), м'яч сидить в оправі з медальйоном. Числа — TRAIL_STYLE_E.KEYS, форма — makeKeysE. У КІНЦІ каталогу
   //   (код орбіти RANKS лише дописується); опис — [KEYS 3.0, фініш] «it plays along with the music» (рецензія: «a key goes down on every beat» застаріло)
   { id: "keys", name: "KEYS", level: "ludovivo", desc: "A grand piano keyboard · it plays along with the music" },
+  { ...BARB_DEF },   // [THE FABULOUS] легендарний хвіст THE FABULOUS
+  // [SUNSHINE, 18.11.2026] хвіст рівня SUNSHINE (MAIN, NORMAL, поле соняшників; Orbit Dash/docs/levels/sunshine/LEVEL.md §4): золоте стебло з пелюстками соняшника
+  //   на дорозі, на долю голова розквітає ширше й одна пелюстка злітає за вітром; у дропі — пилок. Числа — TRAIL_STYLE_E.PETAL, форма — makePetalE. У КІНЦІ каталогу
+  //   (код орбіти RANKS лише дописується)
+  { id: "petal", name: "PETAL", level: "sunshine", desc: "Sunflower petals · one flies off on every beat" },
+  { ...PRISM_DEF },   // [CHROMA, 21.11.2026] хвіст рівня CHROMA (робочий id nu-drop; не легендарний): RGB-примари на кожну долю, глітч у дропі
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -425,6 +433,31 @@ export const TRAIL_STYLE_E = {
   //   «менше руху» — струни рівні. Усе в конверті (|зсув| + півширина ≤ env − dev). Порт: 6 смуг квадами, один ореол.
   STRUM: { N: 6, STRAND_K: 0.17, SPREAD_K: 0.82, TAIL_LEN: 18, HEAD_K: 0.3, VIB_K: 0.26, VIB_HZ: 10.5, VIB_TAU_BEATS: 0.45, VIB_TAU_T: 0.3, VIB_T: 0.5,
     MIX_HI: 0.38, GLOW_MUL: 1.35, GLOW_HEAD_K: 1.0 },
+  // [SUNSHINE, 18.11.2026] PETAL — пелюстки соняшника, хвіст рівня SUNSHINE. Своя барва (як FERN): GOLD = [LIGHT, DEEP] — від хвоста бурштинова DEEP до голови
+  //   світло-жовтої LIGHT (рампа petalLut, LUT_STEPS кроків), біля голови — барва м'яча (HEAD_BALL / HEAD_LEN: м'яч — сонце, пелюстки світяться від нього). Пилок — POLLEN.
+  //   СТЕБЛО — смуга STEM_K·hwE, α STEM_A·aE.
+  //   ПЕЛЮСТКИ — на сітці часу GRID с (рівень — GRID_BEATS долі), N_MAX новіших, почергово ліворуч / праворуч під кутом ANG° НАЗАД (нічого не стирчить попереду м'яча),
+  //     ледь серпом (CURVE); форма — пелюстка соняшника: смуга вздовж жилки на LEAF_N + 1 точках, півширина W_K·ℓ·sin(π·u)^W_EXP (найширше посередині, кінчик
+  //     загострений). Прив'язані до at(t) — лежать на дорозі. Довжина ℓ: L_TAIL → L_MAX до голови (f^L_EXP), біля голови — молоді L_HEAD (ближче L_PINCH дугою),
+  //     біля хвоста гаснуть розміром (TAIL_FADE); нова розкривається за OPEN_BEATS долі (∞ — OPEN с). Уся пелюстка — у конверті env − dev (вершини ×fit).
+  //   ЖИЛКА — серединна смуга (VEIN_FROM … VEIN_TO) півшириною VEIN_K·ℓ, світла (VEIN_MIX), inner.
+  //   НА ДОЛЮ (рівень — SHED_BEATS, ∞ — SHED_T с): РОЗКВІТ — пелюстки біля голови (BLOOM_LEN дуги) розкриваються ширше на BLOOM° і повертаються за долю (expoOut);
+  //     ЗЛІТ — пелюстка долі відривається від дороги: летить убік на SHED_DRIFT вільного місця й обертається SHED_SPIN обертів за життя шлейфу, меншаючи
+  //     (живих ≤ SHED_MAX); усе — у конверті env − dev.
+  //   ДРОП (рівень такту ≥ DROP_LEVEL) — пилок: сітка POLLEN_BEATS долі, POLLEN_N новіших, R ≤ PART_R_MAX, відпливає вбік і гасне.
+  //   СВІТЛО — ореол стебла ×GLOW_MUL (біля голови — GLOW_HEAD_K) і пелюсток ×GLOW_LEAF, градієнт GOLD, α GLOW_A (рівень — × (1 + BEAT_GLOW·доля)).
+  //   «Менше руху»: пелюстки розкриті й нерухомі, без розквіту, зльоту й пилку.
+  //   Заливань 4 (ореол, стебло, пелюстки зі зльотом, жилки) ≤ 4; малювань ≤ POLLEN_N ≤ 30; частинок ≤ POLLEN_N ≤ 14. Пелюстки й жилки — додатного обходу (pos).
+  //   Порт: смуги й пелюстки квадами, пилок — msdf.circle, petalLut — 1D-таблиця (індекс floor(x·LUT_STEPS + 0.5)).
+  PETAL: { GOLD: ["#ffd84a", "#ee8a12"], POLLEN: "#fff2b0", HEAD_BALL: 1, HEAD_LEN: 0.3, LUT_STEPS: 64,
+    STEM_K: 0.2, STEM_A: 0.95, STEM_MIX: 0.08,
+    GRID: 0.024, GRID_BEATS: 1 / 16, N_MAX: 18, ANG: 52, CURVE: 0.06, LEAF_N: 5,
+    L_TAIL: 3.6, L_MAX: 7.4, L_EXP: 0.7, L_HEAD: 2.6, L_PINCH: 12, TAIL_FADE: 0.2, W_K: 0.3, W_EXP: 0.6,
+    OPEN_BEATS: 1 / 8, OPEN: 0.06, LEAF_A: 0.95, A_TAIL: 0.6, LEAF_MIX: 0.05,
+    VEIN_K: 0.04, VEIN_FROM: 0.12, VEIN_TO: 0.8, VEIN_MIX: 0.5, VEIN_A: 0.75,
+    BLOOM: 24, BLOOM_LEN: 22, SHED_BEATS: 1, SHED_T: 0.55, SHED_MAX: 2, SHED_L: 5.6, SHED_SPIN: 1.25, SHED_DRIFT: 0.9, SHED_SHRINK: 0.45,
+    DROP_LEVEL: 2, POLLEN_N: 5, POLLEN_BEATS: 1 / 4, POLLEN_R: [0.8, 1.4], POLLEN_A: 0.9, POLLEN_MIX: 0.3, POLLEN_DRIFT: 0.7,
+    GLOW_A: 0.3, GLOW_MUL: 2.2, GLOW_HEAD_K: 1.3, GLOW_LEAF: 1.15, BEAT_GLOW: 0.4 },
   // [13.11.2026] KEYS — клавіатура рояля LEWYDO & SONS, легендарний хвіст концерту LUDOVIVO (DEMON); 2.0 / 2.1 — предмет і знак у рейтингах,
   //   [KEYS 3.0] — ПЕРСОНАЖ, як CAPE (власник 13.11: «хвіст сподіваюсь буде якісним, як і плащ Дракули — особливий»; рецензія 2.1 — 5 і 6.5 / 10 проти
   //   CAPE). Спека й заміри — Orbit Dash/docs/levels/maestro/TRAIL.md §B. Коротко (кадр вигляду; м'яч — r BALL_R·zs, у прев'ю ×bm):
@@ -1728,6 +1761,120 @@ function makeStrumE(F, S) {
   return out;
 }
 
+// ================================================================ PETAL — пелюстки соняшника (SUNSHINE, 18.11.2026; числа — TRAIL_STYLE_E.PETAL)
+
+/** [PETAL] Рампа золота DEEP (хвіст) → LIGHT (голова) на LUT_STEPS кроків — рядки барв раз на модуль. Порт: 1D-таблиця. */
+let PETAL_LUT = null;
+export const petalLut = () => {
+  if (!PETAL_LUT) {
+    const C = TRAIL_STYLE_E.PETAL;
+    PETAL_LUT = [];
+    for (let i = 0; i <= C.LUT_STEPS; i++) PETAL_LUT.push(flameHex(C.GOLD[1], C.GOLD[0], i / C.LUT_STEPS));
+  }
+  return PETAL_LUT;
+};
+/** [PETAL] Доля: g — номер (рівень — SHED_BEATS долі, ∞ — SHED_T с), u — частка 0…1 усередині. */
+export const petalBeat = (F) => {
+  const C = TRAIL_STYLE_E.PETAL, x = (F.tH - F.t0) / F.step(C.SHED_BEATS, C.SHED_T), g = Math.floor(x + EPS_T);
+  return { g, u: clamp01(x - g) };
+};
+/** [PETAL] Розквіт на долю, ° (BLOOM → 0 за долю, expoOut-спад); «менше руху» — 0. */
+export const petalBloom = (F) => {
+  if (F.reduced) return 0;
+  const { u } = petalBeat(F);
+  return TRAIL_STYLE_E.PETAL.BLOOM * Math.pow(2, -10 * u);
+};
+/** [PETAL] Пелюстка довжини 1 від кореня p: бік side, кут th (рад) назад від дотичної; смуга [L0 … LN, RN … R0], жилка; reach — найдальша вершина. */
+const petalLeaf = (C, p, side, th) => {
+  const bx = -p.ny, by = p.nx, ox = p.nx * side, oy = p.ny * side, c = Math.cos(th), s = Math.sin(th);
+  const dx = c * bx + s * ox, dy = c * by + s * oy, n = C.LEAF_N;
+  const mid = (u) => [dx * u + bx * C.CURVE * u * u, dy * u + by * C.CURVE * u * u];
+  const nrm = (u) => { const tx = dx + 2 * bx * C.CURVE * u, ty = dy + 2 * by * C.CURVE * u, l = Math.hypot(tx, ty) || 1; return [-ty / l, tx / l]; };
+  const band = (us, wOf) => {
+    const L = [], R = [];
+    for (const u of us) { const m = mid(u), q = nrm(u), w = wOf(u); L.push([m[0] + q[0] * w, m[1] + q[1] * w]); R.push([m[0] - q[0] * w, m[1] - q[1] * w]); }
+    return [...L, ...R.reverse()];
+  };
+  const us = [];
+  for (let i = 0; i <= n; i++) us.push(i / n);
+  const poly = band(us, (u) => C.W_K * Math.pow(Math.sin(Math.PI * u), C.W_EXP));
+  const vein = band([C.VEIN_FROM, (C.VEIN_FROM + C.VEIN_TO) / 2, C.VEIN_TO], () => C.VEIN_K);
+  return { poly, vein, reach: Math.max(...poly.map((v) => Math.hypot(v[0], v[1]))) };
+};
+/** [PETAL] Вільна пелюстка (зліт) довжини 1 довкола центру, повернута на rot (рад); reach — найдальша вершина від центру. */
+const petalFree = (C, rot) => {
+  const c = Math.cos(rot), s = Math.sin(rot), poly = [], n = C.LEAF_N, L = [], R = [];
+  for (let i = 0; i <= n; i++) { const u = i / n, x = u - 0.5, w = C.W_K * Math.pow(Math.sin(Math.PI * u), C.W_EXP); L.push([x, w]); R.push([x, -w]); }
+  for (const [x, y] of [...L, ...R.reverse()]) poly.push([x * c - y * s, x * s + y * c]);
+  return { poly, reach: Math.max(...poly.map((v) => Math.hypot(v[0], v[1]))) };
+};
+const PETAL_N = 30;                                            // зразків стебла рівно по дузі (atS)
+/**
+ * [SUNSHINE, 18.11.2026] PETAL — пелюстки соняшника (SUNSHINE): золоте стебло, пелюстки на сітці часу почергово з обох боків (назад під ANG°), світлі жилки;
+ * на долю — розквіт біля голови і зліт однієї пелюстки за вітром; у дропі — пилок. Своя барва GOLD (hue), голова — барва м'яча (ball).
+ */
+function makePetalE(F, S) {
+  const C = TRAIL_STYLE_E.PETAL, X = LOOK_E, out = empty(), env = F.env, still = F.reduced, LV = F.mode === TRAIL_MODE.LEVEL;
+  const smp = [];
+  for (let i = 0; i < PETAL_N; i++) smp.push(F.atS((F.len * i) / (PETAL_N - 1)));
+  const lut = petalLut(), gold = (f) => lut[Math.round(clamp01(f) * C.LUT_STEPS)], ball = (f) => headBallOf(C, f);
+  const stopsOf = (fn) => { const st = []; let last = 0; for (const p of smp) { last = Math.max(last, chordU(F, p.x, p.y)); st.push([last, ...fn(p)]); } return st; };
+  const leafA = (f) => C.LEAF_A * (C.A_TAIL + (1 - C.A_TAIL) * f);
+  const ga = Math.min(TRAIL_RULES.HEAD_A_MAX, C.GLOW_A * (1 + C.BEAT_GLOW * F.beat));
+  const halo = [ribbon(S, smp, (p) => C.STEM_K * X.hw(p.f) * X.pk(C.GLOW_MUL, C.GLOW_HEAD_K, F, p))];
+  out.fills.push({ paths: [ribbon(S, smp, (p) => C.STEM_K * X.hw(p.f))], grad: chordGrad(F, S, stopsOf((p) => [C.STEM_MIX, C.STEM_A * X.a(p.f), gold(p.f), ball(p.f)])) });
+  const bloom = petalBloom(F), leaves = [], veins = [];
+  const put = (p, v, k) => [p.x * S.pm + v[0] * k * S.sm, p.y * S.pm + v[1] * k * S.sm];
+  for (const { g, t } of gridTimes(F, F.step(C.GRID_BEATS, C.GRID), C.N_MAX).reverse()) {
+    const p = F.at(t);
+    if (!p) continue;
+    const base = C.L_TAIL + (C.L_MAX - C.L_TAIL) * Math.pow(p.f, C.L_EXP);
+    let len = (C.L_HEAD + (base - C.L_HEAD) * smooth01((F.len - p.s) / C.L_PINCH)) * smooth01(p.f / C.TAIL_FADE);
+    if (!still) len *= smooth01((F.tH - t) / F.step(C.OPEN_BEATS, C.OPEN));
+    const lim = env - p.dev - 1e-6;
+    if (!(len > 0.05) || !(lim > 0)) continue;
+    const near = 1 - smooth01((F.len - p.s) / C.BLOOM_LEN);              // розквіт — лише біля голови
+    const lf = petalLeaf(C, p, g % 2 ? 1 : -1, (C.ANG + bloom * near) * D), k = Math.min(len, lim / lf.reach);
+    leaves.push(pos(lf.poly.map((v) => put(p, v, k))));
+    veins.push(pos(lf.vein.map((v) => put(p, v, k))));
+    halo.push(lf.poly.map((v) => put(p, v, Math.min(k * C.GLOW_LEAF, lim / lf.reach))));
+  }
+  // зліт: пелюстка долі відривається й летить убік, обертаючись і меншаючи (уся — у конверті env − dev)
+  if (!still) {
+    for (const { g, t } of gridTimes(F, F.step(C.SHED_BEATS, C.SHED_T), C.SHED_MAX).reverse()) {
+      const p = F.at(t);
+      if (!p) continue;
+      const q = clamp01((F.tH - t) / F.span), side = g % 2 ? 1 : -1, lim = env - p.dev;
+      const fr = petalFree(C, TAU * C.SHED_SPIN * q + h01(seedOf(g, 9)) * TAU), L = C.SHED_L * (1 - C.SHED_SHRINK * q) * smooth01(q / 0.08);
+      const k = Math.min(L, (lim * 0.5) / fr.reach);
+      if (!(k > 0.05)) continue;
+      const d = side * Math.min(lim - fr.reach * k, lim * Math.min(1, 0.2 + C.SHED_DRIFT * q));
+      if (!(Math.abs(d) + fr.reach * k <= lim + 1e-9)) continue;
+      const cx = p.x + p.nx * d, cy = p.y + p.ny * d;
+      leaves.push(pos(fr.poly.map((v) => [cx * S.pm + v[0] * k * S.sm, cy * S.pm + v[1] * k * S.sm])));
+    }
+  }
+  if (leaves.length) {
+    out.fills.push({ paths: leaves, grad: chordGrad(F, S, stopsOf((p) => [C.LEAF_MIX, leafA(p.f), gold(p.f), ball(p.f)])) });
+    if (veins.length) out.fills.push({ paths: veins, inner: true, grad: chordGrad(F, S, stopsOf((p) => [C.VEIN_MIX, (C.VEIN_A * leafA(p.f)) / C.LEAF_A, C.GOLD[0], ball(p.f)])) });
+  }
+  // пилок у дропі
+  if (LV && !still && F.level(F.tH) >= C.DROP_LEVEL) {
+    for (const { g, t } of gridTimes(F, F.step(C.POLLEN_BEATS, 1), C.POLLEN_N).reverse()) {
+      const p = F.at(t);
+      if (!p) continue;
+      const seed = seedOf(g, 5), q = clamp01((F.tH - t) / F.span);
+      const r = Math.min(C.POLLEN_R[0] + (C.POLLEN_R[1] - C.POLLEN_R[0]) * h01(seed + TRAIL_SEED.RADIUS), TRAIL_RULES.PART_R_MAX, env - p.dev);
+      const room = Math.max(0, env - p.dev - r), a = C.POLLEN_A * Math.pow(1 - q, 0.6);
+      if (!(r > 0) || !(a > 0)) continue;
+      const d = (g % 2 ? 1 : -1) * room * Math.min(1, 0.3 + C.POLLEN_DRIFT * q) * (0.6 + 0.4 * h01(seed));
+      out.dots.push({ x: (p.x + p.nx * d) * S.pm, y: (p.y + p.ny * d) * S.pm, r: r * S.sm, mixK: C.POLLEN_MIX, alpha: a, spark: true, hue: C.POLLEN });
+    }
+  }
+  out.glow = { paths: glowOf(halo).paths, grad: chordGrad(F, S, stopsOf((p) => [0, ga, gold(p.f), ball(p.f)])) };
+  return out;
+}
+
 // ================================================================ KEYS — клавіатура рояля (LUDOVIVO, 13.11.2026; 2.0 / 2.1 / 3.0 — того ж дня; числа — TRAIL_STYLE_E.KEYS)
 /** [KEYS] Чорні клавіші — на межі після k-ї білої від голови (k mod 7): візерунок октави від верхньої E — D# C# · A# G# F# (2 + 3). */
 export const keysBlackAfter = (k) => [0, 1, 3, 4, 5].includes(((k % 7) + 7) % 7);
@@ -2187,9 +2334,11 @@ function makeKeysE(F, S) {
  * [v47] Форми стилів: COMET — makeComet (рівень v46 · безкінечний COMET_E), решта 9 — TRAIL_STYLE_E.
  * [v102] ті самі 9 форм і в рівнях — на кадрі вигляду lookFrame (розмір на екрані, шапка TRAIL_STYLE_E), назад у поле ×1/zs.
  */
-const MAKERS = { comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
+const MAKERS = { inferno: barbMaker({ ribbon, gradE, glowOf, empty, chordGrad, chordU, pointGrad, LOOK_E, headBallOf, h01, TRAIL_RULES, TRAIL_MODE, TRAIL_STYLE_E }),   // [THE FABULOUS]
+ comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
   pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE,   // [HALLOWEEN]
-  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE, strum: makeStrumE, keys: makeKeysE };
+  fern: makeFernE, scribble: makeScribbleE, mach: makeMachE, strum: makeStrumE, keys: makeKeysE, petal: makePetalE,   // [SUNSHINE] PETAL
+  prism: prismMaker({ ribbon, chordGrad, chordU, glowOf, empty, LOOK_E, headBallOf, TRAIL_RULES }) };   // [CHROMA] PRISM   // [SUNSHINE] PETAL
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
