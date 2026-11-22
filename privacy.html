@@ -72,7 +72,7 @@ Separately, our own visit counter counts page views for everyone, without cookie
 <a href="#visit-counter">Visit counter</a>).
 The fonts and the game itself come from this site (only RANKS, the optional leaderboards, VERSUS, the live races, and our anonymous visit counter use other servers — see below). The app is free and pays for itself with ads, so it does share
 some data with Google (and, on Android, TikTok); everything it shares is listed below. Your game progress lives on your own device (joining RANKS sends your records to our server).
-Our own servers are there only for RANKS, the game's leaderboards, for VERSUS, the live races, and for this website's anonymous visit counter. In the app from version 2.3.0, the RANKS server stores a RANKS profile once you
+Our own servers are there only for RANKS, the game's leaderboards, for VERSUS, the live races, and for this website's anonymous visit counter. From version 4.0.0 the app also sends that counter anonymous counts of its privacy questions (see <a href="#visit-counter">Visit counter</a>). In the app from version 2.3.0, the RANKS server stores a RANKS profile once you
 have finished your first counted run and the game has told you so (“YOU'RE ON THE BOARDS” after GAME OVER or in the menu, or the
 RANKS screen itself if you open it first; in older versions, only after you tap JOIN RANKS); in the browser version (on a phone or a computer) the same way since 1 November 2026 (before that, only if you opened RANKS after playing or tapped JOIN RANKS). You can leave RANKS at any time
 (see <a href="#ranks-auto">How you get on the boards</a>).
@@ -82,9 +82,13 @@ don't open RANKS (see <a href="#ranks">RANKS in the app</a>). The RANKS server n
 longer records your IP address: since 26 October 2026 (18:00 UTC) its request logs are not stored, and the older ones,
 which do contain IP addresses, are deleted by 26 November 2026 (see <a href="#ranks-retention">How long RANKS data is kept</a>); you can <a href="#delete-ranks">delete your
 RANKS profile</a> at any time.
-VERSUS (in the browser version; in the Android app from version 3.0.0, the iPhone app from version 3.0.1) sends nothing until you open it or a friend's invite link: then the race
-server, which Cloudflare runs for us, gets your RANKS name (or a generated one), flag, ball, trail, a random player ID and your race, and keeps
-them only while the room lasts — at most 4 hours (see <a href="#versus">VERSUS live races</a>). It also keeps daily numbers about
+VERSUS (in the browser version; in the Android app from version 3.0.0, the iPhone app from version 3.0.1) uses a race server that Cloudflare runs for us.
+Versions of the game with OPEN ROOMS connect to it while the game is open, to show how many players are online and to pass on race invites and room
+calls (RACE INVITES in the game's Settings turns invites off); older versions connect only when you open VERSUS or a friend's invite link. For a race the
+server gets your RANKS name (or a generated one), flag, ball, trail, a random player ID and your race, and keeps
+them only while the room lasts — at most 4 hours (see <a href="#versus">VERSUS live races</a>). If you leave your own room open in the app and allow
+notifications, it also gets your phone's push token, only to tell you that someone joined, and forgets it with the room — at most 15 minutes after
+you leave the game. It also keeps daily numbers about
 VERSUS (races, rooms, players per country and platform) without names or player IDs, for 30 days (see <a href="#versus-stats">Daily statistics</a>).</p>
 </div>
 
@@ -92,7 +96,8 @@ VERSUS (races, rooms, players per country and platform) without names or player 
 <p>This site is plain static files on GitHub Pages. We do not run advertising, social widgets or other third-party
 code here. Fonts, images, sound and the game itself are served from this site, so apart from our own visit counter (see
 <a href="#visit-counter">Visit counter</a> below) your browser does not contact anyone else while you read or play — unless you allow
-Google Analytics (see “Website analytics” below), or open RANKS or VERSUS in the game (see below).</p>
+Google Analytics (see “Website analytics” below) or open RANKS in the game, and except for the game's connection to our VERSUS race server
+(see below).</p>
 <ul>
 <li><b>No cookies unless you allow analytics or join RANKS.</b> We set none of our own (the visit counter uses none either); Google Analytics sets its cookies only after
 you tap Allow, and Google reCAPTCHA, which RANKS uses when you join (also when RANKS adds you by itself after you play), send results, change your profile, send a report, get a new recovery code or
@@ -105,7 +110,7 @@ applies to it; closing the player removes it from the page.</li>
 <li><b>Your progress in the browser version</b> (best score, gems, skins, settings) is written to your browser's
 <code>localStorage</code> on your own device. It never reaches us, and it is separate from the Android app's progress.
 Clearing your browser data erases it. (The random player ID of VERSUS is kept there too, but unlike your progress it does go to the race
-server when you open VERSUS — see below.)</li>
+server — see below.)</li>
 <li><b>Your language choice</b> is remembered the same way, in your browser only. Links from this site to our studio's site
 carry it in the address (such as <code>?lang=de</code>), so that site opens in the same language.</li>
 <li id="ranks-web"><b>RANKS in the browser version (web leaderboards).</b> Nothing is sent before you finish your first counted run.
@@ -127,9 +132,10 @@ not used for 24 months are deleted.
 To leave sooner, use RANKS → ⓘ → DELETE MY RANKS PROFILE: your profile is deleted, and the game in that browser no longer adds you by itself — only
 JOIN RANKS brings you back. You can also write to <a href="mailto:support@lewydo.com">support@lewydo.com</a>
 with your nickname (see <a href="#delete-ranks">Deleting your RANKS profile</a>).</li>
-<li id="versus-web"><b>VERSUS in the browser version (live races).</b> Nothing is sent before you open VERSUS or a friend's invite
-link. Then the game connects to our race server (<code>orbit-dash-versus.versus-cf.workers.dev</code>, run for us by Cloudflare) and sends what
-<a href="#versus">VERSUS live races</a> lists. The random player ID it creates for VERSUS is kept in your browser's <code>localStorage</code>
+<li id="versus-web"><b>VERSUS in the browser version (live races).</b> With OPEN ROOMS, the game connects to our race server
+(<code>orbit-dash-versus.versus-cf.workers.dev</code>, run for us by Cloudflare) while it is open, to show how many players are online and to pass
+on race invites (before OPEN ROOMS, nothing was sent until you opened VERSUS or a friend's invite link), and sends what
+<a href="#versus">VERSUS live races</a> lists. The browser version gets no push notifications and sends no push token. The random player ID it creates for VERSUS is kept in your browser's <code>localStorage</code>
 (<code>od:own:vs-pid</code>); clearing your browser data erases it, and the next race gets a new one. Invite links open a page of this site
 (<code>/vs/</code>) that shows the room code and is not indexed by search engines; it has no analytics and loads nothing from other sites.</li>
 <li><b>Cloudflare</b> runs the VERSUS race server (Cloudflare Workers and Durable Objects) and our visit counter (Cloudflare Workers) for us. See
@@ -162,6 +168,11 @@ address to deliver the message, as any server does; the counter does not store i
 your browser's user agent is checked only to skip search-engine robots and is not stored.</li>
 <li><b>Retention:</b> each count is stored as one anonymous row (the fields above and the time), which we only ever read as totals,
 such as visits per day and per country; Cloudflare deletes these rows after about 3 months.</li>
+<li><b>In the app:</b> from version 4.0.0, when the app asks whether ads may be personalised (Google's consent form) or, on iPhone, whether it may
+track (Apple's question), it sends the same counter one anonymous message per step: that the question was shown or which answer was chosen (for
+example consent, do not consent, allow or ask not to track), where in the game it was asked (after a cleared level or a few Endless runs, before an ad you chose
+to watch, or at start), whether the European privacy rules apply to you, Android or iPhone, and the country code. Never an ID, the advertising ID
+or anything that identifies you; it is sent even if you say no, because without it we could not know how many people say no.</li>
 <li><b>Where not:</b> not in the live game preview that other sites embed (<code>/play/embed.html</code>) and not on VERSUS invite pages
 (<code>/vs/</code>).</li>
 <li><b>Legal basis:</b> our legitimate interest in knowing how many people visit our site (GDPR Art. 6(1)(f)). The counter keeps nothing
@@ -223,7 +234,8 @@ your first counted run, right after telling you so (“YOU'RE ON THE BOARDS” a
 itself if you open it first); in older versions, only if you tap JOIN RANKS (see
 <a href="#ranks-auto">How you get on the boards</a>). If you have joined RANKS, the app also collects from
 our server the gems your weekly rings have won when you start the game or come back to it after at least 30 seconds away,
-even if you don't open RANKS; it sends this request only when it knows that gems are waiting for you.</p>
+even if you don't open RANKS; it sends this request only when it knows that gems are waiting for you. Separately, versions with OPEN ROOMS keep a
+connection to our VERSUS race server while the game is open (see <a href="#versus">VERSUS live races</a>).</p>
 <p>What the app does send is handled by the SDKs below. Each is run by the company named, under that company's own
 privacy policy, and each may process a device or advertising identifier.</p>
 
@@ -233,10 +245,10 @@ privacy policy, and each may process a device or advertising identifier.</p>
 <tr><td>Google AdMob</td><td>Shows the ads that keep the game free: a banner, rewarded ads you choose to watch, and an ad when you open the game or come back to it. Uses the advertising ID to limit repeats and measure ads.</td><td><a href="https://support.google.com/admob/answer/6128543" target="_blank" rel="noopener">AdMob</a> · <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">Google</a></td></tr>
 <tr><td>Google&nbsp;AdMob&nbsp;/&nbsp;UMP</td><td>In the EEA, the UK and Switzerland, shows the consent form before personalised ads and records your answer.</td><td><a href="https://support.google.com/admob/answer/10113005" target="_blank" rel="noopener">Consent</a></td></tr>
 <tr><td>Unity Ads (via AdMob mediation)</td><td>One of the ad networks AdMob asks for an ad, so the same banner and rewarded ads can come from Unity. It follows your answer in the consent form and uses the advertising ID like AdMob.</td><td><a href="https://unity.com/legal/game-player-and-app-user-privacy-policy" target="_blank" rel="noopener">Unity</a></td></tr>
-<tr><td>Firebase Analytics</td><td>Gameplay events — a run started or ended (with its score, gems and sparks, whether it was a new best, and the range your best score falls in), a level finished, a screen opened — and how RANKS is used: RANKS opened, joined or a profile deleted, a report sent and its kind (name or score), an orb or anthem chosen. In VERSUS, it counts opening it, how you entered a race (with friends, a random opponent, a code, a link, bots or offline) and how it ended for you (won, podium, lost, draw or left) — never names, room codes or player IDs. Also a tap on SHARE THE GAME, though not whether you sent anything (the share sheet is your phone's), and the label on the Google Play link you installed from, if it had one: Firebase reads it from Google Play's install referrer, and it says where the link was published, such as a video or the share button, not who you are. This shows us which parts of the game work and where new players come from. Events are linked to random IDs of your installation, not to your RANKS profile; your RANKS nickname, country and account identifiers, and the players you report, are never sent.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
+<tr><td>Firebase Analytics</td><td>Gameplay events — a run started or ended (with its score, gems and sparks, whether it was a new best, and the range your best score falls in), a level finished, a screen opened — and how RANKS is used: RANKS opened, joined or a profile deleted, a report sent and its kind (name or score), an orb or anthem chosen. In VERSUS, it counts opening it, how you entered a race (with friends, a random opponent, a code, a link, bots or offline) and how it ended for you (won, podium, lost, draw or left) — never names, room codes or player IDs. Also a tap on SHARE THE GAME, though not whether you sent anything (the share sheet is your phone's), and the label on the Google Play link you installed from, if it had one: Firebase reads it from Google Play's install referrer, and it says where the link was published, such as a video or the share button, not who you are. From version 4.0.0 also when the privacy questions were shown and how you answered them (the consent form and, on iPhone, Apple's tracking question), as events and as two properties of your installation, so we can see whether asking at a better moment works. This shows us which parts of the game work and where new players come from. Events are linked to random IDs of your installation, not to your RANKS profile; your RANKS nickname, country and account identifiers, and the players you report, are never sent.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Crashlytics</td><td>Crash and error reports: what broke, on which device and Android version, the screen, game mode, level and attempt you were on, and a short list of what happened just before it — the names of the latest Firebase Analytics events, plus two notes kept only here, with their details: a level continued with a revive (which attempt, how many revives and from how far into the level) and a reward doubled (where, and the gems added).</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Remote Config</td><td>Lets us change settings (such as how often ads appear) without shipping an update.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
-<tr><td>Firebase Cloud Messaging</td><td>Optional notifications. Android asks for your permission first, and the game works fully without it.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
+<tr><td>Firebase Cloud Messaging</td><td>Optional notifications. Android asks for your permission first, and the game works fully without it. If you leave your own VERSUS room open, the game gives the push token to our race server, only so that it can tell you when someone joins (see <a href="#versus">VERSUS live races</a>).</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Google Play Games</td><td>Leaderboards. Only if you sign in — then your Play Games profile name and your score appear in the public ranking. RANKS also uses your Play Games sign-in to confirm who you are, and its name can be your RANKS nickname (see <a href="#ranks">RANKS in the app</a>).</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a></td></tr>
 <tr><td>Firebase App Check (Play&nbsp;Integrity)</td><td>Only when the game talks to the RANKS server: checks that requests come from the genuine app on a real device, to keep the boards fair.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Google Play Billing</td><td>Handles in-app purchases (Remove Ads). Payment details go to Google; we never see your card.</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a></td></tr>
@@ -262,13 +274,13 @@ third-party services than the Android app:</p>
 <tr><td>Unity Ads (via AdMob mediation)</td><td>One of the ad networks AdMob asks for an ad, so the same banner and rewarded ads can come from Unity. It follows your answer in the consent form; the advertising identifier (IDFA) only if you allow tracking.</td><td><a href="https://unity.com/legal/game-player-and-app-user-privacy-policy" target="_blank" rel="noopener">Unity</a></td></tr>
 <tr><td>Firebase Analytics</td><td>The same gameplay and RANKS events as in the Android app (see <a href="#android">The Android app</a>). It does not read the advertising identifier (IDFA). In the EEA, the UK and Switzerland it follows your answer in the consent form.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Firebase Crashlytics</td><td>Crash and error reports: what broke, on which device and iOS version, and the screen, game mode and level you were on, with the names of the latest Firebase Analytics events, as in the Android app.</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
-<tr><td>Firebase Cloud Messaging</td><td>Optional notifications. iOS asks for your permission first, and the game works fully without it. To deliver them, your iPhone gets a push token from Apple and Firebase, and the app subscribes it to general topics (your language and time zone).</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
+<tr><td>Firebase Cloud Messaging</td><td>Optional notifications. iOS asks for your permission first, and the game works fully without it. To deliver them, your iPhone gets a push token from Apple and Firebase, and the app subscribes it to general topics (your language and time zone). If you leave your own VERSUS room open, the game gives the push token to our race server, only so that it can tell you when someone joins (see <a href="#versus">VERSUS live races</a>).</td><td><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>Game Center (Apple)</td><td>Leaderboards. Only if you are signed in to Game Center on your iPhone (when the game starts, it may show Apple's sign-in window) — then your Game Center name and your scores appear in the game's public Game Center leaderboards, whether or not you join RANKS. RANKS also uses your Game Center sign-in to confirm who you are, and its name can be your RANKS nickname (see <a href="#ranks">RANKS in the app</a>).</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a></td></tr>
 <tr><td>App Attest / DeviceCheck (Apple) with Firebase App Check</td><td>Only when the game talks to the RANKS server: checks that requests come from the genuine app on a real device, to keep the boards fair.</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a> · <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase</a></td></tr>
 <tr><td>App Store purchases (Apple)</td><td>Handles the in-app purchase (Remove Ads) and Restore Purchases. Payment goes to Apple; we never see your card or Apple ID.</td><td><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple</a></td></tr>
 </tbody>
 </table>
-<p>Daily reminders on iPhone are scheduled on the device itself; other notifications, if you allow them, arrive through Firebase Cloud Messaging (Apple Push Notification service). Nothing about them is sent to our own server.</p>
+<p>Daily reminders on iPhone are scheduled on the device itself; other notifications, if you allow them, arrive through Firebase Cloud Messaging (Apple Push Notification service). Nothing about them is sent to our own servers, except the push token of a VERSUS room you leave open (see <a href="#versus">VERSUS live races</a>).</p>
 
 <h2 id="ranks">RANKS in the app (Android and iPhone)</h2>
 <p>RANKS are the game's own leaderboards: weekly and all-time boards for your country and the world. You can look at the
@@ -416,9 +428,16 @@ Google and Apple manage.</li>
 <h2 id="versus">VERSUS live races (browser version; Android app from version 3.0.0, iPhone app from version 3.0.1)</h2>
 <p>VERSUS lets you race other players live on the same track: friends you invite with a room code or a link, or random
 players, up to 8 in a race (the game fills empty seats with bots). The races run on our own race server, which
-<b>Cloudflare, Inc.</b> runs for us as our processor (Cloudflare Workers and Durable Objects, <code>orbit-dash-versus.versus-cf.workers.dev</code>). The game connects to it
-only when you open VERSUS or a friend's invite link, always over an encrypted connection. The Android app from version 3.0.0 and the iPhone app
+<b>Cloudflare, Inc.</b> runs for us as our processor (Cloudflare Workers and Durable Objects, <code>orbit-dash-versus.versus-cf.workers.dev</code>). Versions of
+the game with OPEN ROOMS (rooms anyone can join) connect to it as soon as the game is open; older versions connect only when you open VERSUS or a
+friend's invite link. The connection is always encrypted. The Android app from version 3.0.0 and the iPhone app
 from version 3.0.1 use the same server in the same way.</p>
+<p id="versus-online"><b>While the game is open</b> (versions with OPEN ROOMS), this connection lets the game show how many players are online and which
+rooms are open, and lets the server pass on race invites and calls from your room. You need no account for it: the game introduces itself the same
+way as for a race (see the list below) and tells the server where you are in the game (a menu, a run or a level, or the VERSUS screen), whether it may
+show you a race invite right now, whether you have played VERSUS before and which levels you can race — so that invites reach only players who are free,
+never during a run, and only for races they can open. The server keeps this only in its memory while you are connected, and the online count it shows
+is just a number. To get no race invites, turn off <b>RACE INVITES</b> in the game's Settings.</p>
 <p><b>What the race server gets:</b></p>
 <ul>
 <li><b>Your name:</b> your RANKS nickname if you are on RANKS, otherwise a name the server generates from our own word list. You cannot
@@ -426,24 +445,42 @@ type a name in VERSUS; names are checked with the same rules as in RANKS.</li>
 <li><b>Your country flag,</b> if RANKS shows it (a hidden flag is not sent).</li>
 <li><b>Your ball:</b> the skin and trail you play with.</li>
 <li><b>A random player ID</b> that the game creates for VERSUS only, so that two tabs or a reconnect count as the same player. It is not
-linked to your device, your RANKS profile or your Google Play Games / Game Center account. In the browser it is kept in
+made from your device, your RANKS profile or your Google Play Games / Game Center account. In the browser it is kept in
 <code>localStorage</code> (<code>od:own:vs-pid</code>); in the apps, in the game's data on your device.</li>
-<li><b>Your platform and game version</b> (browser, Android or iPhone) and how many orbit rings your version can race on (up to 4), so that only
-matching versions race together.</li>
+<li><b>Your public RANKS details,</b> only if you are on RANKS (versions with OPEN ROOMS): your public RANKS player ID, your orb's code, your ring
+of the week and where you won it (your country or the world), a short summary of your HONORS (how many crowns and your title) and your best place
+on this week's boards — what RANKS already shows everyone, so that other players see your rings and can open your RANKS card. If you are not on
+RANKS, none of this is sent.</li>
+<li><b>Your platform and game version</b> (browser, Android or iPhone), how many orbit rings your version can race on (up to 4) and whether it has
+OPEN ROOMS, so that only matching versions race together.</li>
 <li><b>Which levels you can play</b>, as short level codes, and how many orbit rings you'd like to race on (2, 3 or 4), when you search for a
-random race, so that the server only puts you into a race you can open. The server keeps this list only in its memory while you are connected.</li>
+random race or, with OPEN ROOMS, while the game is open, so that the server only puts you into (or invites you to) a race you can open. The server
+keeps this list only in its memory while you are connected.</li>
 <li><b>Your race:</b> your taps and their timing, your score, gems and sparks in the race, how far you got and whether you finished —
 to keep everyone's race in sync, check the results and show the places.</li>
+<li id="versus-push"><b>Your phone's push token</b> (Firebase Cloud Messaging) and the language of the game — only in the apps, only if you allow
+notifications, and only when you leave your own room open (PLAY WHILE YOU WAIT, KEEP OPEN, or closing the game while your room waits). The server keeps
+the token only with that room and deletes it together with the room — at most 15 minutes after you leave the game. It never goes into logs or
+statistics or to other players, and it is used for one thing only: to tell you that someone joined your room (at most 3 notifications per room). To send it, the race
+server passes the token, the room's game and code and the name and flag of the player who joined to our RANKS server (Google Cloud / Firebase, EU
+region), which sends the notification through Firebase Cloud Messaging and does not store any of it.</li>
 </ul>
-<p><b>Who sees it:</b> the other players in the same room see your name, flag, ball and trail, your place and your race numbers. There is
+<p><b>Who sees it:</b> the other players in the same room see your name, flag, ball and trail, your RANKS rings and best place (if you are on RANKS),
+your place and your race numbers. A room you open to everyone (OPEN TO EVERYONE, or a QUICK RACE room that opened by itself) is listed in OPEN ROOMS
+for every player with the game open — with your name, flag, ball, RANKS rings and best place, the game and how many seats are taken — and a few
+players who are free at that moment may get an invite with your name, flag and the game. There is
 no chat and no free text, and other players never get your IP address: everything goes through the server, never directly between
 players.</p>
 <p><b>How long:</b> only while the room lasts. The server keeps a room in its memory; for rooms with friends it also saves the lobby (names,
-flags, balls and player IDs) in its storage, so that the room survives a restart of the server, and deletes it together with the room.
-Rooms close when everyone has left and at most 4 hours after they open. The server's daily usage counter contains no personal data.</p>
+flags, balls and player IDs, and the host's push token if there is one) in its storage, so that the room survives a restart of the server, and deletes
+it together with the room. Rooms close when everyone has left and at most 4 hours after they open; a room whose host has left the game waits for them
+at most 15 minutes. The server's daily usage counter contains no personal data.</p>
 <p id="versus-stats"><b>Daily statistics:</b> the race server also counts, for each day (UTC), how VERSUS is used: connections, rooms and races
 (with friends or random players, with or without bots, endless or which level, finished or left early), how many different players
-raced, the busiest moment and time of day, how long races last, and how many players came from each country and each platform. The
+raced, the busiest moment and time of day, how long races last, and how many players came from each country and each platform. With OPEN ROOMS it
+also counts how many game connections were open (and the most at once), how many rooms were opened to everyone or opened by themselves, how players
+entered rooms (from the list, an invite, a quick race or a code), how many invites and room notifications were sent, how many hosts came back after
+one and how long that took, and how often the host role passed to another player. The
 country is the two-letter code that Cloudflare derives from your connection; your IP address itself is not part of these statistics. The
 platform comes from the game (browser, Android or iPhone). To count each player only once a day, the server keeps your random player
 ID only in a scrambled form (a hash with a random key that changes every day), never sends it anywhere and deletes these hashes together
@@ -457,8 +494,9 @@ never names. If you install the app from the Google Play button of an invite pag
 the app can open the same room after installing.</p>
 <p><b>Children:</b> the same rules as in RANKS — whoever RANKS gives a generated name and no flag (for example, a Game Center account marked as
 belonging to a minor) races with a generated name and no flag too.</p>
-<p><b>Why:</b> to run the race you started yourself (GDPR Art. 6(1)(b)); limits against abuse, keeping the server secure and working and
-counting how VERSUS is used in daily statistics — our legitimate interest (Art. 6(1)(f)). If you allowed Google Analytics on this site, it also counts how VERSUS is used (see
+<p><b>Why:</b> to run the race you started yourself and to call you back to the room you left open (GDPR Art. 6(1)(b)); showing who is online, open
+rooms and race invites, limits against abuse, keeping the server secure and working and counting how VERSUS is used in daily statistics — our
+legitimate interest (Art. 6(1)(f)). If you allowed Google Analytics on this site, it also counts how VERSUS is used (see
 <a href="#analytics">Website analytics</a>).</p>
 
 <h2>Your choices</h2>
@@ -476,7 +514,9 @@ scores stay off their leaderboards. RANKS adds you by itself — the app from ve
 itself — only <b>JOIN RANKS</b> brings you back. In RANKS you can also hide your flag or pick a generated name.</li>
 <li><b>Visit counter:</b> it keeps nothing on your device and nothing that identifies you, so there is nothing to switch off; if you
 block <code>stats.lewydo.com</code> in your browser (for example with a content blocker), the site works exactly the same.</li>
-<li><b>VERSUS:</b> nothing is sent unless you open VERSUS or an invite link. To leave a room, close it or tap LEAVE; clearing your browser
+<li><b>VERSUS:</b> versions with OPEN ROOMS connect to the race server while the game is open (older versions only when you open VERSUS or an
+invite link). Turn off <b>RACE INVITES</b> in the game's Settings to get no race invites, and notifications for Orbit Dash to get no calls from your
+room when the game is closed. To leave a room, close it or tap LEAVE; clearing your browser
 data (or the app's data) erases your random player ID.</li>
 <li><b>Everything else:</b> uninstalling the app stops all collection (a RANKS profile stays until you delete it or
 24 months pass). Data already sent to Google or TikTok is
@@ -493,7 +533,8 @@ collect personal data from children. If you believe a child has provided persona
 <ul>
 <li><b>RANKS</b> — how long it keeps your profile, records and request data is described in
 <a href="#ranks-retention">How long RANKS data is kept</a> (the browser version's RANKS work the same way).</li>
-<li><b>VERSUS</b> — race data only while a room lasts, at most 4 hours, and daily statistics — numbers only, without names or player IDs —
+<li><b>VERSUS</b> — race data only while a room lasts, at most 4 hours; the push token of a room you leave open only while that room waits for you,
+at most 15 minutes after you leave the game; and daily statistics — numbers only, without names or player IDs —
 for 30 days (see <a href="#versus">VERSUS live races</a> and <a href="#versus-stats">Daily statistics</a>).</li>
 <li><b>Visit counter</b> — anonymous rows, without cookies, identifiers or IP addresses, for about 3 months (see
 <a href="#visit-counter">Visit counter</a>).</li>
@@ -523,6 +564,11 @@ uses the European Commission's Standard Contractual Clauses. All traffic from th
 <h2>Changes to this policy</h2>
 <p>If we add or remove a service, we update this page and the date at the top before the change ships. Material
 changes are described here; the previous wording is available on request.</p>
+<p><b>22 November 2026:</b> from version 4.0.0 the app asks the privacy questions (Google's consent form and, on iPhone, Apple's tracking question)
+after your first cleared level (or after a few Endless runs, or when you first choose to watch an ad for a reward) rather than at the very
+first start, once; in the EEA, the UK and Switzerland there are no ads until you answer, and on iPhone ads run without the advertising
+identifier until you answer Apple's question. Nothing in the game depends on your answers. Each step is counted anonymously with our visit counter
+(see <a href="#visit-counter">Visit counter</a>). What we collect otherwise did not change.</p>
 <p><b>12 November 2026:</b> this site now has its own anonymous visit counter (<code>stats.lewydo.com</code>, run for us by Cloudflare)
 that counts page views and Allow / Decline taps for everyone, without cookies or identifiers (see
 <a href="#visit-counter">Visit counter</a>). Google Analytics still works only after you tap Allow.</p>
