@@ -2290,7 +2290,7 @@ const siteAppStoreUrl = (id, search, ct = SITE_CT) => asCampaignUrl(id, visitorC
     var sec = document.getElementById("contact"), inView = false;
     function bar() { var o = document.getElementById("odc"); return !!(o && !o.hidden && o.offsetHeight > 0); }
     // [17.11.2026] як на lewydo.com: біля кнопки сторінки — лише кружок (.tight), ховаємося, коли й кружок налазить
-    var AVOID = "main .btn, footer a:not(.fab-plane), footer button", ico = f.querySelector(".fp-ico"), lab = f.querySelector(".fp-t");
+    var AVOID = "main .btn, main .lvc, footer a:not(.fab-plane), footer button", ico = f.querySelector(".fp-ico"), lab = f.querySelector(".fp-t");
     function hits(r) { return [].slice.call(document.querySelectorAll(AVOID)).some(function (e) { var b = e.getBoundingClientRect();
       return b.width > 0 && b.height > 0 && b.left < r.right + 6 && b.right > r.left - 6 && b.top < r.bottom + 6 && b.bottom > r.top - 6; }); }
     function upd() {
