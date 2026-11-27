@@ -71,7 +71,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { BARB_DEF, barbMaker } from "./trail-fabulous.mjs";   // [THE FABULOUS]
-import { PRISM_DEF, prismMaker } from "./trail-chroma.mjs";   // [CHROMA, 21.11.2026] хвіст PRISM рівня CHROMA (nu-drop, debugOnly; порт — з рівнем)
+import { osK } from "./orbit-shape.mjs";   // [ABRACADABRA] форма орбіт: хвіст іде по фігурі (поза нею k ≡ 1)
+const OS_FX = 2;   // вузли хвоста — r / FX_K (orbit-dash-tutorial.jsx FX_K = 2); форма рахує в од. поля
+import { PRISM_DEF, prismMaker } from "./trail-chroma.mjs";
+import { MIRAGE_DEF, mirageMaker } from "./trail-abra.mjs";   // [ABRACADABRA, 25.11.2026] хвіст MIRAGE рівня ABRACADABRA (вибір власника; порт — з рівнем)   // [CHROMA, 21.11.2026] хвіст PRISM рівня CHROMA (nu-drop, debugOnly; порт — з рівнем)
+import { MESMER_DEF, MESMER, mesmerMaker } from "./trail-mesmer.mjs";   // [HYPNOTIC, 24.11.2026] легендарний хвіст MESMER рівня HYPNOTIC (DEMON; порт — з рівнем)
 // ================================================================ ЕФЕКТИ ЯК У ГРІ — шлейф (перенесено з JSX у v47, числа ті самі)
 
 // ABallTrail — шлейф м'яча (GameScreen: безкінечний ран і туторіал; у рівнях — свій, LEVEL_TRAIL нижче).
@@ -175,6 +179,8 @@ export const TRAILS = [
   //   (код орбіти RANKS лише дописується)
   { id: "petal", name: "PETAL", level: "sunshine", desc: "Sunflower petals · one flies off on every beat" },
   { ...PRISM_DEF },   // [CHROMA, 21.11.2026] хвіст рівня CHROMA (робочий id nu-drop; не легендарний): RGB-примари на кожну долю, глітч у дропі
+  { ...MESMER_DEF },   // [HYPNOTIC, 24.11.2026] легендарний хвіст DEMON HYPNOTIC: біла й червона нитки пружиною, гіпно-хвиля на кожну долю (trail-mesmer.mjs)
+  { ...MIRAGE_DEF },   // [ABRACADABRA, 25.11.2026] хвіст рівня ABRACADABRA (HARD; не легендарний): краї стрічки — хвиля форми орбіт   // [497] за MESMER — у КІНЦІ каталогу: код орбіти RANKS лише дописується (mirage — 22, знак m)
 ];
 /** [v81] Хвіст лише за кільце RANKS (FLARE — SUPERNOVA): ні ціни, ні рівня. */
 export const isPerkTrail = (t) => !!t && typeof t.perk === "string";
@@ -588,7 +594,8 @@ export function trailFrame(nodes, mode, o = {}) {
     while (j < N - 2 && nodes[j + 1].t <= t) j++;
     const a = nodes[j], b = nodes[j + 1], u = b.t > a.t ? clamp01((t - a.t) / (b.t - a.t)) : 1;
     const ang = (a.a + angDiff(b.a, a.a) * u) * D, r = a.r + (b.r - a.r) * u;
-    return { x: Math.cos(ang) * r, y: Math.sin(ang) * r, t: a.t + (b.t - a.t) * u };
+    const k = osK(ang, r * OS_FX);   // [ABRACADABRA] форма орбіт (вузли — r / FX_K)
+    return { x: Math.cos(ang) * r * k, y: Math.sin(ang) * r * k, t: a.t + (b.t - a.t) * u };
   };
   const F = {
     mode, z, beat, reduced: !!o.reduced, span, tH, t0, unit, scr: LV ? 1 / z : 1, env, L, n: N,
@@ -616,7 +623,8 @@ export function trailFrame(nodes, mode, o = {}) {
     while (j < N - 2 && nodes[j + 1].t <= t) j++;
     const a = nodes[j], b = nodes[j + 1], u = b.t > a.t ? Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))) : 1;
     const ang = (a.a + angDiff(b.a, a.a) * u) * D, r = a.r + (b.r - a.r) * u;
-    pts.push([Math.cos(ang) * r, Math.sin(ang) * r]);
+    const k = osK(ang, r * OS_FX);   // [ABRACADABRA] форма орбіт
+    pts.push([Math.cos(ang) * r * k, Math.sin(ang) * r * k]);
     te.push(a.t + (b.t - a.t) * u);
   }
   // 2. від голови: злиплі точки — одна (tLo — найстаріша мить, яку вона вміщує); LEVEL — обрізка до LEN_MAX / z
@@ -2338,7 +2346,9 @@ const MAKERS = { inferno: barbMaker({ ribbon, gradE, glowOf, empty, chordGrad, c
  comet: makeComet, beads: makeBeadsE, dash: makeDashE, helix: makeHelixE, embers: makeEmbersE,
   pixel: makePixelE, echo: makeEchoE, drift: makeDriftE, zap: makeZapE, nova: makeNovaE, cape: makeCapeE, flare: makeFlareE, wisp: makeWispE,   // [HALLOWEEN]
   fern: makeFernE, scribble: makeScribbleE, mach: makeMachE, strum: makeStrumE, keys: makeKeysE, petal: makePetalE,   // [SUNSHINE] PETAL
-  prism: prismMaker({ ribbon, chordGrad, chordU, glowOf, empty, LOOK_E, headBallOf, TRAIL_RULES }) };   // [CHROMA] PRISM   // [SUNSHINE] PETAL
+  prism: prismMaker({ ribbon, chordGrad, chordU, glowOf, empty, LOOK_E, headBallOf, TRAIL_RULES }),
+  mirage: mirageMaker({ ribbon, chordGrad, chordU, glowOf, empty, LOOK_E, headBallOf, TRAIL_RULES }),   // [ABRACADABRA] MIRAGE   // [CHROMA] PRISM   // [SUNSHINE] PETAL
+  mesmer: mesmerMaker({ ribbon, chordGrad, chordU, empty, LOOK_E, headBallOf, annulusPoly, pos }) };   // [HYPNOTIC] MESMER
 /**
  * [v102] Кадр вигляду рівня: той самий trailFrame з вузлами, радіуси яких ×zs, і зумом z / zs (zs = max(1, z)); env — ENDLESS_ENV. Довжина,
  * обрізка LEN_MAX / z, ok, f, час і сітки — ті самі, що в кадрі F; розміри стилю в ньому — одиниці екрана (до зуму 1 — поля). Кешується на F.
@@ -2460,9 +2470,12 @@ export function trailMetrics(F, prims) {
  * L — довжина: усе намальоване лежить у смузі ±W довкола ОСТАННІХ L од. шляху від голови (bandFu ≤ W; null — лише LEN_MAX шляху), ahead — найдальше
  * попереду центру м'яча, частка BALL_R (aheadFu; null — не міряємо) }. Виняток — лише CAPE (REDESIGN §5.2: плащ читається від поділ / довжина ≥ 0.45):
  * 16 / 66 / 0.5; решта стилів — ENDLESS_ENV 9. COMET у рівні — свій v46.
+ * [HYPNOTIC, власник 24.11: «хвіст якось на прев'ю рівня негарний, не відчуваю ефекту» — дозвіл на виняток, як CAPE] MESMER: гіпно-диск від м'яча
+ * на кожну долю (×3.4 радіуса м'яча, масштаб KIT F3) — ENV 37 / LEN_MAX 400 (увесь шлях — виняток лише вшир) / AHEAD_MAX 3.7 (trail-mesmer.mjs; диск — лінії, під шипами й гемами).
  */
 export const trailEnvOf = (id) => (id === "cape"
   ? { W: TRAIL_STYLE_E.CAPE.ENV, L: TRAIL_STYLE_E.CAPE.LEN_MAX, ahead: TRAIL_STYLE_E.CAPE.AHEAD_MAX }
+  : id === "mesmer" ? { W: MESMER.ENV, L: MESMER.LEN_MAX, ahead: MESMER.AHEAD_MAX }   // [HYPNOTIC, власник 24.11] виняток гіпно-диска
   // [KEYS 3.0] виняток лише для ОПРАВИ довкола спини м'яча: ≤ ENV від осі, усе — в останніх LEN_MAX од. шляху, попереду центру ≤ AHEAD_MAX·BALL_R;
   // далі LID_REACH від центру м'яча — у ±ENDLESS_ENV, як решта (trails.test §20: keysLidOnly)
   // [KEYS 3.0, фініш] на зумі виняток росте з м'ячем: zBall — радіус м'яча, zKey — стеля множника клавіатури (trailEnvAt)

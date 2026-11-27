@@ -57,7 +57,7 @@ footer a{color:var(--dim);text-decoration:none}footer a:hover{color:var(--player
 
 <main class="wrap">
 <h1>Privacy Policy</h1>
-<p class="upd">Orbit Dash · com.lewydo.orbitdash · Last updated 2026-11-22</p>
+<p class="upd">Orbit Dash · com.lewydo.orbitdash · Last updated 2026-11-27</p>
 
 <h2>Who we are</h2>
 <p>Orbit Dash is made by <b>Lewydo</b>, a two-person independent game studio from Ukraine (Vlad and Lilya).
@@ -436,8 +436,9 @@ from version 3.0.1 use the same server in the same way.</p>
 rooms are open, and lets the server pass on race invites and calls from your room. You need no account for it: the game introduces itself the same
 way as for a race (see the list below) and tells the server where you are in the game (a menu, a run or a level, or the VERSUS screen), whether it may
 show you a race invite right now, whether you have played VERSUS before and which levels you can race — so that invites reach only players who are free,
-never during a run, and only for races they can open. The server keeps this only in its memory while you are connected, and the online count it shows
-is just a number. To get no race invites, turn off <b>RACE INVITES</b> in the game's Settings.</p>
+never during a run, and only for races they can open. If you open your own room and then go and play something else (KEEP ROOM OPEN), the server keeps
+your seat in that room and tells your game when someone joins, until you go back to the room, close it, or it closes by itself. The server keeps this only
+in its memory while you are connected, and the online count it shows is just a number. To get no race invites, turn off <b>RACE INVITES</b> in the game's Settings.</p>
 <p><b>What the race server gets:</b></p>
 <ul>
 <li><b>Your name:</b> your RANKS nickname if you are on RANKS, otherwise a name the server generates from our own word list. You cannot
@@ -451,15 +452,15 @@ made from your device, your RANKS profile or your Google Play Games / Game Cente
 of the week and where you won it (your country or the world), a short summary of your HONORS (how many crowns and your title) and your best place
 on this week's boards — what RANKS already shows everyone, so that other players see your rings and can open your RANKS card. If you are not on
 RANKS, none of this is sent.</li>
-<li><b>Your platform and game version</b> (browser, Android or iPhone), how many orbit rings your version can race on (up to 4) and whether it has
-OPEN ROOMS, so that only matching versions race together.</li>
+<li><b>Your platform and game version</b> (browser, Android or iPhone), how many orbit rings your version can race on (up to 4), whether it has
+OPEN ROOMS and whether it can keep your open room waiting while you play something else, so that only matching versions race together.</li>
 <li><b>Which levels you can play</b>, as short level codes, and how many orbit rings you'd like to race on (2, 3 or 4), when you search for a
 random race or, with OPEN ROOMS, while the game is open, so that the server only puts you into (or invites you to) a race you can open. The server
 keeps this list only in its memory while you are connected.</li>
 <li><b>Your race:</b> your taps and their timing, your score, gems and sparks in the race, how far you got and whether you finished —
 to keep everyone's race in sync, check the results and show the places.</li>
 <li id="versus-push"><b>Your phone's push token</b> (Firebase Cloud Messaging) and the language of the game — only in the apps, only if you allow
-notifications, and only when you leave your own room open (PLAY WHILE YOU WAIT, KEEP OPEN, or closing the game while your room waits). The server keeps
+notifications, and only when you leave your own room open (KEEP ROOM OPEN, PLAY WHILE YOU WAIT, KEEP OPEN, or closing the game while your room waits). The server keeps
 the token only with that room and deletes it together with the room — at most 15 minutes after you leave the game. It never goes into logs or
 statistics or to other players, and it is used for one thing only: to tell you that someone joined your room (at most 3 notifications per room). To send it, the race
 server passes the token, the room's game and code and the name and flag of the player who joined to our RANKS server (Google Cloud / Firebase, EU
